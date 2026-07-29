@@ -5,43 +5,76 @@ datasource db {
   provider = "postgresql"
   url = env("DATABASE_URL")
 }
+enum Role {
+  SUPER_ADMIN
+  RESTAURANT_ADMIN
+  WAITER
+  KITCHEN
+}
 model Restaurant {
   id String @id @default(cuid())
   name String
   slug String @unique
-  email String @unique
-  phone String?
-  address String?
   createdAt DateTime @default(now())
-  categories MenuCategory[]
+  updatedAt DateTime @updatedAt
+  users User[]
   tables Table[]
+  categories MenuCategory[]
+  items MenuItem[]
   orders Order[]
 }
-model MenuCategory {
+model User {
   id String @id @default(cuid())
-  name String
-  restaurantId String
-  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  items MenuItem[]
-  order Int @default(0)
-}
-model MenuItem {
-  id String @id @default(cuid())
-  name String
-  description String?
-  price Float
-  available Boolean @default(true)
-  categoryId String
-  category MenuCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  email String @unique
+  password String
+  name String?
+  role Role @default(WAITER)
+  restaurantId String?
+  restaurant Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 model Table {
   id String @id @default(cuid())
   number Int
-  qrCode String @unique
+  qrSlug String @unique
   restaurantId String
   restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   orders Order[]
+  createdAt DateTime @default(now())
   @@unique([restaurantId, number])
+}
+model MenuCategory {
+  id String @id @default(cuid())
+  name String
+  nameEn String?
+  nameDe String?
+  order Int @default(0)
+  restaurantId String
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  items MenuItem[]
+  createdAt DateTime @default(now())
+}
+model MenuItem {
+  id String @id @default(cuid())
+  name String
+  nameEn String?
+  nameDe String?
+  description String?
+  descriptionEn String?
+  descriptionDe String?
+  price Float
+  available Boolean @default(true)
+  isBoosted Boolean @default(false)
+  boostLevel Int @default(0)
+  imageUrl String?
+  order Int @default(0)
+  categoryId String
+  category MenuCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  restaurantId String
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  orderItems OrderItem[]
+  createdAt DateTime @default(now())
 }
 model Order {
   id String @id @default(cuid())
@@ -61,5 +94,6 @@ model OrderItem {
   orderId String
   order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
   menuItemId String
+  menuItem MenuItem @relation(fields: [menuItemId], references: [id])
   price Float
 }
