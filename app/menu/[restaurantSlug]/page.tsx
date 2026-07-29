@@ -9,7 +9,7 @@ export default async function MenuPage({ params }: { params: { restaurantSlug: s
     <main className="max-w-xl mx-auto min-h-screen bg-white">
       <header className="p-6 bg-black text-white text-center">
         <h1 className="text-3xl font-black">{restaurant.name}</h1>
-        <p className="opacity-70">{restaurant.address}</p>
+        <p className="opacity-70">{restaurant.slug}</p>
       </header>
       <div className="p-6 space-y-8">
         {restaurant.categories.map(cat => (
@@ -18,8 +18,11 @@ export default async function MenuPage({ params }: { params: { restaurantSlug: s
             <div className="space-y-4">
               {cat.items.map(item => (
                 <div key={item.id} className="flex justify-between gap-4">
-                  <div><div className="font-semibold">{item.name}</div><div className="text-sm text-neutral-500">{item.description}</div></div>
-                  <div className="font-bold">€{item.price.toFixed(2)}</div>
+                  <div>
+                    <div className="font-semibold">{item.name} {item.isBoosted ? "🔥" : ""}</div>
+                    <div className="text-sm opacity-60">{item.description}</div>
+                  </div>
+                  <div className="font-bold">{item.price} €</div>
                 </div>
               ))}
             </div>
