@@ -1,15 +1,29 @@
 import { prisma } from "@/lib/prisma"
 export default async function MenuPage({ params }: { params: { restaurantSlug: string } }) {
-  const restaurant = await prisma.restaurant.findUnique({
+  let restaurant = await prisma.restaurant.findUnique({
     where: { slug: params.restaurantSlug },
     include: { categories: { include: { items: true } } }
   }).catch(() => null)
-  if (!restaurant) return <div className="p-10 text-center"><h1 className="text-3xl font-bold">Restoran nije pronađen</h1><p>Dodaj ga u Prisma Studiu sa slug: {params.restaurantSlug}</p></div>
+
+  let tableNumber: number | null = null
+  if (!restaurant) {
+    const table = await prisma.table.findUnique({
+      where: { qrSlug: params.restaurantSlug },
+      include: { restaurant: { include: { categories: { include: { items: true } } } } }
+    }).catch(() => null)
+    if (table) {
+      restaurant = table.restaurant
+      tableNumber = table.number
+    }
+  }
+
+  if (!restaurant) return <div className="p-10 text-center"><h1 className="text-3xl font-bold">Restoran nije pronađen</h1><p>Slug: {params.restaurantSlug}</p></div>
+  
   return (
     <main className="max-w-xl mx-auto min-h-screen bg-white">
       <header className="p-6 bg-black text-white text-center">
         <h1 className="text-3xl font-black">{restaurant.name}</h1>
-        <p className="opacity-70">{restaurant.slug}</p>
+        <p className="opacity-70">{restaurant.slug} {tableNumber ? `• Stol ${tableNumber}` : ''}</p>
       </header>
       <div className="p-6 space-y-8">
         {restaurant.categories.map(cat => (
