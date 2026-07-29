@@ -18,11 +18,11 @@ export default function LoginForm() {
     else router.push('/admin')
   }
   return (
-    <form onSubmit={submit} className="bg-zinc-900/60 border border-zinc-800 rounded- p-8 space-y-5 w-full">
-      <h1 className="text- font-bold text-white">Dobrodosao nazad</h1>
+    <form onSubmit={submit} className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-8 space-y-5 w-full">
+      <h1 className="text-2xl font-bold text-white">Dobrodosao nazad</h1>
       {error && <div className="bg-red-500/10 border border-red-500/20 text-red-300 text-sm p-3 rounded-xl">{error}</div>}
-      <div><label className="text- uppercase text-zinc-400">Email</label><input value={email} onChange={e=>setEmail(e.target.value)} className="mt-2 w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3.5 text-white" required /></div>
-      <div><label className="text- uppercase text-zinc-400">Lozinka</label><input type="password" value={password} onChange={e=>setPassword(e.target.value)} className="mt-2 w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3.5 text-white" required /></div>
+      <div><label className="text-xs uppercase text-zinc-400">Email</label><input value={email} onChange={e=>setEmail(e.target.value)} className="mt-2 w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3.5 text-white" required /></div>
+      <div><label className="text-xs uppercase text-zinc-400">Lozinka</label><input type="password" value={password} onChange={e=>setPassword(e.target.value)} className="mt-2 w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3.5 text-white" required /></div>
       <button disabled={loading} className="w-full bg-white text-black font-bold py-3.5 rounded-xl">{loading? 'Prijavljivanje...' : 'Prijavi se'}</button>
     </form>
   )
