@@ -2,8 +2,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 export default function LoginForm() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [email, setEmail] = useState('admin@tableboost.app')
+  const [password, setPassword] = useState('admin123')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const router = useRouter()
@@ -11,11 +11,16 @@ export default function LoginForm() {
     e.preventDefault()
     setLoading(true)
     setError('')
-    const res = await fetch('/api/auth/login', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ email, password }) })
-    const data = await res.json()
-    if (!res.ok) { setError(data.error || 'Greska'); setLoading(false); return }
-    if (data.role === 'SUPER_ADMIN') router.push('/superadmin')
-    else router.push('/admin')
+    try {
+      const res = await fetch('/api/auth/login', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ email, password }) })
+      const data = await res.json().catch(()=>({}))
+      if (!res.ok) { setError(data.error || `Greska ${res.status}`); setLoading(false); return }
+      if (data.role === 'SUPER_ADMIN') router.push('/superadmin')
+      else router.push('/admin')
+    } catch (err:any) {
+      setError(err.message || 'Network greska')
+      setLoading(false)
+    }
   }
   return (
     <form onSubmit={submit} className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-8 space-y-5 w-full">
