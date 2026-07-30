@@ -14,7 +14,6 @@ export default function LoginPage() {
             <h1 className="text-5xl font-bold text-white leading-none">Povecaj<br/>promet<br/><span className="text-zinc-400">svakog stola.</span></h1>
           </div>
         </div>
-      </div>
       <div className="flex-1 flex items-center justify-center p-6 lg:p-12 bg-zinc-950">
         <div className="w-full max-w-md">
           <LoginForm />
