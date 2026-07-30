@@ -20,11 +20,11 @@ export default function LoginForm(){
   }
   return (
     <form onSubmit={submit} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 w-full max-w-sm space-y-4">
-      <h1 className="text-2xl font-black">Prijava</h1>
-      <input value={email} onChange={e=>setEmail(e.target.value)} placeholder="Email" className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3"/>
-      <input value={pass} onChange={e=>setPass(e.target.value)} placeholder="Lozinka" type="password" className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3"/>
+      <h1 className="text-2xl font-black text-white">Prijava</h1>
+      <input value={email} onChange={e=>setEmail(e.target.value)} placeholder="Email" className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white placeholder:text-zinc-500 focus:outline-none focus:border-zinc-500"/>
+      <input value={pass} onChange={e=>setPass(e.target.value)} placeholder="Lozinka" type="password" className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white placeholder:text-zinc-500 focus:outline-none focus:border-zinc-500"/>
       {err&&<div className="text-red-400 text-sm bg-red-900/20 p-3 rounded-xl">{err}</div>}
-      <button disabled={loading} className="w-full bg-white text-black font-bold py-3 rounded-xl">{loading?'...':'Prijavi se'}</button>
+      <button disabled={loading} className="w-full bg-white text-black font-bold py-3 rounded-xl hover:bg-zinc-100">{loading?'...':'Prijavi se'}</button>
     </form>
   )
 }
