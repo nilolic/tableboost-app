@@ -23,14 +23,14 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex">
       <AdminSidebar user={user} restaurant={restaurant} impersonated={impersonated} />
-      <div className="flex-1 lg:ml- min-w-0 flex flex-col">
+      <div className="flex-1 min-w-0 flex flex-col">
         {impersonated && (
           <div className="sticky top-0 z-30 bg-amber-400 text-black text- font-medium px-4 py-2.5 text-center flex items-center justify-center gap-2">
             <span>👀 Gledaš kao: {impersonated.name}</span>
             <a href="/api/superadmin/impersonate?clear=true" className="ml-3 px-3 py-1 rounded-full bg-black text-white text-xs">Izađi</a>
           </div>
         )}
-        <main className="flex-1 w-full bg-[#F8FAFC] overflow-x-hidden">
+        <main className="flex-1 w-full bg-[#F8FAFC]">
           <div className="lg:hidden h-16" />
           {children}
         </main>
