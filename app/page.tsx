@@ -707,7 +707,7 @@ function ContactForm({ source = "landing", compact = false }: { source?: string;
 }
 
 
-function FeatureCardfunction FeatureCard({ gradient, icon, title, desc }: { gradient: string; icon: React.ReactNode; title: string; desc: string }) {
+function FeatureCard({ gradient, icon, title, desc }: { gradient: string; icon: React.ReactNode; title: string; desc: string }) {
   return (
     <div className="group relative overflow-hidden rounded-[24px] border border-zinc-200 bg-white p-6 shadow-[0_8px_24px_rgba(0,0,0,0.04)] hover:shadow-[0_16px_40px_rgba(0,0,0,0.08)] hover:-translate-y-0.5 transition-all">
       <div className={`absolute left-0 top-0 h-[1px] w-full bg-gradient-to-r ${gradient}`} />
