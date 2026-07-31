@@ -161,9 +161,9 @@ export default function Page() {
       <section className="relative overflow-hidden">
         {/* blobs */}
         <div className="pointer-events-none absolute inset-0">
-          <div className="absolute -top-24 -left-24 h-[520px] w-[520px] rounded-full bg-emerald-200/50 blur-[80px]" />
-          <div className="absolute -top-20 right-[-80px] h-[460px] w-[460px] rounded-full bg-amber-200/50 blur-[80px]" />
-          <div className="absolute top-[280px] left-1/2 h-[700px] w-[700px] -translate-x-1/2 rounded-full bg-violet-200/40 blur-[90px]" />
+          <div className="absolute -top-24 -left-24 h-[600px] w-[600px] rounded-full bg-emerald-300/70 blur-[60px]" />
+          <div className="absolute -top-20 right-[-80px] h-[520px] w-[520px] rounded-full bg-amber-300/70 blur-[60px]" />
+          <div className="absolute top-[280px] left-1/2 h-[700px] w-[700px] -translate-x-1/2 rounded-full bg-violet-300/60 blur-[70px]" />
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(0,0,0,0.02),_transparent_60%)]" />
         </div>
 
@@ -751,3 +751,4 @@ function TrendingIcon() {
     </svg>
   );
 }
+
