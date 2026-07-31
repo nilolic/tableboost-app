@@ -22,18 +22,22 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   } catch {}
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC]">
+    <div className="min-h-screen bg-[#F8FAFC] flex">
       <AdminSidebar user={user} restaurant={restaurant} impersonated={impersonated} />
-      <div className="lg:pl- transition-all">
+      {/* Ovo je ključ - ml- gura content, ne pl */}
+      <div className="flex-1 lg:ml- min-w-0 flex flex-col">
         {impersonated && (
           <div className="sticky top-0 z-30 bg-amber-400 text-black text- font-medium px-4 py-2.5 text-center flex items-center justify-center gap-2">
             <span>👀 Gledaš kao: {impersonated.name}</span>
-            <a href="/api/superadmin/impersonate?clear=true" className="ml-3 px-3 py-1 rounded-full bg-black text-white text-xs">Izađi</a>
+            <a href="/api/superadmin/impersonate?clear=true" className="ml-3 px-3 py-1 rounded-full bg-black text-white text-xs hover:bg-zinc-800">Izađi</a>
           </div>
         )}
-        <main className="min-h-screen">
+        <main className="flex-1 min-h-screen w-full bg-[#F8FAFC] overflow-x-hidden">
+          {/* mobitel spacer */}
           <div className="lg:hidden h-16" />
-          {children}
+          <div className="w-full max-w-full">
+            {children}
+          </div>
         </main>
       </div>
     </div>
