@@ -612,6 +612,11 @@ export default function Page() {
                 </a>
               </div>
               <div className="mt-4 text-[12px] font-medium text-white/70">Bez kartice • 15 min postavljanje • Podrška na HR</div>
+              <div className="mt-6 rounded-[20px] border border-white/10 bg-white/5 backdrop-blur p-4">
+                <div className="text-[13px] font-semibold text-white mb-2">Imaš pitanje? Piši direktno:</div>
+                <ContactForm source="hero" compact={true} />
+                <div className="mt-2 text-[11px] text-white/60">Odgovaramo u 2h • <a href="mailto:admin@tableboost.app" className="underline">admin@tableboost.app</a></div>
+              </div>
             </div>
           </div>
         </div>
@@ -638,7 +643,71 @@ export default function Page() {
   );
 }
 
-function FeatureCard({ gradient, icon, title, desc }: { gradient: string; icon: React.ReactNode; title: string; desc: string }) {
+
+function ContactForm({ source = "landing", compact = false }: { source?: string; compact?: boolean }) {
+  const [form, setForm] = useState({ name: "", email: "", phone: "", message: "" });
+  const [status, setStatus] = useState<"idle"|"sending"|"sent"|"error">("idle");
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatus("sending");
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...form, source }),
+      });
+      if (res.ok) {
+        setStatus("sent");
+        setForm({ name: "", email: "", phone: "", message: "" });
+        setTimeout(()=>setStatus("idle"), 4000);
+      } else setStatus("error");
+    } catch { setStatus("error"); }
+  };
+
+  if (compact) {
+    return (
+      <form onSubmit={submit} className="flex flex-col sm:flex-row gap-2 w-full max-w-[520px]">
+        <input required type="email" placeholder="tvoj@email.com" value={form.email}
+          onChange={e=>setForm({...form,email:e.target.value})}
+          className="h-12 flex-1 rounded-full border border-zinc-200 bg-white px-5 text-[14px] outline-none focus:border-zinc-900 placeholder:text-zinc-400" />
+        <button disabled={status==="sending"} className="h-12 rounded-full bg-zinc-900 px-6 text-[14px] font-bold text-white hover:bg-black transition disabled:opacity-50">
+          {status==="sending" ? "Šaljem..." : status==="sent" ? "✓ Poslano!" : "Pošalji upit"}
+        </button>
+      </form>
+    );
+  }
+
+  return (
+    <form onSubmit={submit} className="rounded-[28px] border border-zinc-200 bg-white p-6 lg:p-8 shadow-[0_12px_32px_rgba(0,0,0,0.06)]">
+      <div className="flex items-center justify-between">
+        <h3 className="text-[18px] font-bold tracking-tight">Javi se ekipi</h3>
+        <span className="text-[12px] text-zinc-500">→ admin@tableboost.app</span>
+      </div>
+      <div className="mt-5 grid gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <input required placeholder="Ime i prezime" value={form.name} onChange={e=>setForm({...form,name:e.target.value})}
+            className="h-12 rounded-2xl border border-zinc-200 bg-zinc-50 px-4 text-[14px] outline-none focus:border-zinc-900 focus:bg-white" />
+          <input placeholder="Telefon (opcionalno)" value={form.phone} onChange={e=>setForm({...form,phone:e.target.value})}
+            className="h-12 rounded-2xl border border-zinc-200 bg-zinc-50 px-4 text-[14px] outline-none focus:border-zinc-900 focus:bg-white" />
+        </div>
+        <input required type="email" placeholder="Email" value={form.email} onChange={e=>setForm({...form,email:e.target.value})}
+          className="h-12 rounded-2xl border border-zinc-200 bg-zinc-50 px-4 text-[14px] outline-none focus:border-zinc-900 focus:bg-white" />
+        <textarea required placeholder="Poruka - npr. koristim KOR, imam 45 artikala..." value={form.message} onChange={e=>setForm({...form,message:e.target.value})}
+          className="min-h-[110px] rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-[14px] outline-none focus:border-zinc-900 focus:bg-white resize-none" />
+        <button disabled={status==="sending"} className="h-12 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 text-white text-[14px] font-bold shadow-[0_8px_20px_rgba(16,185,129,0.35)] hover:shadow-[0_10px_28px_rgba(16,185,129,0.45)] transition disabled:opacity-60">
+          {status==="sending" ? "Šaljem..." : status==="sent" ? "✓ Poslano na admin@tableboost.app!" : "Pošalji poruku"}
+        </button>
+        {status==="sent" && <p className="text-[12px] text-emerald-600 font-medium">Hvala! Javim se u roku 2h na {form.email || "tvoj email"}.</p>}
+        {status==="error" && <p className="text-[12px] text-red-500">Greška, probaj direkt na admin@tableboost.app</p>}
+        <p className="text-[11px] text-zinc-400 text-center">Ili piši direktno: <a href="mailto:admin@tableboost.app" className="underline font-semibold text-zinc-600">admin@tableboost.app</a></p>
+      </div>
+    </form>
+  );
+}
+
+
+function FeatureCardfunction FeatureCard({ gradient, icon, title, desc }: { gradient: string; icon: React.ReactNode; title: string; desc: string }) {
   return (
     <div className="group relative overflow-hidden rounded-[24px] border border-zinc-200 bg-white p-6 shadow-[0_8px_24px_rgba(0,0,0,0.04)] hover:shadow-[0_16px_40px_rgba(0,0,0,0.08)] hover:-translate-y-0.5 transition-all">
       <div className={`absolute left-0 top-0 h-[1px] w-full bg-gradient-to-r ${gradient}`} />
