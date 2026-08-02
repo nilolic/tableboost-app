@@ -30,12 +30,12 @@ export default async function QRPrintPage() {
         <div className="flex justify-between items-center mb-6 print:hidden">
           <div>
             <h1 className="text-3xl font-black tracking-tight">Stolovi & QR</h1>
-            <p className="text-sm text-zinc-500 mt-1">{restaurant.name} • {tables.length} stolova • QR s logom</p>
+            <p className="text-sm text-zinc-500 mt-1">{restaurant.name} • {tables.length} stolova • QR s logom u sredini</p>
           </div>
           <PrintButton />
         </div>
 
-        {isAdmin && <ManageTables restaurantId={restaurantId} tables={tables} />}
+        {isAdmin && <ManageTables restaurantId={restaurantId} tables={tables} initialLogo={(restaurant as any).logoUrl} />}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 print:grid-cols-2 print:gap-4">
           {tables.map(table => {
@@ -44,16 +44,10 @@ export default async function QRPrintPage() {
             const logo = (restaurant as any).logoUrl
             return (
               <div key={table.id} className="bg-white border border-zinc-200 rounded- p-7 text-center shadow-[0_8px_30px_rgba(0,0,0,0.06)] print:shadow-none print:border-2 print:border-black print:rounded- break-inside-avoid">
+                {/* BEZ LOGA GORE - samo ime i stol */}
                 <div className="flex flex-col items-center">
-                  {logo? (
-                    <img src={logo} alt="logo" className="w-16 h-16 rounded-2xl object-cover shadow-sm mb-3" />
-                  ) : (
-                    <div className="w-16 h-16 rounded-2xl bg-zinc-900 text-white flex items-center justify-center text-xl font-black mb-3">
-                      {restaurant.name.charAt(0).toUpperCase()}
-                    </div>
-                  )}
                   <h2 className="font-black text- tracking-widest uppercase text-zinc-900">{restaurant.name}</h2>
-                  <div className="mt-2 inline-flex items-center px-4 py-1.5 rounded-full bg-zinc-900 text-white text- font-black tracking-widest">STOL {table.number}</div>
+                  <div className="mt-2 inline-flex items-center px-5 py-2 rounded-full bg-zinc-900 text-white text- font-black tracking-widest">STOL {table.number}</div>
                 </div>
 
                 <div className="mt-6 flex justify-center">
@@ -75,7 +69,7 @@ export default async function QRPrintPage() {
             )
           })}
         </div>
-        {tables.length === 0 && <p className="text-center text-zinc-500 mt-20 print:hidden">Nema stolova. Dodaj prvi stol gore.</p>}
+        {tables.length === 0 && <p className="text-center text-zinc-500 mt-20 print:hidden">Nema stolova. Dodaj prvi stol gore u tabu Stolovi.</p>}
       </div>
       <style>{`@media print { @page { margin: 12mm; } body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }`}</style>
     </main>
