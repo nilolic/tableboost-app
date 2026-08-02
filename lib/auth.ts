@@ -12,17 +12,12 @@ export async function getCurrentUser() {
 
     const impId = cookieStore.get('tb_impersonate')?.value
     if (impId && user.role === 'SUPER_ADMIN') {
-      const impRest = await prisma.restaurant.findUnique({ 
-        where: { id: impId },
-        include: {
-          tables: true,
-          users: true,
-          _count: { select: { items: true } }
-        }
-      })
+      const impRest = await prisma.restaurant.findUnique({ where: { id: impId } })
       if (impRest) {
         return { ...user, restaurantId: impRest.id, restaurant: impRest, _impersonated: true } as any
       }
+      // ako restoran ne postoji više, vrati barem restaurantId = impId da ne pukne
+      return { ...user, restaurantId: impId, _impersonated: true } as any
     }
     return user
   } catch { return null }
