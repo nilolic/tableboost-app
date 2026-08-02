@@ -24,10 +24,14 @@ import {
   CreditCard
 } from "lucide-react"
 
-const navGroups = [
+type NavItem = { href: string; label: string; icon: any; desc: string; badge?: string; exact?: boolean; roles?: string[] }
+type NavGroup = { label: string; icon: any; items: NavItem[]; roles?: string[] }
+
+const allNavGroups: NavGroup[] = [
   {
     label: "Meni",
     icon: UtensilsCrossed,
+    roles: ["SUPER_ADMIN", "RESTAURANT_ADMIN"],
     items: [
       { href: "/admin/items", label: "Artikli", icon: Package, desc: "Uredi ponudu" },
       { href: "/admin/categories", label: "Kategorije", icon: Tags, desc: "Grupe jela" },
@@ -38,15 +42,17 @@ const navGroups = [
   {
     label: "Poslovanje",
     icon: ShoppingCart,
+    roles: ["SUPER_ADMIN","RESTAURANT_ADMIN","WAITER","KITCHEN"],
     items: [
-      { href: "/admin/orders", label: "Narudžbe", icon: ShoppingCart, desc: "Uživo" },
-      { href: "/admin/qr", label: "Stolovi & QR", icon: QrCode, desc: "QR kodovi" },
-      { href: "/admin/upsell", label: "Upsell", icon: Sparkles, desc: "Boost prodaje" },
+      { href: "/admin/orders", label: "Narudžbe", icon: ShoppingCart, desc: "Uživo", roles: ["SUPER_ADMIN","RESTAURANT_ADMIN","WAITER","KITCHEN"] },
+      { href: "/admin/qr", label: "Stolovi & QR", icon: QrCode, desc: "QR kodovi", roles: ["SUPER_ADMIN","RESTAURANT_ADMIN","WAITER"] },
+      { href: "/admin/upsell", label: "Upsell", icon: Sparkles, desc: "Boost prodaje", roles: ["SUPER_ADMIN","RESTAURANT_ADMIN"] },
     ]
   },
   {
     label: "Postavke",
     icon: Settings,
+    roles: ["SUPER_ADMIN", "RESTAURANT_ADMIN"],
     items: [
       { href: "/admin/settings", label: "Podaci objekta", icon: Building2, desc: "OIB, adresa, IBAN" },
       { href: "/admin/payments", label: "Plaćanja", icon: CreditCard, desc: "Kartice, Stripe", badge: "NOVO" },
@@ -60,6 +66,15 @@ export default function AdminSidebar({ user, restaurant, impersonated }: any) {
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({ "Meni": true, "Poslovanje": true, "Postavke": true })
+  const role = user?.role || "WAITER"
+
+  const navGroups = allNavGroups.map(g => {
+    const groupAllowed =!g.roles || g.roles.includes(role)
+    if (!groupAllowed) return null
+    const filteredItems = g.items.filter(i =>!i.roles || i.roles.includes(role))
+    if (filteredItems.length === 0) return null
+    return {...g, items: filteredItems }
+  }).filter(Boolean) as NavGroup[]
 
   useEffect(() => {
     navGroups.forEach(g => {
@@ -71,6 +86,7 @@ export default function AdminSidebar({ user, restaurant, impersonated }: any) {
 
   const toggleGroup = (label: string) => setOpenGroups(p => ({...p, [label]:!p[label] }))
   const isActive = (href: string, exact?: boolean) => exact? pathname === href : pathname === href || pathname?.startsWith(href + "/")
+  const isStaff = role === "WAITER" || role === "KITCHEN"
 
   return (
     <>
@@ -91,6 +107,13 @@ export default function AdminSidebar({ user, restaurant, impersonated }: any) {
           <button onClick={() => setMobileOpen(false)} className="lg:hidden h-8 w-8 rounded-lg bg-slate-800 flex items-center justify-center"><X size={16} /></button>
         </div>
 
+        {isStaff && (
+          <div className="mx-3 mt-3 px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-xs">
+            <div className="text-slate-400">Prijavljen kao</div>
+            <div className="text-white font-bold">{role === "KITCHEN"? "🍳 Kuhinja" : "🧑‍💼 Konobar"} - {user?.name || user?.email}</div>
+          </div>
+        )}
+
         {impersonated && (
           <div className="mx-3 mt-3 px-3 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs">
             <div className="text-amber-300 font-medium">👀 Impersonate</div>
@@ -99,9 +122,11 @@ export default function AdminSidebar({ user, restaurant, impersonated }: any) {
         )}
 
         <nav className="flex-1 overflow-y-auto px-3 py-5 space-y-6">
-          <Link href="/admin" className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${pathname === "/admin"? "bg-white text-slate-900 shadow-lg" : "hover:bg-slate-800 hover:text-white text-slate-400"}`}>
-            <LayoutDashboard size={18} /> Dashboard
-          </Link>
+          {!isStaff && (
+            <Link href="/admin" className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${pathname === "/admin"? "bg-white text-slate-900 shadow-lg" : "hover:bg-slate-800 hover:text-white text-slate-400"}`}>
+              <LayoutDashboard size={18} /> Dashboard
+            </Link>
+          )}
           {navGroups.map(group => (
             <div key={group.label}>
               <button onClick={() => toggleGroup(group.label)} className="w-full flex items-center justify-between px-3 py-2 text- font-semibold tracking-widest uppercase text-slate-500 hover:text-slate-300">
@@ -130,7 +155,7 @@ export default function AdminSidebar({ user, restaurant, impersonated }: any) {
         <div className="p-3 border-t border-slate-800 shrink-0">
           <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-slate-800/50">
             <div className="h-9 w-9 rounded-full bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center text-white font-bold text-sm">{user?.email?.[0]?.toUpperCase() || "A"}</div>
-            <div className="flex-1 min-w-0"><div className="text-sm font-medium text-white truncate">{user?.email || "admin"}</div><div className="text-xs text-slate-400 truncate">{user?.role || "RESTAURANT_ADMIN"}</div></div>
+            <div className="flex-1 min-w-0"><div className="text-sm font-medium text-white truncate">{user?.name || user?.email || "admin"}</div><div className="text-xs text-slate-400 truncate">{user?.role || "WAITER"}</div></div>
             <a href="/api/auth/logout" className="h-8 w-8 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-white"><LogOut size={14} /></a>
           </div>
         </div>
