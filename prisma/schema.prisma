@@ -20,7 +20,6 @@ model Restaurant {
   slug String @unique
   logoUrl String?
   loginImageUrl String?
-  // Poslovni podaci
   legalName String?
   address String?
   city String?
@@ -33,6 +32,15 @@ model Restaurant {
   vatNumber String?
   description String?
   workingHours String?
+  // Placanja
+  paymentCashEnabled Boolean @default(true)
+  paymentCardTerminalEnabled Boolean @default(true)
+  paymentCardOnlineEnabled Boolean @default(false)
+  paymentProvider String? @default("stripe")
+  paymentTestMode Boolean @default(true)
+  stripePublicKey String?
+  stripeSecretKey String?
+  stripeWebhookSecret String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   users User[]
@@ -112,6 +120,12 @@ model Order {
   restaurantId String
   restaurant Restaurant @relation(fields: [restaurantId], references: [id])
   items OrderItem[]
+  paymentMethod String @default("CASH")
+  paymentStatus String @default("PENDING")
+  paymentIntentId String?
+  paymentProvider String?
+  paidAt DateTime?
+  payments Payment[]
   createdAt DateTime @default(now())
 }
 
@@ -124,6 +138,20 @@ model OrderItem {
   menuItemId String
   menuItem MenuItem @relation(fields: [menuItemId], references: [id])
   price Float
+}
+
+model Payment {
+  id String @id @default(cuid())
+  orderId String
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  amount Float
+  provider String @default("mock")
+  providerIntentId String?
+  status String @default("PENDING")
+  rawResponse Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([orderId])
 }
 
 model UpsellRule {

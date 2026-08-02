@@ -20,7 +20,8 @@ import {
   Store,
   LogOut,
   Zap,
-  Building2
+  Building2,
+  CreditCard
 } from "lucide-react"
 
 const navGroups = [
@@ -48,6 +49,7 @@ const navGroups = [
     icon: Settings,
     items: [
       { href: "/admin/settings", label: "Podaci objekta", icon: Building2, desc: "OIB, adresa, IBAN" },
+      { href: "/admin/payments", label: "Plaćanja", icon: CreditCard, desc: "Kartice, Stripe", badge: "NOVO" },
       { href: "/admin/staff", label: "Osoblje", icon: Users, desc: "Konobari" },
       { href: "/admin", label: "Restoran", icon: Store, desc: "Profil", exact: true },
     ]
