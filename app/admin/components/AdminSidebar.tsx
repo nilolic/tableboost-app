@@ -19,7 +19,8 @@ import {
   X,
   Store,
   LogOut,
-  Zap
+  Zap,
+  Building2
 } from "lucide-react"
 
 const navGroups = [
@@ -46,6 +47,7 @@ const navGroups = [
     label: "Postavke",
     icon: Settings,
     items: [
+      { href: "/admin/settings", label: "Podaci objekta", icon: Building2, desc: "OIB, adresa, IBAN" },
       { href: "/admin/staff", label: "Osoblje", icon: Users, desc: "Konobari" },
       { href: "/admin", label: "Restoran", icon: Store, desc: "Profil", exact: true },
     ]
@@ -55,7 +57,7 @@ const navGroups = [
 export default function AdminSidebar({ user, restaurant, impersonated }: any) {
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({ "Meni": true, "Poslovanje": true, "Postavke": false })
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({ "Meni": true, "Poslovanje": true, "Postavke": true })
 
   useEffect(() => {
     navGroups.forEach(g => {
@@ -75,28 +77,27 @@ export default function AdminSidebar({ user, restaurant, impersonated }: any) {
       </button>
       {mobileOpen && <div onClick={() => setMobileOpen(false)} className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 lg:hidden" />}
 
-      {/* KLJUČNO: fixed na mobitelu, sticky na desktopu - nema više overlap */}
-      <aside className={`fixed lg:sticky top-0 z-50 h-screen w- bg-[#0F172A] text-slate-300 flex flex-col border-r border-slate-800 shrink-0 transition-transform duration-300 lg:translate-x-0 ${mobileOpen? "translate-x-0" : "-translate-x-full"}`}>
-        <div className="h- flex items-center gap-3 px-6 border-b border-slate-800/80 shrink-0">
+      <aside className={`fixed lg:sticky top-0 z-50 h-screen w-64 bg-[#0F172A] text-slate-300 flex flex-col border-r border-slate-800 shrink-0 transition-transform duration-300 lg:translate-x-0 ${mobileOpen? "translate-x-0" : "-translate-x-full"}`}>
+        <div className="h-16 flex items-center gap-3 px-6 border-b border-slate-800/80 shrink-0">
           <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-violet-500 via-indigo-500 to-fuchsia-500 flex items-center justify-center shadow-lg shadow-violet-500/20">
             <Zap size={18} className="text-white" />
           </div>
           <div className="flex-1">
             <div className="font-bold text-white tracking-tight">TableBoost</div>
-            <div className="text- text-slate-400 -mt-0.5 truncate max-w-">{restaurant?.name || "Admin panel"}</div>
+            <div className="text-xs text-slate-400 -mt-0.5 truncate max-w-">{restaurant?.name || "Admin panel"}</div>
           </div>
           <button onClick={() => setMobileOpen(false)} className="lg:hidden h-8 w-8 rounded-lg bg-slate-800 flex items-center justify-center"><X size={16} /></button>
         </div>
 
         {impersonated && (
-          <div className="mx-3 mt-3 px-3 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-">
+          <div className="mx-3 mt-3 px-3 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs">
             <div className="text-amber-300 font-medium">👀 Impersonate</div>
             <div className="text-white font-medium truncate">{impersonated.name}</div>
           </div>
         )}
 
         <nav className="flex-1 overflow-y-auto px-3 py-5 space-y-6">
-          <Link href="/admin" className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text- font-medium transition-all ${pathname === "/admin"? "bg-white text-slate-900 shadow-lg" : "hover:bg-slate-800 hover:text-white text-slate-400"}`}>
+          <Link href="/admin" className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${pathname === "/admin"? "bg-white text-slate-900 shadow-lg" : "hover:bg-slate-800 hover:text-white text-slate-400"}`}>
             <LayoutDashboard size={18} /> Dashboard
           </Link>
           {navGroups.map(group => (
@@ -109,11 +110,11 @@ export default function AdminSidebar({ user, restaurant, impersonated }: any) {
                 {group.items.map(item => {
                   const active = isActive(item.href, (item as any).exact)
                   return (
-                    <Link key={item.href} href={item.href} onClick={() => setMobileOpen(false)} className={`group flex items-center gap-3 px-3 py-2.5 rounded-xl text- relative ${active? "bg-white text-slate-900 shadow-lg" : "hover:bg-slate-800/80 hover:text-white text-slate-400"}`}>
+                    <Link key={item.href} href={item.href} onClick={() => setMobileOpen(false)} className={`group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm relative ${active? "bg-white text-slate-900 shadow-lg" : "hover:bg-slate-800/80 hover:text-white text-slate-400"}`}>
                       <item.icon size={18} className={active? "text-slate-900" : "text-slate-500 group-hover:text-white"} />
                       <div className="flex-1">
                         <div className="font-medium leading-none flex items-center gap-2">{item.label} {(item as any).badge && <span className="text- px-1.5 py-0.5 rounded-full bg-green-500 text-white font-bold">{(item as any).badge}</span>}</div>
-                        <div className={`text- mt-0.5 ${active? "text-slate-500" : "text-slate-500"}`}>{(item as any).desc}</div>
+                        <div className={`text-xs mt-0.5 ${active? "text-slate-500" : "text-slate-500"}`}>{(item as any).desc}</div>
                       </div>
                       {active && <div className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 rounded-r-full bg-violet-500" />}
                     </Link>
@@ -127,7 +128,7 @@ export default function AdminSidebar({ user, restaurant, impersonated }: any) {
         <div className="p-3 border-t border-slate-800 shrink-0">
           <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-slate-800/50">
             <div className="h-9 w-9 rounded-full bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center text-white font-bold text-sm">{user?.email?.[0]?.toUpperCase() || "A"}</div>
-            <div className="flex-1 min-w-0"><div className="text- font-medium text-white truncate">{user?.email || "admin"}</div><div className="text- text-slate-400 truncate">{user?.role || "RESTAURANT_ADMIN"}</div></div>
+            <div className="flex-1 min-w-0"><div className="text-sm font-medium text-white truncate">{user?.email || "admin"}</div><div className="text-xs text-slate-400 truncate">{user?.role || "RESTAURANT_ADMIN"}</div></div>
             <a href="/api/auth/logout" className="h-8 w-8 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-white"><LogOut size={14} /></a>
           </div>
         </div>
