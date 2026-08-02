@@ -27,6 +27,9 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/prisma ./prisma
 
+# FIX za persistent uploads + permisije
+RUN mkdir -p /app/public/uploads && chown -R nextjs:nodejs /app/public && chmod -R 775 /app/public/uploads
+
 USER nextjs
 EXPOSE 3000
 ENV PORT=3000
