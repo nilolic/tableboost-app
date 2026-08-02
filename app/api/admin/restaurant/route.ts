@@ -14,15 +14,17 @@ export async function GET() {
 export async function PATCH(req: Request) {
   const user = await getCurrentUser()
   if (!user?.restaurantId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  const { logoUrl, loginImageUrl, name } = await req.json()
+  const body = await req.json()
+
+  const allowed = ["name","legalName","address","city","postalCode","oib","phone","email","website","iban","vatNumber","description","workingHours","logoUrl","loginImageUrl"]
+  const data:any = {}
+  for(const k of allowed){
+    if(k in body) data[k] = body[k] || null
+  }
 
   const updated = await prisma.restaurant.update({
     where: { id: user.restaurantId },
-    data: {
-     ...(logoUrl!== undefined? { logoUrl } : {}),
-     ...(loginImageUrl!== undefined? { loginImageUrl } : {}),
-     ...(name? { name } : {}),
-    }
+    data
   })
   return NextResponse.json(updated)
 }

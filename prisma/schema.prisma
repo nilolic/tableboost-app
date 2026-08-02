@@ -20,6 +20,19 @@ model Restaurant {
   slug String @unique
   logoUrl String?
   loginImageUrl String?
+  // Poslovni podaci
+  legalName String?
+  address String?
+  city String?
+  postalCode String?
+  oib String?
+  phone String?
+  email String?
+  website String?
+  iban String?
+  vatNumber String?
+  description String?
+  workingHours String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   users User[]
