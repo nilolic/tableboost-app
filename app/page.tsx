@@ -111,10 +111,10 @@ export default function Page() {
               <span className="flex h-full items-center">Prijava</span>
             </a>
             <a
-              href="/login"
+              href="mailto:info@tableboost.app"
               className="group h-10 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 px-5 text-[14px] font-bold text-white shadow-[0_8px_20px_rgba(16,185,129,0.35)] hover:shadow-[0_10px_28px_rgba(16,185,129,0.45)] transition-all flex items-center gap-1.5"
             >
-              Pokreni besplatno
+              Kontaktirajte nas
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </a>
           </div>
@@ -148,8 +148,8 @@ export default function Page() {
                 <a href="/login" className="h-12 grid place-items-center rounded-full bg-zinc-900 text-sm font-semibold text-white">
                   Prijava
                 </a>
-                <a href="/login" className="h-12 grid place-items-center rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 text-sm font-bold text-white shadow">
-                  Pokreni besplatno
+                <a href="mailto:info@tableboost.app" className="h-12 grid place-items-center rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 text-sm font-bold text-white shadow">
+                  Kontaktirajte nas
                 </a>
               </div>
             </div>
@@ -190,10 +190,10 @@ export default function Page() {
 
             <div className="mt-7 flex flex-wrap justify-center gap-3">
               <a
-                href="/login"
+                href="mailto:info@tableboost.app"
                 className="group inline-flex h-[52px] items-center gap-2 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 px-7 text-[15px] font-bold text-white shadow-[0_12px_24px_rgba(16,185,129,0.35)] hover:shadow-[0_16px_32px_rgba(16,185,129,0.45)] transition-all"
               >
-                Pokreni besplatno
+                Kontaktirajte nas
                 <span className="grid h-7 w-7 place-items-center rounded-full bg-white/20">
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                 </span>
@@ -604,7 +604,7 @@ export default function Page() {
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(600px_at_10%_-10%,rgba(255,255,255,0.18),transparent),radial-gradient(700px_at_90%_20%,rgba(255,255,255,0.14),transparent)]" />
             <div className="relative">
               <h2 className="mx-auto max-w-[600px] text-[28px] lg:text-[44px] font-[800] leading-[1.05] tracking-[-0.03em] text-white">Spreman? Idemo postaviti tvoj restoran.</h2>
-              <p className="mx-auto mt-3 max-w-[480px] text-[14px] lg:text-[16px] leading-[1.6] text-white/80">Pokreni besplatno, uvezi jelovnik i isprintaj QR kodove. Podrška je uz tebe cijelim putem.</p>
+              <p className="mx-auto mt-3 max-w-[480px] text-[14px] lg:text-[16px] leading-[1.6] text-white/80">Kontaktirajte nas, uvezi jelovnik i isprintaj QR kodove. Podrška je uz tebe cijelim putem.</p>
               <div className="mt-7 flex justify-center">
                 <a href="/login" className="group inline-flex h-[52px] items-center gap-2 rounded-full bg-white px-7 text-[15px] font-bold text-zinc-900 shadow-[0_10px_28px_rgba(0,0,0,0.18)] hover:bg-zinc-50 transition">
                   Idi na login
@@ -615,7 +615,7 @@ export default function Page() {
               <div className="mt-6 rounded-[20px] border border-white/10 bg-white/5 backdrop-blur p-4">
                 <div className="text-[13px] font-semibold text-white mb-2">Imaš pitanje? Piši direktno:</div>
                 <ContactForm source="hero" compact={true} />
-                <div className="mt-2 text-[11px] text-white/60">Odgovaramo u 2h • <a href="mailto:admin@tableboost.app" className="underline">admin@tableboost.app</a></div>
+                <div className="mt-2 text-[11px] text-white/60">Odgovaramo u 2h • <a href="mailto:info@tableboost.app" className="underline">info@tableboost.app</a></div>
               </div>
             </div>
           </div>
@@ -682,7 +682,7 @@ function ContactForm({ source = "landing", compact = false }: { source?: string;
     <form onSubmit={submit} className="rounded-[28px] border border-zinc-200 bg-white p-6 lg:p-8 shadow-[0_12px_32px_rgba(0,0,0,0.06)]">
       <div className="flex items-center justify-between">
         <h3 className="text-[18px] font-bold tracking-tight">Javi se ekipi</h3>
-        <span className="text-[12px] text-zinc-500">→ admin@tableboost.app</span>
+        <span className="text-[12px] text-zinc-500">→ info@tableboost.app</span>
       </div>
       <div className="mt-5 grid gap-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -696,11 +696,11 @@ function ContactForm({ source = "landing", compact = false }: { source?: string;
         <textarea required placeholder="Poruka - npr. koristim KOR, imam 45 artikala..." value={form.message} onChange={e=>setForm({...form,message:e.target.value})}
           className="min-h-[110px] rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-[14px] outline-none focus:border-zinc-900 focus:bg-white resize-none" />
         <button disabled={status==="sending"} className="h-12 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 text-white text-[14px] font-bold shadow-[0_8px_20px_rgba(16,185,129,0.35)] hover:shadow-[0_10px_28px_rgba(16,185,129,0.45)] transition disabled:opacity-60">
-          {status==="sending" ? "Šaljem..." : status==="sent" ? "✓ Poslano na admin@tableboost.app!" : "Pošalji poruku"}
+          {status==="sending" ? "Šaljem..." : status==="sent" ? "✓ Poslano na info@tableboost.app!" : "Pošalji poruku"}
         </button>
         {status==="sent" && <p className="text-[12px] text-emerald-600 font-medium">Hvala! Javim se u roku 2h na {form.email || "tvoj email"}.</p>}
-        {status==="error" && <p className="text-[12px] text-red-500">Greška, probaj direkt na admin@tableboost.app</p>}
-        <p className="text-[11px] text-zinc-400 text-center">Ili piši direktno: <a href="mailto:admin@tableboost.app" className="underline font-semibold text-zinc-600">admin@tableboost.app</a></p>
+        {status==="error" && <p className="text-[12px] text-red-500">Greška, probaj direkt na info@tableboost.app</p>}
+        <p className="text-[11px] text-zinc-400 text-center">Ili piši direktno: <a href="mailto:info@tableboost.app" className="underline font-semibold text-zinc-600">info@tableboost.app</a></p>
       </div>
     </form>
   );
