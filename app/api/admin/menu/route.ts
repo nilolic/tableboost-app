@@ -9,6 +9,40 @@ export async function GET() {
   const impId = await getImpersonateId()
   const restaurantId = getRestaurantId(user, impId)
   if (!restaurantId) return NextResponse.json({ error: 'No restaurant' }, { status: 400 })
-  const categories = await prisma.menuCategory.findMany({ where: { restaurantId }, include: { items: { orderBy: { order: 'asc' } } }, orderBy: { order: 'asc' } })
-  return NextResponse.json({ categories })
+  const categories = await prisma.menuCategory.findMany({
+    where: { restaurantId },
+    include: { items: { orderBy: { order: 'asc' } } },
+    orderBy: { order: 'asc' }
+  })
+  // vraćamo i flatten items da stari frontend radi
+  const items = categories.flatMap(c => c.items.map(i => ({...i, category: { name: c.name, id: c.id } })))
+  return NextResponse.json({ categories, items })
+}
+
+export async function POST(req: Request) {
+  const user = await getCurrentUser()
+  const impId = await getImpersonateId()
+  const restaurantId = getRestaurantId(user, impId)
+  if (!user ||!restaurantId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const body = await req.json()
+  const { name, price, description, categoryId, imageUrl, available, isBoosted, boostLevel } = body
+  if (!name || price == null ||!categoryId) return NextResponse.json({ error: 'Ime, cijena, kategorija obavezni' }, { status: 400 })
+  const cat = await prisma.menuCategory.findFirst({ where: { id: categoryId, restaurantId } })
+  if (!cat) return NextResponse.json({ error: 'Kategorija ne pripada restoranu' }, { status: 400 })
+  const maxOrder = await prisma.menuItem.aggregate({ where: { categoryId }, _max: { order: true } })
+  const created = await prisma.menuItem.create({
+    data: {
+      name: name.trim(),
+      price: Number(price),
+      description: description || null,
+      categoryId,
+      restaurantId,
+      imageUrl: imageUrl || null,
+      available: available?? true,
+      isBoosted: isBoosted?? false,
+      boostLevel: boostLevel? Number(boostLevel) : 0,
+      order: (maxOrder._max.order?? 0) + 1
+    } as any
+  })
+  return NextResponse.json(created)
 }

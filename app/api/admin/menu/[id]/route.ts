@@ -1,7 +1,17 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { getCurrentUser, getImpersonateId } from "@/lib/auth"
+import { getRestaurantId } from "@/lib/getRestaurantId"
 
 export async function PATCH(req: NextRequest, {params}:{params:{id:string}}){
+  const user = await getCurrentUser()
+  const impId = await getImpersonateId()
+  const restaurantId = getRestaurantId(user, impId)
+  if (!user ||!restaurantId) return NextResponse.json({error:'Unauthorized'},{status:401})
+
+  const existing = await prisma.menuItem.findFirst({ where:{ id: params.id, restaurantId } })
+  if(!existing) return NextResponse.json({error:'Not found'},{status:404})
+
   const body = await req.json()
   const data:any = {}
   if(body.name!==undefined) data.name = body.name
@@ -16,7 +26,6 @@ export async function PATCH(req: NextRequest, {params}:{params:{id:string}}){
   if(body.available!==undefined) data.available = Boolean(body.available)
   if(body.isBoosted!==undefined) data.isBoosted = Boolean(body.isBoosted)
   if(body.boostLevel!==undefined) data.boostLevel = Number(body.boostLevel)
-  if(body.upsellEnabled!==undefined) data.upsellEnabled = Boolean(body.upsellEnabled)
   if(body.order!==undefined) data.order = Number(body.order)
 
   const updated = await prisma.menuItem.update({ where:{id: params.id}, data })
@@ -24,7 +33,14 @@ export async function PATCH(req: NextRequest, {params}:{params:{id:string}}){
 }
 
 export async function DELETE(req: NextRequest, {params}:{params:{id:string}}){
-  // obriši i upsell pravila vezana uz artikal
+  const user = await getCurrentUser()
+  const impId = await getImpersonateId()
+  const restaurantId = getRestaurantId(user, impId)
+  if (!user ||!restaurantId) return NextResponse.json({error:'Unauthorized'},{status:401})
+
+  const existing = await prisma.menuItem.findFirst({ where:{ id: params.id, restaurantId } })
+  if(!existing) return NextResponse.json({error:'Not found'},{status:404})
+
   await prisma.upsellRule.deleteMany({ where:{ OR:[{sourceId:params.id},{targetId:params.id}] } })
   await prisma.orderItem.deleteMany({ where:{menuItemId:params.id} }).catch(()=>{})
   await prisma.menuItem.delete({ where:{id:params.id} })
