@@ -115,6 +115,8 @@ model Order {
   id String @id @default(cuid())
   status String @default("pending")
   total Float
+  tipPercent Int @default(0)
+  tipAmount Float @default(0)
   tableId String
   table Table @relation(fields: [tableId], references: [id])
   restaurantId String
@@ -148,12 +150,13 @@ model Payment {
   provider String @default("mock")
   providerIntentId String?
   status String @default("PENDING")
+  tipAmount Float @default(0)
+  stripeSessionId String? @unique
   rawResponse Json?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   @@index([orderId])
 }
-
 model UpsellRule {
   id String @id @default(cuid())
   restaurantId String
