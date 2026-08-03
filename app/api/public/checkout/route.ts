@@ -36,6 +36,8 @@ export async function POST(req: Request) {
   const order = await prisma.order.create({
     data: {
       total,
+      tipPercent: parseInt(tipPercent)||0,
+      tipAmount,
       tableId: table.id,
       restaurantId: restaurant.id,
       paymentMethod: 'CARD_ONLINE',
