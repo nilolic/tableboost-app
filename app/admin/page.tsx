@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 export default function AdminPage(){
   const [data,setData]=useState<any>(null)
   const [orders,setOrders]=useState<any[]>([])
-  const [stats,setStats]=useState({ today:0, todayTip:0, weekTip:0, monthTip:0, todayOrders:0 })
+  const [stats,setStats]=useState({ today:0, todayTip:0, weekTip:0, monthTip:0, totalTip:0, todayOrders:0, totalWithTip:0 })
   
   useEffect(()=>{ 
     fetch('/api/admin/me').then(r=>r.json()).then(setData)
@@ -20,12 +20,15 @@ export default function AdminPage(){
       const weekOrders = ords.filter((o:any)=> new Date(o.createdAt) >= startOfWeek)
       const monthOrders = ords.filter((o:any)=> new Date(o.createdAt) >= startOfMonth)
       
-      const todayTip = todayOrders.reduce((s:any,o:any)=> s + (o.tipAmount||0), 0)
-      const weekTip = weekOrders.reduce((s:any,o:any)=> s + (o.tipAmount||0), 0)
-      const monthTip = monthOrders.reduce((s:any,o:any)=> s + (o.tipAmount||0), 0)
-      const todayTotal = todayOrders.reduce((s:any,o:any)=> s + (o.total||0), 0)
+      const toNum = (v:any)=> Number(v||0)
+      const todayTip = todayOrders.reduce((s:any,o:any)=> s + toNum(o.tipAmount), 0)
+      const weekTip = weekOrders.reduce((s:any,o:any)=> s + toNum(o.tipAmount), 0)
+      const monthTip = monthOrders.reduce((s:any,o:any)=> s + toNum(o.tipAmount), 0)
+      const totalTip = ords.reduce((s:any,o:any)=> s + toNum(o.tipAmount), 0)
+      const todayTotal = todayOrders.reduce((s:any,o:any)=> s + toNum(o.total), 0)
+      const totalWithTip = ords.filter((o:any)=> toNum(o.tipAmount)>0).length
       
-      setStats({ today: todayTotal, todayTip, weekTip, monthTip, todayOrders: todayOrders.length })
+      setStats({ today: todayTotal, todayTip, weekTip, monthTip, totalTip, todayOrders: todayOrders.length, totalWithTip })
     })
   },[])
   
@@ -44,30 +47,16 @@ export default function AdminPage(){
       <div className="grid md:grid-cols-4 gap-4 mb-8">
         <div className="bg-white border rounded-2xl p-6"><div className="text-sm text-neutral-500">Narudžbe danas</div><div className="text-3xl font-bold mt-2">{stats.todayOrders}</div><div className="text-xs text-neutral-400 mt-1">Ukupno danas</div></div>
         <div className="bg-white border rounded-2xl p-6"><div className="text-sm text-neutral-500">Promet danas</div><div className="text-3xl font-bold mt-2">€{stats.today.toFixed(2)}</div><div className="text-xs text-neutral-400 mt-1">S napojnicama</div></div>
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6"><div className="text-sm text-amber-800 font-bold">💰 Napojnice danas</div><div className="text-3xl font-bold mt-2 text-amber-900">€{stats.todayTip.toFixed(2)}</div><div className="text-xs text-amber-700 mt-1">Za podijeliti radnicima</div></div>
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6"><div className="text-sm text-amber-800 font-bold">💰 Napojnice danas</div><div className="text-3xl font-bold mt-2 text-amber-900">€{stats.todayTip.toFixed(2)}</div><div className="text-xs text-amber-700 mt-1">{stats.todayTip===0 ? `Ukupno zadnjih 100: €${stats.totalTip.toFixed(2)}` : 'Za podijeliti radnicima'}</div></div>
         <div className="bg-white border rounded-2xl p-6"><div className="text-sm text-neutral-500">Artikala</div><div className="text-3xl font-bold mt-2">{r._count?.items || 0}</div></div>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-4 mb-8">
-        <div className="bg-zinc-900 text-white rounded-2xl p-6"><div className="text-sm text-zinc-400">Napojnice ovaj tjedan</div><div className="text-2xl font-bold mt-2">€{stats.weekTip.toFixed(2)}</div></div>
-        <div className="bg-zinc-900 text-white rounded-2xl p-6"><div className="text-sm text-zinc-400">Napojnice ovaj mjesec</div><div className="text-2xl font-bold mt-2">€{stats.monthTip.toFixed(2)}</div></div>
-        <div className="bg-white border rounded-2xl p-6"><div className="text-sm text-neutral-500">Zadnjih 100 narudžbi s napojnicom</div><div className="text-2xl font-bold mt-2">{orders.filter((o:any)=> (o.tipAmount||0)>0).length}</div><div className="text-xs text-neutral-400 mt-1">{orders.length>0 ? ((orders.filter((o:any)=> (o.tipAmount||0)>0).length / orders.length)*100).toFixed(0) : 0}% gostiju ostavlja</div></div>
+      <div className="grid md:grid-cols-4 gap-4 mb-8">
+        <div className="bg-zinc-900 text-white rounded-2xl p-6"><div className="text-sm text-zinc-400">Tjedan napojnice</div><div className="text-2xl font-bold mt-2">€{stats.weekTip.toFixed(2)}</div></div>
+        <div className="bg-zinc-900 text-white rounded-2xl p-6"><div className="text-sm text-zinc-400">Mjesec napojnice</div><div className="text-2xl font-bold mt-2">€{stats.monthTip.toFixed(2)}</div></div>
+        <div className="bg-white border rounded-2xl p-6"><div className="text-sm text-neutral-500">Ukupno (100 zadnjih)</div><div className="text-2xl font-bold mt-2">€{stats.totalTip.toFixed(2)}</div><div className="text-xs text-neutral-400 mt-1">{stats.totalWithTip} narudžbi s napojnicom</div></div>
+        <div className="bg-white border rounded-2xl p-6"><div className="text-sm text-neutral-500">% ostavlja napojnicu</div><div className="text-2xl font-bold mt-2">{orders.length>0 ? ((stats.totalWithTip / orders.length)*100).toFixed(0) : 0}%</div><div className="text-xs text-neutral-400 mt-1">od zadnjih {orders.length}</div></div>
       </div>
-
-      {stats.todayTip>0 && (
-        <div className="bg-green-50 border border-green-200 rounded-2xl p-5 mb-8">
-          <h3 className="font-bold text-green-900">📋 Obračun za danas - isplata radnicima</h3>
-          <p className="text-sm text-green-800 mt-2">Ukupno napojnica danas: <b>€{stats.todayTip.toFixed(2)}</b> iz {orders.filter((o:any)=> new Date(o.createdAt) >= new Date(new Date().setHours(0,0,0,0)) && (o.tipAmount||0)>0).length} narudžbi</p>
-          <div className="mt-3 bg-white rounded-xl p-3 text-xs space-y-1 max-h-40 overflow-auto">
-            {orders.filter((o:any)=> new Date(o.createdAt) >= new Date(new Date().setHours(0,0,0,0)) && (o.tipAmount||0)>0).map((o:any)=>(
-              <div key={o.id} className="flex justify-between border-b border-black/5 py-1 last:border-0">
-                <span>Stol {o.table?.number} • {new Date(o.createdAt).toLocaleTimeString()} • {o.tipPercent}%</span>
-                <span className="font-bold">€{o.tipAmount.toFixed(2)}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       <div className="flex gap-3 flex-wrap">
         <a href={`/menu/${r.slug}`} target="_blank" className="bg-black text-white px-6 py-3 rounded-full">Vidi meni</a>
