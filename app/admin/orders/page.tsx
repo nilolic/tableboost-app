@@ -6,7 +6,18 @@ export default function OrdersPage(){
   const [from,setFrom]=useState(''); const [to,setTo]=useState(''); const [loading,setLoading]=useState(true)
   const prevReadyRef = useRef<Set<string>>(new Set()); const audioCtxRef = useRef<any>(null)
   function beep(freq=880, duration=0.4){ try{ if(typeof window==='undefined') return; const AudioCtx = (window as any).AudioContext || (window as any).webkitAudioContext; if(!AudioCtx) return; if(!audioCtxRef.current) audioCtxRef.current = new AudioCtx(); const ctx = audioCtxRef.current; if(ctx.state==='suspended') ctx.resume(); const o = ctx.createOscillator(); const g = ctx.createGain(); o.frequency.value = freq; o.connect(g); g.connect(ctx.destination); g.gain.setValueAtTime(0.8, ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime+duration); o.start(); o.stop(ctx.currentTime+duration) }catch{} }
-  async function load(f?:string,t?:string, silent=false){ if(!silent) setLoading(true); const p = new URLSearchParams(); if(f) p.set('from', f); if(t) p.set('to', t); if(f||t) p.set('all','1'); const res = await fetch('/api/admin/orders?'+p.toString()); const d = await res.json(); const ords = d.orders||[]; if(role === 'WAITER'){ const readyNow = new Set(ords.filter((o:any)=> (o.status||'').toLowerCase()==='ready').map((o:any)=>o.id)); for(const id of readyNow){ if(!prevReadyRef.current.has(id as string)){ beep(880,0.5); setTimeout(()=>beep(1200,0.5),200) } } prevReadyRef.current = readyNow as any } setOrders(ords); if(!silent) setLoading(false) }
+  async function load(f?:string,t?:string, silent=false){
+    if(!silent) setLoading(true)
+    const p = new URLSearchParams(); if(f) p.set('from', f); if(t) p.set('to', t); if(f||t) p.set('all','1')
+    const res = await fetch('/api/admin/orders?'+p.toString()); const d = await res.json(); const ords = d.orders||[]
+    if(role === 'WAITER'){
+      const readyIds = ords.filter((o:any)=> (o.status||'').toLowerCase()==='ready').map((o:any)=> o.id as string)
+      const readyNow = new Set<string>(readyIds)
+      readyIds.forEach((id:string)=>{ if(!prevReadyRef.current.has(id)){ beep(880,0.5); setTimeout(()=>beep(1200,0.5),200) } })
+      prevReadyRef.current = readyNow
+    }
+    setOrders(ords); if(!silent) setLoading(false)
+  }
   useEffect(()=>{ fetch('/api/admin/me').then(r=>r.json()).then(d=> setRole(d.role||'WAITER')) },[])
   useEffect(()=>{ if(!role) return; load(); const interval = setInterval(()=> load(from,to,true), role==='WAITER' || role==='KITCHEN'? 4000 : 15000); return ()=> clearInterval(interval) },[role])
   const toNum = (v:any)=> Number(v||0)
