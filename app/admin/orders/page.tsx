@@ -7,6 +7,7 @@ export default function OrdersPage(){
   const [audioUnlocked,setAudioUnlocked]=useState(false)
   const prevReadyRef = useRef<Set<string>>(new Set());
   const prevPendingRef = useRef<Set<string>>(new Set());
+  const prevConfirmRef = useRef<Set<string>>(new Set());
   const audioCtxRef = useRef<any>(null)
 
   const unlockAudio = ()=>{
@@ -22,7 +23,7 @@ export default function OrdersPage(){
     }catch{}
   }
 
-  const beepLoud = (type:'ready'|'new' = 'ready')=>{
+  const beepLoud = (type:'ready'|'new'|'confirm' = 'ready')=>{
     try{
       if(typeof window==='undefined') return
       const AudioCtx = (window as any).AudioContext || (window as any).webkitAudioContext
@@ -31,8 +32,9 @@ export default function OrdersPage(){
       const ctx = audioCtxRef.current
       if(ctx.state==='suspended'){ ctx.resume().catch(()=>{}); return }
       if((navigator as any).vibrate){
-        if(type==='new') (navigator as any).vibrate([200,100,200])
-        else (navigator as any).vibrate([400,100,400,100,800])
+        if(type==='confirm') (navigator as any).vibrate([500,100,500])
+        else if(type==='new') (navigator as any).vibrate([200,100,200])
+        else (navigator as any).vibrate([400,100,800])
       }
       const playTone = (freq:number, start:number, dur:number, vol:number)=>{
         const o1 = ctx.createOscillator(); const o2 = ctx.createOscillator(); const g = ctx.createGain()
@@ -45,14 +47,9 @@ export default function OrdersPage(){
         o1.start(ctx.currentTime+start); o2.start(ctx.currentTime+start)
         o1.stop(ctx.currentTime+start+dur); o2.stop(ctx.currentTime+start+dur)
       }
-      if(type==='new'){
-        playTone(800,0,0.4,1.0)
-        playTone(1000,0.2,0.4,1.0)
-      }else{
-        playTone(1200,0,0.6,1.2)
-        playTone(1800,0.3,0.6,1.2)
-        playTone(2400,0.6,0.8,1.5)
-      }
+      if(type==='confirm'){ playTone(1500,0,0.5,1.5); playTone(2000,0.4,0.5,1.5); playTone(2500,0.8,0.8,1.5) }
+      else if(type==='new'){ playTone(800,0,0.4,1.0); playTone(1000,0.2,0.4,1.0) }
+      else { playTone(1200,0,0.6,1.2); playTone(1800,0.3,0.6,1.2); playTone(2400,0.6,0.8,1.5) }
     }catch{}
   }
 
@@ -63,21 +60,19 @@ export default function OrdersPage(){
     if(role === 'WAITER'){
       const readyIds = ords.filter((o:any)=> (o.status||'').toLowerCase()==='ready').map((o:any)=> o.id as string)
       const readyNow = new Set<string>(readyIds)
-      readyIds.forEach((id:string)=>{
-        if(!prevReadyRef.current.has(id)){
-          beepLoud('ready'); setTimeout(()=>beepLoud('ready'),1000)
-        }
-      })
+      readyIds.forEach((id:string)=>{ if(!prevReadyRef.current.has(id)){ beepLoud('ready'); setTimeout(()=>beepLoud('ready'),1000) } })
       prevReadyRef.current = readyNow
+      // NOVA NARUDŽBA ZA POTVRDU - GOTOVINA/POS
+      const confirmIds = ords.filter((o:any)=>{ const s=(o.status||'').toLowerCase(); return ['awaiting_confirmation','pending_confirmation','awaiting_waiter','unconfirmed','new_cash'].includes(s) }).map((o:any)=>o.id as string)
+      const confirmNow = new Set<string>(confirmIds)
+      confirmIds.forEach((id:string)=>{ if(!prevConfirmRef.current.has(id)){ beepLoud('confirm'); setTimeout(()=>beepLoud('confirm'),800) } })
+      prevConfirmRef.current = confirmNow
     }
     if(role === 'KITCHEN'){
-      const pendingIds = ords.filter((o:any)=> ['pending','new'].includes((o.status||'').toLowerCase())).map((o:any)=> o.id as string)
+      const pendingIds = ords.filter((o:any)=> ['pending','new','preparing','in_progress'].includes((o.status||'').toLowerCase())).map((o:any)=> o.id as string)
       const pendingNow = new Set<string>(pendingIds)
-      pendingIds.forEach((id:string)=>{
-        if(!prevPendingRef.current.has(id)){
-          beepLoud('new'); setTimeout(()=>beepLoud('new'),600)
-        }
-      })
+      const newOnes = pendingIds.filter((id:string)=>!prevPendingRef.current.has(id))
+      if(newOnes.length>0){ beepLoud('new'); setTimeout(()=>beepLoud('new'),600) }
       prevPendingRef.current = pendingNow
     }
     setOrders(ords); if(!silent) setLoading(false)
@@ -90,9 +85,16 @@ export default function OrdersPage(){
     document.addEventListener('keydown', handler, {once:false})
     return ()=>{ document.removeEventListener('click', handler); document.removeEventListener('touchstart', handler); document.removeEventListener('keydown', handler) }
   },[])
-  useEffect(()=>{ if(!role) return; load(); const interval = setInterval(()=> load(from,to,true), 3500); return ()=> clearInterval(interval) },[role])
+  useEffect(()=>{ if(!role) return; load(); const interval = setInterval(()=> load(from,to,true), 3000); return ()=> clearInterval(interval) },[role])
   const toNum = (v:any)=> Number(v||0)
   const updateStatus = async(id:string, status:string)=>{ await fetch(`/api/admin/orders/${id}`,{method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({status})}); setOrders(prev=> prev.map(o=> o.id===id? {...o, status} : o)) }
+  const confirmCashPos = async(id:string, method:string)=>{
+    // Potvrdi gotovinu/POS i posalji kuhinji
+    await fetch(`/api/admin/orders/${id}`,{method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({status:'pending'})});
+    // Opcionalno oznaci placeno ako zelis, za sada samo status pending da ide kuhinji
+    // await fetch(`/api/admin/orders/${id}/pay`,{method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({paymentMethod:method})})
+    await load()
+  }
   const payMethodLabel = (m:string)=>{ const s=(m||'').toUpperCase(); if(s.includes('CASH')) return 'Gotovina'; if(s.includes('TERMINAL')||s.includes('POS')) return 'POS'; if(s.includes('ONLINE')||s.includes('STRIPE')||s.includes('CARD')) return 'Online'; return m||'Nepoznato' }
   const exportCSV = ()=>{ const header = ['Datum','Stol','Ukupno','Napojnica','%','Status','Placanje','Artikli']; const rows = orders.map((o:any)=>{ const date = new Date(o.createdAt).toLocaleString('hr-HR'); const items = o.items?.map((i:any)=> `${i.menuItem?.name||'Artikal'} x${i.quantity}`).join(' | '); return [date, o.table?.number||'', toNum(o.total).toFixed(2), toNum(o.tipAmount).toFixed(2), o.tipPercent||0, o.status, payMethodLabel(o.paymentMethod)+' '+o.paymentStatus, `"${items}"`].join(',') }); const csv = [header.join(','),...rows].join('\n'); const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href=url; a.download=`narudzbe_${from||'pocetak'}_${to||'danas'}.csv`; a.click() }
 
@@ -101,20 +103,32 @@ export default function OrdersPage(){
     return (<main className="max-w-7xl mx-auto p-4"><h1 className="text-xl font-bold mb-3">Narudžbe & Napojnice</h1><div className="bg-white border rounded-xl p-3 mb-3 flex flex-wrap gap-2 items-end"><div><div className="text- text-neutral-500 mb-1">Od</div><input type="date" value={from} onChange={e=>setFrom(e.target.value)} className="border rounded-lg px-3 h-8 text-sm"/></div><div><div className="text- text-neutral-500 mb-1">Do</div><input type="date" value={to} onChange={e=>setTo(e.target.value)} className="border rounded-lg px-3 h-8 text-sm"/></div><button onClick={()=>load(from,to)} className="bg-black text-white px-4 h-8 rounded-full text-xs">Filtriraj</button><button onClick={()=>{setFrom('');setTo('');load()}} className="border px-4 h-8 rounded-full text-xs">Reset</button><button onClick={exportCSV} className="bg-green-600 text-white px-4 h-8 rounded-full text-xs ml-auto">CSV</button></div><div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-3"><div className="bg-white border rounded-xl p-3"><div className="text- text-neutral-500">Narudžbi</div><div className="text-lg font-bold">{orders.length}</div></div><div className="bg-white border rounded-xl p-3"><div className="text- text-neutral-500">Promet</div><div className="text-lg font-bold">€{total.toFixed(2)}</div></div><div className="bg-amber-50 border border-amber-200 rounded-xl p-3"><div className="text- text-amber-800 font-bold">Napojnice</div><div className="text-lg font-bold text-amber-900">€{tips.toFixed(2)}</div></div><div className="bg-white border rounded-xl p-3"><div className="text- text-neutral-500">S napojnicom</div><div className="text-lg font-bold">{withTip} ({orders.length?((withTip/orders.length)*100).toFixed(0):0}%)</div></div></div>{loading? <div className="p-8 text-center text-sm">Učitavam...</div> : (<div className="bg-white border rounded-xl overflow-hidden"><div className="overflow-auto max-h-"><table className="w-full text-xs"><thead className="bg-zinc-50 text-left text- text-neutral-500 sticky top-0"><tr><th className="p-2">Datum</th><th className="p-2">Stol</th><th className="p-2">Status</th><th className="p-2">Plaćanje</th><th className="p-2">Iznos</th><th className="p-2">Napojnica</th><th className="p-2">Artikli</th></tr></thead><tbody>{orders.map((o:any)=>(<tr key={o.id} className="border-t border-black/5"><td className="p-2 whitespace-nowrap">{new Date(o.createdAt).toLocaleTimeString('hr-HR')}</td><td className="p-2 font-bold">#{o.table?.number}</td><td className="p-2"><span className="px-2 py-0.5 rounded-full bg-zinc-100 text-">{o.status}</span></td><td className="p-2"><span className={`px-2 py-0.5 rounded-full text- ${o.paymentStatus==='PAID'?'bg-green-100 text-green-800':'bg-yellow-100 text-yellow-800'}`}>{o.paymentStatus} • {payMethodLabel(o.paymentMethod)}</span></td><td className="p-2 font-bold">€{toNum(o.total).toFixed(2)}</td><td className="p-2">{toNum(o.tipAmount)>0? <span className="bg-amber-100 px-2 py-0.5 rounded-full font-bold text-">€{toNum(o.tipAmount).toFixed(2)}</span> : '-'}</td><td className="p-2 max-w- truncate">{o.items?.map((i:any)=> `${i.menuItem?.name} x${i.quantity}${i.note?' ('+i.note+')':''}`).join(', ')}</td></tr>))}</tbody></table></div></div>)}</main>)
   }
   if(role==='KITCHEN'){
-    const pending = orders.filter((o:any)=> ['pending','new'].includes((o.status||'').toLowerCase())); const preparing = orders.filter((o:any)=> ['preparing','in_progress'].includes((o.status||'').toLowerCase())); const ready = orders.filter((o:any)=> ['ready'].includes((o.status||'').toLowerCase()))
+    const pending = orders.filter((o:any)=> ['pending','new','awaiting_kitchen'].includes((o.status||'').toLowerCase())); const preparing = orders.filter((o:any)=> ['preparing','in_progress'].includes((o.status||'').toLowerCase())); const ready = orders.filter((o:any)=> ['ready'].includes((o.status||'').toLowerCase()))
     return (<main className="p-3">
-      {!audioUnlocked && <div onClick={unlockAudio} className="bg-red-600 text-white rounded-xl p-3 mb-3 flex items-center justify-between cursor-pointer animate-pulse"><div className="font-black">🔊 KLIKNI ZA ZVUK + VIBRACIJU - obavezno!</div><div className="bg-white text-red-600 px-3 py-1 rounded-full text-xs font-bold">AKTIVIRAJ</div></div>}
-      <div className="flex justify-between items-center mb-3"><h1 className="text-lg font-black">Kuhinja {audioUnlocked?'🔊':''}</h1><div className="flex gap-2 items-center"><span className="text-xs text-neutral-500">3.5s</span><button onClick={()=>{unlockAudio(); setTimeout(()=>beepLoud('new'),100)}} className={`px-4 h-8 rounded-full text-xs font-bold ${audioUnlocked?'bg-black text-white':'bg-red-600 text-white'}`}>TEST ZVUK</button></div></div>
+      {!audioUnlocked && <div onClick={unlockAudio} className="bg-red-600 text-white rounded-xl p-3 mb-3 flex items-center justify-between cursor-pointer animate-pulse"><div className="font-black">🔊 KLIKNI ZA ZVUK + VIBRACIJU</div><div className="bg-white text-red-600 px-3 py-1 rounded-full text-xs font-bold">AKTIVIRAJ</div></div>}
+      <div className="flex justify-between items-center mb-3"><h1 className="text-lg font-black">Kuhinja {audioUnlocked?'🔊':''} - samo online + potvrđene</h1><div className="flex gap-2 items-center"><span className="text-xs text-neutral-500">3s</span><button onClick={()=>{unlockAudio(); setTimeout(()=>beepLoud('new'),100)}} className={`px-4 h-8 rounded-full text-xs font-bold ${audioUnlocked?'bg-black text-white':'bg-red-600 text-white'}`}>TEST</button></div></div>
       <div className="flex gap-3 overflow-auto pb-4">
-      <div className="flex-1 min-w-"><div className="p-2 font-bold text-xs uppercase bg-white rounded-t-xl border">Nove ({pending.length})</div><div className="space-y-2 p-2 bg-zinc-50 rounded-b-xl min-h- border border-t-0">{pending.map((o:any)=>{ const mins = Math.floor((Date.now() - new Date(o.createdAt).getTime())/60000); return (<div key={o.id} className="bg-white border rounded-xl p-3 animate-pulse border-orange-300"><div className="flex justify-between mb-2"><div className="text-2xl font-black">Stol {o.table?.number}</div><div className="text-xs px-2 py-1 rounded-full bg-orange-100">{mins} min 🔔</div></div><div className="space-y-1">{o.items?.map((i:any)=>(<div key={i.id} className="text-sm"><span className="font-black">{i.quantity}x </span>{i.menuItem?.name}</div>))}</div><button onClick={()=>updateStatus(o.id,'preparing')} className="mt-3 w-full bg-black text-white h-10 rounded-xl text-sm font-bold">KRENI</button></div>)})}</div></div>
+      <div className="flex-1 min-w-"><div className="p-2 font-bold text-xs uppercase bg-white rounded-t-xl border">Nove ({pending.length})</div><div className="space-y-2 p-2 bg-zinc-50 rounded-b-xl min-h- border border-t-0">{pending.map((o:any)=>{ const mins = Math.floor((Date.now() - new Date(o.createdAt).getTime())/60000); const isOnline = (o.paymentMethod||'').toUpperCase().includes('ONLINE')|| (o.paymentMethod||'').toUpperCase().includes('STRIPE')|| (o.paymentMethod||'').toUpperCase().includes('CARD'); return (<div key={o.id} className="bg-white border rounded-xl p-3"><div className="flex justify-between mb-2"><div className="text-2xl font-black">Stol {o.table?.number} {isOnline? <span className="text- bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full ml-1">ONLINE</span> : <span className="text- bg-green-100 text-green-800 px-2 py-0.5 rounded-full ml-1">{payMethodLabel(o.paymentMethod)}</span>}</div><div className="text-xs px-2 py-1 rounded-full bg-zinc-100">{mins} min</div></div><div className="space-y-1">{o.items?.map((i:any)=>(<div key={i.id} className="text-sm"><span className="font-black">{i.quantity}x </span>{i.menuItem?.name}</div>))}</div><button onClick={()=>updateStatus(o.id,'preparing')} className="mt-3 w-full bg-black text-white h-10 rounded-xl text-sm font-bold">KRENI</button></div>)})}</div></div>
       <div className="flex-1 min-w-"><div className="p-2 font-bold text-xs uppercase bg-orange-50 rounded-t-xl border border-orange-200">U pripremi ({preparing.length})</div><div className="space-y-2 p-2 bg-zinc-50 rounded-b-xl min-h- border border-t-0">{preparing.map((o:any)=>{ const mins = Math.floor((Date.now() - new Date(o.createdAt).getTime())/60000); return (<div key={o.id} className="bg-white border rounded-xl p-3"><div className="flex justify-between mb-2"><div className="text-2xl font-black">Stol {o.table?.number}</div><div className="text-xs px-2 py-1 rounded-full bg-zinc-100">{mins} min</div></div><div className="space-y-1">{o.items?.map((i:any)=>(<div key={i.id} className="text-sm"><span className="font-black">{i.quantity}x </span>{i.menuItem?.name}</div>))}</div><button onClick={()=>updateStatus(o.id,'ready')} className="mt-3 w-full bg-green-600 text-white h-12 rounded-xl text-base font-black">SPREMNO 🔔</button></div>)})}</div></div>
       <div className="flex-1 min-w-"><div className="p-2 font-bold text-xs uppercase bg-green-50 rounded-t-xl border border-green-200">Spremne ({ready.length})</div><div className="space-y-2 p-2 bg-zinc-50 rounded-b-xl min-h- border border-t-0">{ready.map((o:any)=> (<div key={o.id} className="bg-white border rounded-xl p-3 border-green-300"><div className="text-2xl font-black">Stol {o.table?.number}</div><div className="space-y-1 mt-2">{o.items?.map((i:any)=>(<div key={i.id} className="text-sm"><span className="font-black">{i.quantity}x </span>{i.menuItem?.name}</div>))}</div><div className="mt-3 w-full bg-green-50 border border-green-200 text-green-800 h-10 rounded-xl text-xs font-bold flex items-center justify-center">Čeka konobara...</div></div>))}</div></div>
     </div></main>)
   }
+  // WAITER - KONOBAR
+  const awaitingConfirm = orders.filter((o:any)=> ['awaiting_confirmation','pending_confirmation','awaiting_waiter','unconfirmed','new_cash'].includes((o.status||'').toLowerCase()))
+  const activeOrders = orders.filter((o:any)=>!['awaiting_confirmation','pending_confirmation','awaiting_waiter','unconfirmed','new_cash'].includes((o.status||'').toLowerCase()))
   const readyOrders = orders.filter((o:any)=> o.status.toLowerCase()==='ready')
+
+  const isCashOrPos = (m:string)=>{ const s=(m||'').toUpperCase(); return s.includes('CASH')||s.includes('POS')||s.includes('TERMINAL') }
+
   return (<main className="max-w-6xl mx-auto p-3">
-    {!audioUnlocked && <div onClick={unlockAudio} className="bg-red-600 text-white rounded-xl p-3 mb-3 flex items-center justify-between cursor-pointer animate-pulse"><div className="font-black">🔊 KLIKNI ZA ZVUK + VIBRACIJU - obavezno jednom!</div><div className="bg-white text-red-600 px-3 py-1 rounded-full text-xs font-bold">AKTIVIRAJ</div></div>}
-    <div className="flex justify-between items-center mb-3"><h1 className="text-lg font-bold">Uzivo narudzbe {audioUnlocked?'🔊':'(bez zvuka)'}</h1><div className="flex items-center gap-2"><span className="text-xs text-neutral-500">Auto 3.5s</span><button onClick={()=>{unlockAudio(); setTimeout(()=>beepLoud('ready'),100)}} className={`px-4 h-8 rounded-full text-xs font-bold ${audioUnlocked?'bg-black text-white':'bg-red-600 text-white'}`}>TEST ZVUK + VIBRACIJA</button></div></div>
+    {!audioUnlocked && <div onClick={unlockAudio} className="bg-red-600 text-white rounded-xl p-3 mb-3 flex items-center justify-between cursor-pointer animate-pulse"><div className="font-black">🔊 KLIKNI ZA ZVUK + VIBRACIJU - obavezno!</div><div className="bg-white text-red-600 px-3 py-1 rounded-full text-xs font-bold">AKTIVIRAJ</div></div>}
+
+    {awaitingConfirm.length>0 && <div className="bg-orange-500 text-white rounded-xl p-3 mb-4 animate-pulse"><div className="font-black text-lg mb-2">⚠️ {awaitingConfirm.length} NARUDŽBI ČEKA POTVRDU (Gotovina/POS)</div><div className="grid md:grid-cols-2 gap-3">{awaitingConfirm.map((o:any)=> (<div key={o.id} className="bg-white text-black rounded-xl p-3"><div className="flex justify-between mb-2"><div className="text-xl font-black">Stol {o.table?.number} - {payMethodLabel(o.paymentMethod)}</div><div className="text-xs bg-orange-100 px-2 py-1 rounded-full font-bold">€{toNum(o.total).toFixed(2)}</div></div><div className="space-y-1 mb-3 text-sm">{o.items?.map((i:any)=>(<div key={i.id}>{i.quantity}x {i.menuItem?.name} {i.note? <span className="text-amber-700">({i.note})</span>:null}</div>))}</div><button onClick={()=>confirmCashPos(o.id,o.paymentMethod)} className="w-full bg-black text-white h-12 rounded-xl font-black text-sm">✅ POTVRDI {payMethodLabel(o.paymentMethod).toUpperCase()} I POŠALJI KUHINJI</button></div>))}</div></div>}
+
+    <div className="flex justify-between items-center mb-3"><h1 className="text-lg font-bold">Konobar - uživo {audioUnlocked?'🔊':''}</h1><div className="flex items-center gap-2"><span className="text-xs text-neutral-500">3s • Online ide direkt kuhinji</span><button onClick={()=>{unlockAudio(); setTimeout(()=>beepLoud('ready'),100)}} className={`px-4 h-8 rounded-full text-xs font-bold ${audioUnlocked?'bg-black text-white':'bg-red-600 text-white'}`}>TEST ZVUK</button></div></div>
+
     {readyOrders.length>0 && <div className="bg-green-600 text-white rounded-xl p-4 mb-3 flex items-center justify-between animate-pulse"><div className="font-black text-lg">🔔 {readyOrders.length} SPREMNO: {readyOrders.map((o:any)=>'Stol '+o.table?.number).join(', ')}</div><button onClick={()=>beepLoud('ready')} className="bg-white text-green-700 px-3 py-1 rounded-full text-xs font-bold">BEEP</button></div>}
-    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">{orders.slice(0,100).map((o:any)=>{ const isReady = o.status.toLowerCase()==='ready'; const isPaid = o.paymentStatus==='PAID'; return (<div key={o.id} className={`bg-white border rounded-xl p-3 ${isReady?'border-green-500 ring-2 ring-green-200 animate-pulse':''}`}><div className="flex justify-between items-start mb-2"><div className="text-xl font-black">Stol {o.table?.number}</div><div className="flex flex-col items-end gap-1"><span className={`text- px-2 py-0.5 rounded-full font-bold uppercase ${o.status==='pending'?'bg-zinc-900 text-white': o.status==='preparing'?'bg-orange-100 text-orange-800': o.status==='ready'?'bg-green-600 text-white':'bg-zinc-100'}`}>{o.status}</span><span className={`text- px-2 py-0.5 rounded-full font-bold ${isPaid?'bg-green-50 text-green-700 border border-green-200':'bg-yellow-50 text-yellow-700 border border-yellow-200'}`}>{isPaid?'PLACENO':'NIJE PLACENO'} • {payMethodLabel(o.paymentMethod)}</span></div></div><div className="text-xs text-neutral-500 mb-2">{new Date(o.createdAt).toLocaleTimeString('hr-HR')} • {Math.floor((Date.now()-new Date(o.createdAt).getTime())/60000)} min</div><div className="space-y-1.5 mb-3">{o.items?.map((i:any)=>(<div key={i.id} className="flex justify-between text-sm"><span>{i.quantity}x {i.menuItem?.name}</span>{i.note && <span className="text-xs text-amber-700 bg-amber-50 px-1.5 rounded">! {i.note}</span>}</div>))}</div><div className="flex gap-2">{o.status.toLowerCase()==='ready' && <button onClick={()=>updateStatus(o.id,'served')} className="flex-1 bg-black text-white h-9 rounded-xl text-xs font-bold">POSLUZENO</button>}{o.status.toLowerCase()==='pending' && <button onClick={()=>updateStatus(o.id,'preparing')} className="flex-1 border h-9 rounded-xl text-xs">Kuhinji</button>}<button onClick={()=>{const m=prompt('Nacin: CASH/POS/ONLINE', o.paymentMethod); if(m){ fetch(`/api/admin/orders/${o.id}/pay`,{method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({paymentMethod:m})}).then(()=>load()) } }} className="px-3 h-9 border rounded-xl text-xs">{payMethodLabel(o.paymentMethod)}</button></div></div>)})}</div></main>)
+
+    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">{activeOrders.slice(0,100).map((o:any)=>{ const isReady = o.status.toLowerCase()==='ready'; const isPaid = o.paymentStatus==='PAID'; const online =!isCashOrPos(o.paymentMethod); return (<div key={o.id} className={`bg-white border rounded-xl p-3 ${isReady?'border-green-500 ring-2 ring-green-200 animate-pulse':''} ${online?'border-blue-200':''}`}><div className="flex justify-between items-start mb-2"><div className="text-xl font-black">Stol {o.table?.number} {online? <span className="text- bg-blue-600 text-white px-1.5 py-0.5 rounded-full">ONLINE</span> : <span className="text- bg-zinc-900 text-white px-1.5 py-0.5 rounded-full">{payMethodLabel(o.paymentMethod)}</span>}</div><div className="flex flex-col items-end gap-1"><span className={`text- px-2 py-0.5 rounded-full font-bold uppercase ${o.status==='pending'?'bg-zinc-900 text-white': o.status==='preparing'?'bg-orange-100 text-orange-800': o.status==='ready'?'bg-green-600 text-white':'bg-zinc-100'}`}>{o.status}</span><span className={`text- px-2 py-0.5 rounded-full font-bold ${isPaid?'bg-green-50 text-green-700 border border-green-200':'bg-yellow-50 text-yellow-700 border border-yellow-200'}`}>{isPaid?'PLACENO':'NIJE PLACENO'}</span></div></div><div className="text-xs text-neutral-500 mb-2">{new Date(o.createdAt).toLocaleTimeString('hr-HR')} • {Math.floor((Date.now()-new Date(o.createdAt).getTime())/60000)} min • €{toNum(o.total).toFixed(2)}</div><div className="space-y-1.5 mb-3">{o.items?.map((i:any)=>(<div key={i.id} className="flex justify-between text-sm"><span>{i.quantity}x {i.menuItem?.name}</span>{i.note && <span className="text-xs text-amber-700 bg-amber-50 px-1.5 rounded">! {i.note}</span>}</div>))}</div><div className="flex gap-2">{o.status.toLowerCase()==='ready' && <button onClick={()=>updateStatus(o.id,'served')} className="flex-1 bg-black text-white h-9 rounded-xl text-xs font-bold">POSLUŽENO</button>}{o.status.toLowerCase()==='pending' && <div className="flex-1 text- text-neutral-500 flex items-center">Kuhinja radi...</div>}<button onClick={()=>{const m=prompt('Način: CASH/POS/ONLINE', o.paymentMethod); if(m){ fetch(`/api/admin/orders/${o.id}/pay`,{method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({paymentMethod:m})}).then(()=>load()) } }} className="px-3 h-9 border rounded-xl text-xs">{payMethodLabel(o.paymentMethod)}</button></div></div>)})}</div>
+  </main>)
 }
