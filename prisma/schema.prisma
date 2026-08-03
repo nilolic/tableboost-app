@@ -113,6 +113,10 @@ model MenuItem {
 
 model Order {
   id String @id @default(cuid())
+  cancelReason String?
+  cancelledAt DateTime?
+  refundId String?
+  refundStatus String?
   status String @default("pending")
   total Float
   tipPercent Int @default(0)
