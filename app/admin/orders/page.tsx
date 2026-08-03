@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
-type Order = { id:string; status:string; total:number; createdAt:string; table:{number:number}; items:{quantity:number; note?:string; price:number; menuItem:{name:string}}[]; paymentMethod?: string; paymentStatus?: string; };
+type Order = { id:string; status:string; total:number; tipPercent?:number; tipAmount?:number; createdAt:string; table:{number:number}; items:{quantity:number; note?:string; price:number; menuItem:{name:string}}[]; paymentMethod?: string; paymentStatus?: string; };
 const STATUS_COLORS:any={ pending:"border-yellow-400 bg-yellow-50", preparing:"border-blue-400 bg-blue-50", ready:"border-green-500 bg-green-50", done:"border-gray-300 bg-white opacity-60" };
 const STATUS_LABEL:any={ pending:"NOVO 🔔", preparing:"U PRIPREMI", ready:"SPREMNO", done:"ZAVRŠENO" };
 const PAYMENT_LABEL:any={ CASH:"💵 Gotovina", CARD_TERMINAL:"💳 Terminal", CARD_ONLINE:"🌐 Online" };
@@ -36,7 +36,7 @@ export default function OrdersPage(){
     <div className="p-4 max-w- mx-auto">
       <div className="flex justify-between items-center mb-4 gap-3 flex-wrap">
         <div>
-          <h1 className="text-2xl font-bold">{isKitchen? "Kuhinja - Narudžbe 👨‍🍳" : isWaiter? "Konobar - Narudžbe 🧑‍💼" : "Narudžbe"}</h1>
+          <h1 className="text-2xl font-bold">{isKitchen? "Kuhinja - Narudžbe 👨🍳" : isWaiter? "Konobar - Narudžbe 🧑💼" : "Narudžbe"}</h1>
           {userInfo && <p className="text-xs text-zinc-500 mt-0.5">{userInfo.name||userInfo.email} • {userInfo.role}</p>}
         </div>
         <div className="flex gap-2 items-center flex-wrap">
@@ -53,6 +53,8 @@ export default function OrdersPage(){
           const payMethod = o.paymentMethod || 'CASH'
           const payStatus = o.paymentStatus || 'PENDING'
           const isPaid = payStatus === 'PAID'
+          const tip = o.tipAmount || 0
+          const tipPct = o.tipPercent || 0
           return (
           <div key={o.id} className={`border-2 rounded-xl p-4 ${STATUS_COLORS[o.status]||"bg-white"} ${isPaid && payMethod==='CARD_ONLINE'? 'ring-2 ring-green-400' : ''}`}>
             <div className="flex justify-between items-start mb-2">
@@ -68,9 +70,20 @@ export default function OrdersPage(){
                 <span className={`text- font-bold px-2.5 py-1 rounded-full border ${PAYMENT_STATUS_STYLE[payStatus]||'bg-white'}`}>
                   {payStatus==='PAID'? '✅ PLAĆENO' : payStatus==='PENDING' && payMethod==='CARD_ONLINE'? '⏳ Čeka online' : payStatus==='PENDING'? '💰 Za naplatu' : payStatus}
                 </span>
+                {tip>0 && <span className="text- font-bold px-2.5 py-1 rounded-full border bg-amber-100 border-amber-300 text-amber-800">💰 Napojnica {tipPct}% • {tip.toFixed(2)}€</span>}
               </div>
             )}
+            {isKitchen && tip>0 && (
+              <div className="mb-2 text-xs font-bold bg-amber-100 border border-amber-200 text-amber-900 rounded-lg p-2">💰 Napojnica: {tipPct}% = {tip.toFixed(2)}€ - DATI KONOBARU</div>
+            )}
             <div className="space-y-1 my-3 bg-white/70 rounded p-2">{o.items.map((it,i)=><div key={i} className="flex justify-between text-sm"><span className="font-bold">{it.quantity}x {it.menuItem?.name}</span><span className="text-xs">{it.note&&`(${it.note})`} {!isKitchen && `• ${it.price?.toFixed(2)}€`}</span></div>)}</div>
+            {!isKitchen && tip>0 && (
+              <div className="bg-zinc-50 border rounded-lg p-2 mb-2 text-xs space-y-1">
+                <div className="flex justify-between"><span>Hrana:</span><span>{(o.total - tip).toFixed(2)}€</span></div>
+                <div className="flex justify-between font-bold"><span>Napojnica {tipPct}%:</span><span className="text-green-600">{tip.toFixed(2)}€</span></div>
+                <div className="flex justify-between font-black border-t pt-1 mt-1"><span>Ukupno:</span><span>{o.total.toFixed(2)}€</span></div>
+              </div>
+            )}
             {isWaiter && payMethod==='CARD_TERMINAL' && o.status!=='done' && (<div className="text- bg-violet-50 border border-violet-200 text-violet-800 rounded-lg p-2 mb-2">💳 Treba naplatiti na terminalu - odnesi POS</div>)}
             {isPaid && payMethod==='CARD_ONLINE' && (<div className="text- bg-green-50 border border-green-200 text-green-800 rounded-lg p-2 mb-2">✅ Gost već platio online - ne naplaćuj!</div>)}
             <div className="grid grid-cols-3 gap-1 mt-3">

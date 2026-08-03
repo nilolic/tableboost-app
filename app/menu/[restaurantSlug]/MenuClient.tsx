@@ -197,7 +197,7 @@ export default function MenuClient({ restaurant, tableNumber, cats, lang, slug }
               <div className="mb-3">
                 <div className="text-xs font-bold tracking-widest opacity-60 mb-2">NAPOJNICA</div>
                 <div className="flex gap-2">
-                  {[0,10,15].map(p=>(
+                  {[0,10,15,30].map(p=>(
                     <button key={p} onClick={()=>setTipPercent(p)} className={`flex-1 py-2 rounded-full text-xs font-bold border ${tipPercent===p?'bg-black text-white border-black':'bg-white border-black/10'}`}>{p===0?'Bez':p+'%'}</button>
                   ))}
                 </div>
