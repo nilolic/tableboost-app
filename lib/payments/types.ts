@@ -7,6 +7,7 @@ export interface CreateIntentParams {
   amount: number
   currency?: string
   restaurantId: string
+  restaurantSlug?: string
 }
 
 export interface PaymentIntentResult {

@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, useMemo } from 'react'
 
 type Item = { id:string, name:string, nameEn?:string|null, nameDe?:string|null, description?:string|null, descriptionEn?:string|null, descriptionDe?:string|null, price:number, isBoosted:boolean, boostLevel:number, imageUrl?:string|null, available?:boolean }
 type Cat = { id:string, name:string, nameEn?:string|null, nameDe?:string|null, items: Item[] }
+type PayConfig = { paymentCashEnabled:boolean, paymentCardTerminalEnabled:boolean, paymentCardOnlineEnabled:boolean, name?:string }
 
 export default function MenuClient({ restaurant, tableNumber, cats, lang, slug }: { restaurant:any, tableNumber:number|null, cats:Cat[], lang:'hr'|'en'|'de', slug:string }) {
   const [cart, setCart] = useState<{id:string, qty:number}[]>([])
@@ -10,6 +11,9 @@ export default function MenuClient({ restaurant, tableNumber, cats, lang, slug }
   const [sending, setSending] = useState(false)
   const [activeCat, setActiveCat] = useState(cats[0]?.id || "")
   const [search, setSearch] = useState("")
+  const [payConfig, setPayConfig] = useState<PayConfig>({ paymentCashEnabled:true, paymentCardTerminalEnabled:true, paymentCardOnlineEnabled:false })
+  const [paymentMethod, setPaymentMethod] = useState<'CASH'|'CARD_TERMINAL'|'CARD_ONLINE'>('CASH')
+  const [tipPercent, setTipPercent] = useState(0)
   const catRefs = useRef<Record<string, HTMLElement|null>>({})
 
   const t = (hr:string, en?:string|null, de?:string|null) => {
@@ -17,6 +21,17 @@ export default function MenuClient({ restaurant, tableNumber, cats, lang, slug }
     if(lang==='de') return de||hr
     return hr
   }
+
+  useEffect(()=>{
+    fetch(`/api/public/restaurant/${slug}`).then(r=>r.json()).then(d=>{
+      if(d.paymentCashEnabled!==undefined) {
+        setPayConfig(d)
+        if(d.paymentCardOnlineEnabled) setPaymentMethod('CARD_ONLINE')
+        else if(d.paymentCardTerminalEnabled) setPaymentMethod('CARD_TERMINAL')
+        else setPaymentMethod('CASH')
+      }
+    }).catch(()=>{})
+  },[slug])
 
   const add = (id:string) => setCart(prev => {
     const ex = prev.find(p=>p.id===id)
@@ -30,7 +45,9 @@ export default function MenuClient({ restaurant, tableNumber, cats, lang, slug }
     return item? {...item, qty:c.qty} : null
   }).filter(Boolean) as (Item & {qty:number})[], [cart, cats])
 
-  const total = cartDetailed.reduce((s,i)=>s + i.price*i.qty, 0)
+  const subtotal = cartDetailed.reduce((s,i)=>s + i.price*i.qty, 0)
+  const tipAmount = subtotal * (tipPercent/100)
+  const total = subtotal + tipAmount
   const cartIds = cart.map(c=>c.id)
 
   const filteredCats = useMemo(()=>{
@@ -45,7 +62,7 @@ export default function MenuClient({ restaurant, tableNumber, cats, lang, slug }
   useEffect(()=>{
     if(!cartIds.length){ setUpsells([]); return }
     fetch(`/api/menu/${slug}/upsell`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ cartItemIds: cartIds }) })
-   .then(r=>r.json()).then(d=>setUpsells(d.upsells||[])).catch(()=>{})
+  .then(r=>r.json()).then(d=>setUpsells(d.upsells||[])).catch(()=>{})
   }, [JSON.stringify(cartIds), slug])
 
   useEffect(()=>{
@@ -60,17 +77,30 @@ export default function MenuClient({ restaurant, tableNumber, cats, lang, slug }
   const order = async () => {
     if(!cart.length) return
     setSending(true)
-    const res = await fetch('/api/orders', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ restaurantSlug: slug, tableNumber, items: cart }) })
-    const data = await res.json()
-    setSending(false)
-    if(data.order){ alert(lang==='hr'?'Narudžba poslana! Konobar dolazi uskoro':'Order sent!'); setCart([]) }
-    else alert('Greška: '+(data.error||''))
+    try {
+      if(paymentMethod === 'CARD_ONLINE') {
+        const res = await fetch('/api/public/checkout', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ restaurantSlug: slug, tableNumber, items: cart, tipPercent }) })
+        const data = await res.json()
+        if(data.url) { window.location.href = data.url; return }
+        if(data.mock) { alert(lang==='hr'?'Narudžba kreirana (Stripe nije aktivan)':'Order created (Stripe not active)'); setCart([]); return }
+        throw new Error(data.error||'Checkout error')
+      } else {
+        const res = await fetch('/api/orders', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ restaurantSlug: slug, tableNumber, items: cart, paymentMethod, tipPercent }) })
+        const data = await res.json()
+        if(data.order){ alert(lang==='hr'?'Narudžba poslana! Konobar dolazi uskoro':'Order sent!'); setCart([]) }
+        else throw new Error(data.error||'')
+      }
+    } catch(e:any) {
+      alert('Greška: '+(e.message||''))
+    } finally {
+      setSending(false)
+    }
   }
 
   const getQty = (id:string) => cart.find(c=>c.id===id)?.qty || 0
 
   return (
-    <div className="min-h-screen bg-orange-50/50 text-zinc-900 pb-40">
+    <div className="min-h-screen bg-orange-50/50 text-zinc-900 pb-96">
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Inter:wght@400;500;600&display=swap'); h1,h2,h3{font-family:'Sora',sans-serif}`}</style>
 
       <div className="sticky top-0 z-30 bg-orange-50/80 backdrop-blur-xl border-b border-black/5">
@@ -135,7 +165,6 @@ export default function MenuClient({ restaurant, tableNumber, cats, lang, slug }
             </div>
           </section>
         ))}
-        {filteredCats.length===0 && <div className="text-center py-20 opacity-60">Nema rezultata za "{search}"</div>}
       </div>
 
       {cart.length>0 && (
@@ -157,16 +186,51 @@ export default function MenuClient({ restaurant, tableNumber, cats, lang, slug }
             <div className="p-4">
               <div className="flex justify-between items-center mb-3">
                 <span className="font-bold text-sm">Košarica • Stol {tableNumber?? '?'}</span>
-                <span className="font-bold text-sm">{total.toFixed(2)} €</span>
+                <span className="text-xs opacity-60">{subtotal.toFixed(2)}€ + napojnica</span>
               </div>
-              <div className="space-y-1 max-h-24 overflow-auto mb-3 pr-1">
+              <div className="space-y-1 max-h-20 overflow-auto mb-3 pr-1">
                 {cartDetailed.map(i=>(
                   <div key={i.id} className="flex justify-between text-xs"><span className="truncate mr-2">{i.name} x{i.qty}</span><span className="shrink-0 opacity-60">{(i.price*i.qty).toFixed(2)}€</span></div>
                 ))}
               </div>
-              <button disabled={sending} onClick={order} className="w-full bg-black text-white py-3.5 rounded-full font-bold text-sm tracking-wide active:scale-95 transition">
-                {sending? 'Šaljem...' : `Naruči • ${total.toFixed(2)} €`}
+
+              <div className="mb-3">
+                <div className="text-xs font-bold tracking-widest opacity-60 mb-2">NAPOJNICA</div>
+                <div className="flex gap-2">
+                  {[0,10,15].map(p=>(
+                    <button key={p} onClick={()=>setTipPercent(p)} className={`flex-1 py-2 rounded-full text-xs font-bold border ${tipPercent===p?'bg-black text-white border-black':'bg-white border-black/10'}`}>{p===0?'Bez':p+'%'}</button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mb-4">
+                <div className="text-xs font-bold tracking-widest opacity-60 mb-2">NAČIN PLAĆANJA</div>
+                <div className="grid grid-cols-1 gap-2">
+                  {payConfig.paymentCashEnabled && (
+                    <button onClick={()=>setPaymentMethod('CASH')} className={`flex justify-between items-center px-4 py-2.5 rounded-xl border text-xs font-semibold ${paymentMethod==='CASH'?'bg-black text-white border-black':'bg-white border-black/10'}`}>
+                      <span>💵 {lang==='hr'?'Gotovina':'Cash'}</span><span>{paymentMethod==='CASH'?'●':''}</span>
+                    </button>
+                  )}
+                  {payConfig.paymentCardTerminalEnabled && (
+                    <button onClick={()=>setPaymentMethod('CARD_TERMINAL')} className={`flex justify-between items-center px-4 py-2.5 rounded-xl border text-xs font-semibold ${paymentMethod==='CARD_TERMINAL'?'bg-black text-white border-black':'bg-white border-black/10'}`}>
+                      <span>💳 {lang==='hr'?'Kartica konobaru':'Card to waiter'}</span><span>{paymentMethod==='CARD_TERMINAL'?'●':''}</span>
+                    </button>
+                  )}
+                  {payConfig.paymentCardOnlineEnabled && (
+                    <button onClick={()=>setPaymentMethod('CARD_ONLINE')} className={`flex justify-between items-center px-4 py-2.5 rounded-xl border text-xs font-semibold ${paymentMethod==='CARD_ONLINE'?'bg-black text-white border-black':'bg-white border-black/10'}`}>
+                      <span>🔒 {lang==='hr'?'Plati karticom odmah':'Pay online'}</span><span className="text- bg-green-500 text-white px-2 py-0.5 rounded-full ml-2">STRIPE</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {tipPercent>0 && <div className="flex justify-between text-xs mb-1"><span className="opacity-60">Napojnica {tipPercent}%</span><span>{tipAmount.toFixed(2)}€</span></div>}
+              <div className="flex justify-between font-bold mb-3"><span>Ukupno</span><span>{total.toFixed(2)}€</span></div>
+
+              <button disabled={sending} onClick={order} className="w-full bg-black text-white py-3.5 rounded-full font-bold text-sm tracking-wide active:scale-95 transition disabled:opacity-50">
+                {sending? 'Šaljem...' : paymentMethod==='CARD_ONLINE'? `Plati karticom • ${total.toFixed(2)} €` : `Naruči • ${total.toFixed(2)} €`}
               </button>
+              <div className="text- text-center opacity-40 mt-2">Sigurno plaćanje preko Stripe-a • {payConfig.name||''}</div>
             </div>
           </div>
         </div>

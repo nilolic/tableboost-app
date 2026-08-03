@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { getPaymentProvider } from '@/lib/payments'
 
 export async function POST(req: Request) {
-  const { restaurantSlug, tableNumber, items, paymentMethod = 'CASH', tipPercent = 0 } = await req.json()
+  const { restaurantSlug, tableNumber, items, tipPercent = 0 } = await req.json()
+
   let restaurant = await prisma.restaurant.findUnique({ where: { slug: restaurantSlug } })
   let table = null
   if (!restaurant) {
@@ -26,6 +28,8 @@ export async function POST(req: Request) {
     return { menuItemId: mi.id, quantity: i.qty, price: mi.price }
   }).filter(Boolean)
 
+  if(!orderItems.length) return NextResponse.json({ error: 'Prazna košarica' }, { status: 400 })
+
   const tipAmount = subtotal * (tipPercent / 100)
   const total = subtotal + tipAmount
 
@@ -34,12 +38,40 @@ export async function POST(req: Request) {
       total,
       tableId: table.id,
       restaurantId: restaurant.id,
-      paymentMethod,
-      paymentStatus: paymentMethod === 'CASH'? 'PENDING' : 'PENDING',
-      paymentProvider: paymentMethod === 'CARD_ONLINE'? 'stripe' : 'mock',
+      paymentMethod: 'CARD_ONLINE',
+      paymentStatus: 'PENDING',
+      paymentProvider: 'stripe',
       items: { create: orderItems }
-    },
-    include: { items: true }
+    }
   })
-  return NextResponse.json({ order })
+
+  const provider = getPaymentProvider(restaurant)
+  if(provider.name === 'mock') {
+    return NextResponse.json({ order, url: null, mock: true })
+  }
+
+  const intent = await provider.createIntent({
+    orderId: order.id,
+    amount: total,
+    currency: 'eur',
+    restaurantId: restaurant.id,
+    restaurantSlug: restaurant.slug
+  })
+
+  await prisma.order.update({
+    where: { id: order.id },
+    data: { paymentIntentId: intent.intentId }
+  })
+
+  await prisma.payment.create({
+    data: {
+      orderId: order.id,
+      amount: total,
+      provider: 'stripe',
+      providerIntentId: intent.intentId,
+      status: 'PENDING'
+    }
+  })
+
+  return NextResponse.json({ orderId: order.id, url: intent.checkoutUrl })
 }
