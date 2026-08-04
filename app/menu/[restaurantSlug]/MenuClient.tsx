@@ -56,7 +56,7 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
   const cartCount = cart.reduce((s,c)=>s+c.qty,0)
 
   const filteredData = useMemo(()=>{
-    if(!currentMain) return { subs: [], items: [] }
+    if(!currentMain) return { subs: [], directItems: [] }
     const q=search.toLowerCase().trim()
     
     // filter subs
@@ -260,7 +260,7 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
           </section>
         ))}
 
-        {filteredData.subs.length===0 && filteredData.directItems.length===0 && (
+        {filteredData.subs?.length || 0===0 && filteredData.directItems?.length || 0===0 && (
           <div className="py-16 text-center bg-white rounded-[24px] border border-dashed"><p className="font-bold">Nema artikala</p><p className="text-sm text-zinc-500 mt-1">Dodaj artikle u {currentMain.name} u adminu</p></div>
         )}
       </div>
