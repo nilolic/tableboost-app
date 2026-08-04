@@ -32,7 +32,6 @@ model Restaurant {
   vatNumber String?
   description String?
   workingHours String?
-  // Placanja
   paymentCashEnabled Boolean @default(true)
   paymentCardTerminalEnabled Boolean @default(true)
   paymentCardOnlineEnabled Boolean @default(false)
@@ -82,8 +81,15 @@ model MenuCategory {
   order Int @default(0)
   restaurantId String
   restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  parentId String?
+  parent MenuCategory? @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children MenuCategory[] @relation("CategoryHierarchy")
+  imageUrl String?
+  description String?
+  sendsToKitchen Boolean @default(false)
   items MenuItem[]
   createdAt DateTime @default(now())
+  @@index([restaurantId, parentId])
 }
 
 model MenuItem {
