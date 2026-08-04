@@ -9,12 +9,20 @@ export async function GET(){
     const impId = await getImpersonateId()
     const restaurantId = getRestaurantId(user, impId)
     if(!restaurantId) return NextResponse.json({categories:[]})
-    const categories = await prisma.menuCategory.findMany({ 
-      where:{restaurantId}, 
-      orderBy:{order:"asc"}, 
-      include:{_count:{select:{items:true, children:true}}, children:{orderBy:{order:"asc"}, include:{_count:{select:{items:true}}}} } 
+    const categories = await prisma.menuCategory.findMany({
+      where:{restaurantId},
+      orderBy:{order:"asc"},
+      include:{
+        _count:{select:{items:true, children:true}}, 
+        children:{
+          orderBy:{order:"asc"}, 
+          include:{
+            _count:{select:{items:true}},
+            parent: true
+          }
+        }
+      }
     })
-    // vrati samo parent kategorije sa children
     const parents = categories.filter(c=>!c.parentId)
     return NextResponse.json({categories: parents, all: categories})
   } catch(e:any){
@@ -33,8 +41,7 @@ export async function POST(req: NextRequest){
     const body = await req.json()
     const name = body.name?.trim()
     if(!name) return NextResponse.json({error:"Ime obavezno"},{status:400})
-    
-    // ako je podkategorija, provjeri parent
+
     let parent = null
     if(body.parentId){
       parent = await prisma.menuCategory.findFirst({where:{id:body.parentId, restaurantId}})
@@ -42,18 +49,27 @@ export async function POST(req: NextRequest){
     }
 
     const maxOrder = await prisma.menuCategory.aggregate({ where:{restaurantId, parentId: body.parentId||null}, _max:{order:true} })
-    
+
+    let sendsToKitchen = body.sendsToKitchen
+    if(sendsToKitchen === undefined || sendsToKitchen === null){
+      if(parent){
+        sendsToKitchen = parent.sendsToKitchen
+      } else {
+        sendsToKitchen = name.toLowerCase().includes('hrana') || name.toLowerCase().includes('food')
+      }
+    }
+
     const cat = await prisma.menuCategory.create({
-      data:{ 
-        name, 
-        nameEn: body.nameEn?.trim() || null, 
-        nameDe: body.nameDe?.trim() || null, 
+      data:{
+        name,
+        nameEn: body.nameEn?.trim() || null,
+        nameDe: body.nameDe?.trim() || null,
         description: body.description?.trim() || null,
         imageUrl: body.imageUrl || null,
-        order: body.order ?? ((maxOrder._max.order||0)+1), 
+        order: body.order ?? ((maxOrder._max.order||0)+1),
         restaurantId,
         parentId: body.parentId || null,
-        sendsToKitchen: body.sendsToKitchen ?? (!body.parentId ? body.name?.toLowerCase().includes('hrana') || body.name?.toLowerCase().includes('food') : false)
+        sendsToKitchen
       }
     })
     const withCount = await prisma.menuCategory.findUnique({ where:{id:cat.id}, include:{_count:{select:{items:true, children:true}}}})
