@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://tableboost.app/sitemap.xml
