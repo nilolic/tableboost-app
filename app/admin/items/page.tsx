@@ -1,4 +1,5 @@
-"use client";
+import { useEffect, useState, useRef } from "react";
+import { useSearchParams } from "next/navigation";"use client";
 import { useEffect, useState, useRef } from "react";
 
 type Cat = { id:string; name:string; parentId?:string|null; order?:number };
@@ -27,7 +28,7 @@ const ALLERGENS = [
   {id:"14", label:"14. Mekušci", desc:"školjke..."},
 ];
 
-export default function ItemsPage(){
+export default function ItemsPage(){const searchParams = useSearchParams();
   const [cats,setCats]=useState<Cat[]>([]); 
   const [items,setItems]=useState<Item[]>([]); 
   const [filter,setFilter]=useState(""); 
@@ -79,7 +80,10 @@ export default function ItemsPage(){
     } 
   }; 
   useEffect(()=>{ load(); },[]);
-
+  useEffect(()=>{
+    const cat = searchParams.get("cat");
+    if(cat) setCatFilter(cat);
+  }, [searchParams]);
   const uploadImage = async (file: File): Promise<string> => {
     const fd = new FormData();
     fd.append("file", file);

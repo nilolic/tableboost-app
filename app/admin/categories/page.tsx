@@ -1,5 +1,6 @@
 "use client"
 import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 
 type Cat = {
   id: string
@@ -24,6 +25,7 @@ const DEFAULT_IMAGES: Record<string,string> = {
 }
 
 export default function CategoriesPage(){
+  const router = useRouter()
   const [cats, setCats] = useState<Cat[]>([])
   const [all, setAll] = useState<Cat[]>([])
   const [loading, setLoading] = useState(true)
@@ -69,15 +71,15 @@ export default function CategoriesPage(){
   }
 
   const bulkTranslateAll = async ()=>{
-    const toTranslate = all.filter(c=> !c.nameEn || !c.nameDe)
+    const toTranslate = all.filter(c=>!c.nameEn ||!c.nameDe)
     if(toTranslate.length===0){alert("Sve kategorije već imaju prijevode!"); return}
     if(!confirm(`Prevesti ${toTranslate.length} kategorija koje nemaju prijevod? (HR -> EN, DE)`)) return
     setBulkTranslating(true)
     try{
       for(const cat of toTranslate){
         try{
-          const en = !cat.nameEn ? await translateText(cat.name, "EN") : cat.nameEn
-          const de = !cat.nameDe ? await translateText(cat.name, "DE") : cat.nameDe
+          const en =!cat.nameEn? await translateText(cat.name, "EN") : cat.nameEn
+          const de =!cat.nameDe? await translateText(cat.name, "DE") : cat.nameDe
           await fetch(`/api/admin/categories/${cat.id}`, {method:"PATCH", headers:{"Content-Type":"application/json"}, body: JSON.stringify({nameEn: en, nameDe: de})})
         }catch(e){console.error("fail", cat.name, e)}
       }
@@ -136,7 +138,7 @@ export default function CategoriesPage(){
 
     const createdMains: Record<string, any> = {}
     for(const m of mains){
-      let existing = all.find(c=> c.name.toLowerCase()===m.name.toLowerCase() && !c.parentId)
+      let existing = all.find(c=> c.name.toLowerCase()===m.name.toLowerCase() &&!c.parentId)
       if(!existing){
         const res = await fetch("/api/admin/categories", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(m)})
         const data = await res.json()
@@ -145,7 +147,7 @@ export default function CategoriesPage(){
       } else createdMains[m.name]=existing
     }
     await load()
-    
+
     const subMap: Record<string,string[]> = {
       "Hrana": ["Riba","Meso","Burgeri","Deserti"],
       "Piće": ["Alkoholna","Bezalkoholna","Topli napitci","Piva"],
@@ -161,7 +163,7 @@ export default function CategoriesPage(){
       "Piva":{en:"Beers",de:"Biere",img:"https://images.unsplash.com/photo-1608270586620-248524c67de9?w=400"},
     }
     for(const mainName in subMap){
-      const parent = createdMains[mainName] || all.find(c=>c.name===mainName && !c.parentId)
+      const parent = createdMains[mainName] || all.find(c=>c.name===mainName &&!c.parentId)
       if(!parent) continue
       for(const subName of subMap[mainName]){
         const exists = all.find(c=>c.name===subName && c.parentId===parent.id)
@@ -182,7 +184,7 @@ export default function CategoriesPage(){
         <h1 className="text-2xl font-black tracking-tight">Kategorije • {cats.length} glavnih</h1>
         <div className="flex gap-2">
           <button disabled={bulkTranslating} onClick={bulkTranslateAll} className="px-4 py-2 rounded-full bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-sm font-bold shadow-lg disabled:opacity-50">
-            {bulkTranslating ? "⏳ Prevodim..." : "🌐 Prevedi sve što fali (EN/DE)"}
+            {bulkTranslating? "⏳ Prevodim..." : "🌐 Prevedi sve što fali (EN/DE)"}
           </button>
           <button onClick={seedFullStructure} className="px-4 py-2 rounded-full bg-black text-white text-sm font-bold">✨ Seed po planu (4+8)</button>
           <button onClick={()=>startNew(null)} className="px-4 py-2 rounded-full border bg-white text-sm font-bold">+ Nova glavna</button>
@@ -192,7 +194,7 @@ export default function CategoriesPage(){
       {(showNew || editing) && (
         <div className="mb-8 p-5 rounded-2xl bg-white border shadow-lg max-w-2xl">
           <h3 className="font-bold mb-3 flex justify-between">
-            <span>{editing? "Uredi kategoriju" : showNew?.parentId ? "Nova podkategorija" : "Nova glavna kategorija"}</span>
+            <span>{editing? "Uredi kategoriju" : showNew?.parentId? "Nova podkategorija" : "Nova glavna kategorija"}</span>
             <span className="text-xs text-zinc-400">HR → auto EN/DE</span>
           </h3>
           <div className="grid grid-cols-2 gap-3">
@@ -200,10 +202,10 @@ export default function CategoriesPage(){
               <label className="text-xs font-bold text-zinc-500">Naziv HR *</label>
               <input value={form.name} onChange={e=>setForm({...form, name:e.target.value})} placeholder="npr. Riba" className="border rounded-xl px-3 py-2.5 text-sm w-full font-medium"/>
             </div>
-            
+
             <div className="col-span-2 flex gap-2">
               <button disabled={translating} onClick={handleAutoTranslate} className="w-full py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-sm font-black shadow-md disabled:opacity-50 flex items-center justify-center gap-2">
-                {translating ? "⏳ Prevodim..." : "🌐 Automatski prevedi HR → EN + DE"}
+                {translating? "⏳ Prevodim..." : "🌐 Automatski prevedi HR → EN + DE"}
               </button>
             </div>
 
@@ -259,17 +261,17 @@ export default function CategoriesPage(){
               </div>
               <div className="space-y-1.5 flex-1">
                 {(main.children||[]).sort((a,b)=>a.order-b.order).map(sub=>(
-                  <div key={sub.id} className="group flex items-center gap-2 p-2 rounded-xl hover:bg-zinc-50 border border-transparent hover:border-zinc-200 transition">
+                  <div key={sub.id} onClick={()=>router.push(`/admin/items?cat=${sub.id}`)} className="group flex items-center gap-2 p-2 rounded-xl hover:bg-zinc-50 border border-transparent hover:border-zinc-200 transition cursor-pointer">
                     <div className="w-11 h-11 rounded-xl bg-zinc-100 overflow-hidden shrink-0 border">
                       <img src={sub.imageUrl || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100"} className="w-full h-full object-cover"/>
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="font-semibold text-sm truncate">{sub.name} <span className="text-zinc-400 text-xs">/ {sub.nameEn||"-"} / {sub.nameDe||"-"}</span></div>
-                      <div className="text-xs text-zinc-500 truncate">{sub._count?.items||0} artikala</div>
+                      <div className="text-xs text-zinc-500 truncate">{sub._count?.items||0} artikala • klik za artikle</div>
                     </div>
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition">
-                      <button onClick={()=>startEdit(sub)} className="w-7 h-7 rounded-full bg-white border text-xs shadow-sm">✎</button>
-                      <button onClick={()=>del(sub.id)} className="w-7 h-7 rounded-full bg-red-50 text-red-600 text-xs border">✕</button>
+                      <button onClick={(e)=>{e.stopPropagation(); startEdit(sub)}} className="w-7 h-7 rounded-full bg-white border text-xs shadow-sm">✎</button>
+                      <button onClick={(e)=>{e.stopPropagation(); del(sub.id)}} className="w-7 h-7 rounded-full bg-red-50 text-red-600 text-xs border">✕</button>
                     </div>
                   </div>
                 ))}
