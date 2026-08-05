@@ -181,8 +181,8 @@ export default function Page() {
 
           <div className="mt-7 text-center">
             <h1 className="mx-auto max-w-[860px] text-[36px] leading-[0.95] tracking-[-0.04em] font-[800] lg:text-[72px]">
-              <span className="block text-zinc-900">Restoran koji radi</span>
-              <span className="block bg-gradient-to-r from-emerald-500 to-teal-600 bg-clip-text text-transparent">brže.</span>
+              <span className="block text-zinc-900">QR naručivanje za</span>
+              <span className="block bg-gradient-to-r from-emerald-500 to-teal-600 bg-clip-text text-transparent">restorane</span>
             </h1>
             <p className="mx-auto mt-5 max-w-[560px] text-[16px] lg:text-[18px] leading-[1.55] text-zinc-500 font-[400]">
               QR narudžbe, KDS kuhinja i konobar aplikacija u jednom sustavu. Bez papira, bez vikanja, bez grešaka. Postavljeno za 15 minuta.
@@ -598,7 +598,21 @@ export default function Page() {
       </section>
 
       {/* CTA */}
-      <section className="px-5 lg:px-6 pb-8">
+      
+{/* SEO FAQ - dodano za Google */}
+<section className="bg-white border-t border-zinc-100">
+  <div className="mx-auto max-w- px-5 lg:px-6 py-16">
+    <h2 className="text- font-[800] tracking-tight text-center">Često pitana pitanja o QR naručivanju</h2>
+    <div className="mt-8 space-y-4">
+      <details className="rounded-2xl border border-zinc-200 p-5 bg-[#FFFEFB]"><summary className="font-bold cursor-pointer">Što je QR jelovnik i kako radi?</summary><p className="mt-3 text- text-zinc-600 leading-[1.6]">Gost skenira QR kod na stolu i otvara digitalni jelovnik. Naručuje sam bez čekanja konobara. Narudžba ide direktno na KDS u kuhinji.</p></details>
+      <details className="rounded-2xl border border-zinc-200 p-5 bg-[#FFFEFB]"><summary className="font-bold cursor-pointer">Treba li gost instalirati aplikaciju?</summary><p className="mt-3 text- text-zinc-600">Ne. QR jelovnik radi u browseru. Bez aplikacije, bez registracije.</p></details>
+      <details className="rounded-2xl border border-zinc-200 p-5 bg-[#FFFEFB]"><summary className="font-bold cursor-pointer">Što je KDS sustav?</summary><p className="mt-3 text- text-zinc-600">KDS (Kitchen Display System) je ekran u kuhinji koji prikazuje narudžbe uživo s timerima, prioritetima i alergenima. Zamjenjuje papiriće.</p></details>
+      <details className="rounded-2xl border border-zinc-200 p-5 bg-[#FFFEFB]"><summary className="font-bold cursor-pointer">Koliko košta TableBoost?</summary><p className="mt-3 text- text-zinc-600">Bez provizije po narudžbi. Fiksno mjesečno, bez ugovorne obveze. Postavljanje 15 minuta.</p></details>
+    </div>
+  </div>
+</section>
+
+<section className="px-5 lg:px-6 pb-8">
         <div className="mx-auto max-w-[1240px] rounded-[28px] bg-gradient-to-br from-emerald-600 via-teal-600 to-violet-600 p-[1px] shadow-[0_24px_64px_rgba(16,185,129,0.28)]">
           <div className="rounded-[26px] bg-gradient-to-br from-emerald-600 via-teal-600 to-violet-600 px-6 lg:px-14 py-12 lg:py-16 text-center relative overflow-hidden">
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(600px_at_10%_-10%,rgba(255,255,255,0.18),transparent),radial-gradient(700px_at_90%_20%,rgba(255,255,255,0.14),transparent)]" />
