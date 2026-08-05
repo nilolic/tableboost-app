@@ -7,6 +7,7 @@ type Item = {
   price:number, imageUrl?:string|null,
   categoryId:string, sendsToKitchen?:boolean,
   allergens?:string|null, allergensNote?:string|null, allergensNoteEn?:string|null, allergensNoteDe?:string|null,
+  isBoosted?:boolean, boostLevel?:number, upsellEnabled?:boolean
 }
 type SubCat = {
   id:string, name:string, nameEn?:string|null, nameDe?:string|null,
@@ -19,21 +20,11 @@ type MainCat = {
   children: SubCat[], items: Item[], sendsToKitchen:boolean
 }
 
-const ALLERGENS_MAP: Record<string, {label:string, hr:string}> = {
-  "1": {label:"1", hr:"Gluten"},
-  "2": {label:"2", hr:"Rakovi"},
-  "3": {label:"3", hr:"Jaja"},
-  "4": {label:"4", hr:"Riba"},
-  "5": {label:"5", hr:"Kikiriki"},
-  "6": {label:"6", hr:"Soja"},
-  "7": {label:"7", hr:"Mlijeko"},
-  "8": {label:"8", hr:"Orašasti"},
-  "9": {label:"9", hr:"Celer"},
-  "10": {label:"10", hr:"Gorušica"},
-  "11": {label:"11", hr:"Sezam"},
-  "12": {label:"12", hr:"Sulfiti"},
-  "13": {label:"13", hr:"Lupine"},
-  "14": {label:"14", hr:"Mekušci"},
+const ALLERGENS_MAP: Record<string, {hr:string}> = {
+  "1": {hr:"Gluten"}, "2": {hr:"Rakovi"}, "3": {hr:"Jaja"}, "4": {hr:"Riba"},
+  "5": {hr:"Kikiriki"}, "6": {hr:"Soja"}, "7": {hr:"Mlijeko"}, "8": {hr:"Orašasti"},
+  "9": {hr:"Celer"}, "10": {hr:"Gorušica"}, "11": {hr:"Sezam"}, "12": {hr:"Sulfiti"},
+  "13": {hr:"Lupine"}, "14": {hr:"Mekušci"},
 };
 
 const MAIN_IMAGES: Record<string,string> = {
@@ -80,6 +71,8 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
   const [sending, setSending] = useState(false)
   const [paymentMethod, setPaymentMethod] = useState<'CASH'|'CARD_TERMINAL'|'CARD_ONLINE'>('CASH')
   const [tipPercent, setTipPercent] = useState<number>(0)
+  const [upsells, setUpsells] = useState<Item[]>([])
+  const [loadingUpsell, setLoadingUpsell] = useState(false)
   const subRefs = useRef<Record<string, any>>({})
 
   const t = (hr:string, en?:string|null, de?:string|null)=> lang==='en'?(en||hr):lang==='de'?(de||hr):hr
@@ -94,6 +87,21 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
   const tipAmount = subtotal * (tipPercent/100)
   const total = subtotal + tipAmount
   const cartCount = cart.reduce((s,c)=>s+c.qty,0)
+
+  // FETCH UPSELLS when cart changes
+  useEffect(()=>{
+    const ids = cart.map(c=>c.id)
+    if(ids.length===0){
+      // bez košarice - prikaži boosted items kao preporuku
+      setLoadingUpsell(true)
+      fetch(`/api/menu/${slug}/upsell`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cartItemIds:[]})})
+        .then(r=>r.json()).then(d=>setUpsells(d.upsells||[])).catch(()=>setUpsells([])).finally(()=>setLoadingUpsell(false))
+      return
+    }
+    setLoadingUpsell(true)
+    fetch(`/api/menu/${slug}/upsell`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cartItemIds:ids})})
+      .then(r=>r.json()).then(d=>setUpsells(d.upsells||[])).catch(()=>setUpsells([])).finally(()=>setLoadingUpsell(false))
+  }, [cart, slug])
 
   const filteredData = useMemo(()=>{
     if(!currentMain) return { subs: [], directItems: [] }
@@ -145,16 +153,14 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
               return
             }
           }catch{}
-          window.location.href = `/order/${data.order.id}/success?method=${paymentMethod}`
-        } else {
-          window.location.href = `/order/${data.order.id}/success?method=${paymentMethod}`
         }
+        window.location.href = `/order/${data.order.id}/success?method=${paymentMethod}`
       } else throw new Error('Greška')
     }catch(e:any){ alert(e.message) } finally{ setSending(false) }
   }
 
   if(!currentMain){
-    return <div className="min-h-screen bg-[#fdf8f3] flex items-center justify-center p-10 text-center"><div><h1 className="text-2xl font-black">Menu je prazan</h1><p className="text-zinc-500 mt-2">Admin treba dodati kategorije Hrana, Piće, Kokteli, Vina</p></div></div>
+    return <div className="min-h-screen bg-[#fdf8f3] flex items-center justify-center p-10 text-center"><div><h1 className="text-2xl font-black">Menu je prazan</h1><p className="text-zinc-500 mt-2">Admin treba dodati kategorije</p></div></div>
   }
 
   const payCashEnabled = restaurant?.paymentCashEnabled ?? true
@@ -195,7 +201,7 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
                 <h1 className="text-white font-black text-[28px] md:text-[34px] leading-none tracking-tight">{t(currentMain.name, currentMain.nameEn, currentMain.nameDe)}</h1>
                 {currentMain.sendsToKitchen && <span className="bg-orange-500 text-white text-[10px] font-black px-2.5 py-1 rounded-full">IDE U KUHINJU 🍳</span>}
               </div>
-              <p className="text-white/70 text-[13px] max-w-[520px] leading-snug">{currentMain.description || (currentMain.name==="Hrana" ? "Svježe pripremljeno • Ide direktno u kuhinju" : currentMain.name==="Piće" ? "Alkoholna, bezalkoholna, topli napitci i piva" : "")}</p>
+              <p className="text-white/70 text-[13px] max-w-[520px] leading-snug">{currentMain.description || ""}</p>
             </div>
           </div>
         </div>
@@ -227,10 +233,11 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
               {visibleItems.directItems.map((item:any)=>{
                 const qty=getQty(item.id)
                 return (
-                  <div key={item.id} className="group bg-white rounded-[20px] border border-zinc-100 p-3 flex gap-3.5 shadow-sm hover:shadow-md hover:border-zinc-200 transition-all">
+                  <div key={item.id} className={`group bg-white rounded-[20px] border p-3 flex gap-3.5 shadow-sm hover:shadow-md transition-all ${item.isBoosted ? 'border-amber-300 bg-amber-50/30' : 'border-zinc-100 hover:border-zinc-200'}`}>
                     <div className="w-[96px] h-[96px] rounded-[16px] bg-zinc-100 overflow-hidden shrink-0 relative">
                       <img src={item.imageUrl || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200"} className="w-full h-full object-cover group-hover:scale-105 transition duration-500"/>
-                      {qty>0 && <div className="absolute top-1.5 left-1.5 bg-black text-white text-[10px] font-black w-5 h-5 grid place-items-center rounded-full">{qty}</div>}
+                      {item.isBoosted && <div className="absolute top-1 left-1 bg-amber-400 text-black text-[8px] font-black px-1.5 py-0.5 rounded-full">🔥 BOOST {item.boostLevel}</div>}
+                      {qty>0 && <div className="absolute top-1.5 right-1.5 bg-black text-white text-[10px] font-black w-5 h-5 grid place-items-center rounded-full">{qty}</div>}
                     </div>
                     <div className="flex-1 min-w-0 flex flex-col">
                       <div className="flex justify-between items-start gap-2">
@@ -267,17 +274,18 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
                   {t(sub.name,sub.nameEn,sub.nameDe)}
                   {sub.sendsToKitchen && <span className="bg-orange-50 text-orange-600 border border-orange-200 text-[9px] px-1.5 py-0.5 rounded-full">KUHINJA</span>}
                 </h2>
-                <p className="text-[11px] text-zinc-500 mt-0.5">{sub.items.length} artikala {sub.sendsToKitchen ? "• ide u kuhinju" : "• poslužuje konobar"}</p>
+                <p className="text-[11px] text-zinc-500 mt-0.5">{sub.items.length} artikala</p>
               </div>
             </div>
             <div className="grid md:grid-cols-2 gap-3">
               {sub.items.map((item:any)=>{
                 const qty=getQty(item.id)
                 return (
-                  <div key={item.id} className="group bg-white rounded-[20px] border border-zinc-100 p-3 flex gap-3.5 shadow-sm hover:shadow-md hover:border-zinc-200 transition-all">
+                  <div key={item.id} className={`group bg-white rounded-[20px] border p-3 flex gap-3.5 shadow-sm hover:shadow-md transition-all ${item.isBoosted ? 'border-amber-300 bg-amber-50/30' : 'border-zinc-100 hover:border-zinc-200'}`}>
                     <div className="w-[96px] h-[96px] rounded-[16px] bg-zinc-100 overflow-hidden shrink-0 relative">
                       <img src={item.imageUrl || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200"} className="w-full h-full object-cover group-hover:scale-105 transition duration-500"/>
-                      {qty>0 && <div className="absolute top-1.5 left-1.5 bg-black text-white text-[10px] font-black w-5 h-5 grid place-items-center rounded-full">{qty}</div>}
+                      {item.isBoosted && <div className="absolute top-1 left-1 bg-amber-400 text-black text-[8px] font-black px-1.5 py-0.5 rounded-full">🔥 {item.boostLevel}</div>}
+                      {qty>0 && <div className="absolute top-1.5 right-1.5 bg-black text-white text-[10px] font-black w-5 h-5 grid place-items-center rounded-full">{qty}</div>}
                     </div>
                     <div className="flex-1 min-w-0 flex flex-col">
                       <div className="flex justify-between items-start gap-2">
@@ -347,9 +355,31 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
                     </div>
                   </div>
                 ))}
+
+              {/* UPSELL SECTION */}
+              {upsells.length>0 && (
+                <div className="pt-4 border-t mt-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-[11px] font-black uppercase tracking-wider">✨ Preporučujemo uz narudžbu</span>
+                    {loadingUpsell && <span className="text-[10px] text-zinc-400">učitavam...</span>}
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {upsells.map((u:any)=>(
+                      <div key={u.id} className="bg-amber-50 border border-amber-200 rounded-2xl p-2.5 flex gap-2">
+                        <div className="w-12 h-12 rounded-xl bg-white overflow-hidden shrink-0"><img src={u.imageUrl||"https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200"} className="w-full h-full object-cover"/></div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-bold text-[12px] leading-tight line-clamp-1">{t(u.name,u.nameEn,u.nameDe)}</div>
+                          <div className="text-[11px] text-zinc-600">{u.price.toFixed(2)}€ {u.isBoosted && `🔥${u.boostLevel}`}</div>
+                          <button onClick={()=>add(u.id)} className="mt-1 bg-black text-white text-[11px] font-bold px-3 py-1 rounded-full">+ Dodaj</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
+
             <div className="p-4 border-t bg-zinc-50 space-y-3">
-              {/* TIP SELECTOR - 0% 10% 20% 30% */}
               <div>
                 <div className="text-[11px] font-black uppercase tracking-wider opacity-60 mb-2 flex justify-between">
                   <span>💝 Napojnica za osoblje</span>
@@ -362,7 +392,6 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
                     </button>
                   ))}
                 </div>
-                {tipPercent>0 && <div className="text-[11px] text-zinc-500 mt-1.5 text-center">Hvala! Tip ide direktno osoblju ❤️</div>}
               </div>
 
               <div className="text-[11px] font-black uppercase tracking-wider opacity-60">Način plaćanja</div>
@@ -395,9 +424,8 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
               </div>
 
               <button disabled={sending || cart.length===0} onClick={order} className="w-full bg-black text-white py-4 rounded-full font-black text-[15px] shadow-lg shadow-black/20 disabled:opacity-50 active:scale-[0.98] transition">
-                {sending ? "Šaljem..." : paymentMethod==='CASH' ? `Naruči • Plati gotovinom • ${total.toFixed(2)}€` : paymentMethod==='CARD_TERMINAL' ? `Naruči • POS na stol • ${total.toFixed(2)}€` : `Plati online • ${total.toFixed(2)}€`}
+                {sending ? "Šaljem..." : paymentMethod==='CASH' ? `Naruči • Gotovina • ${total.toFixed(2)}€` : paymentMethod==='CARD_TERMINAL' ? `Naruči • POS • ${total.toFixed(2)}€` : `Plati online • ${total.toFixed(2)}€`}
               </button>
-              <p className="text-[10px] text-center text-zinc-500">Hrana ide u kuhinju, piće konobaru • {tipPercent>0 ? `Uključena napojnica ${tipPercent}% • ` : ''}Plaćanje: {paymentMethod==='CASH'?'gotovina':paymentMethod==='CARD_TERMINAL'?'POS terminal':'online kartica'}</p>
             </div>
           </div>
         </div>
