@@ -199,7 +199,7 @@ export default function Page() {
                 </span>
               </a>
               <a
-                href="#demo"
+                href="/demo"
                 className="inline-flex h-[52px] items-center rounded-full border border-zinc-200 bg-white px-7 text-[15px] font-semibold text-zinc-900 shadow-[0_6px_18px_rgba(0,0,0,0.05)] hover:bg-zinc-50 transition"
               >
                 Pogledaj demo
