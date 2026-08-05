@@ -29,9 +29,10 @@ COPY --from=builder /app/prisma ./prisma
 
 # FIX za persistent uploads + permisije
 RUN mkdir -p /app/public/uploads && chown -R nextjs:nodejs /app/public && chmod -R 775 /app/public/uploads
+RUN chown -R nextjs:nodejs /app/node_modules/.prisma /app/node_modules/@prisma 2>/dev/null || true
 
 USER nextjs
 EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
-CMD ["npm", "start"]
+CMD ["sh","-c","npx prisma db push --accept-data-loss; npm start"]
