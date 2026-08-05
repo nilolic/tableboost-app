@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
-import { useSearchParams } from "next/navigation";
 
 type Cat = { id:string; name:string; parentId?:string|null; order?:number };
 type Item = { 
@@ -29,7 +28,6 @@ const ALLERGENS = [
 ];
 
 export default function ItemsPage(){
- const searchParams = useSearchParams();
   const [cats,setCats]=useState<Cat[]>([]); 
   const [items,setItems]=useState<Item[]>([]); 
   const [filter,setFilter]=useState(""); 
@@ -82,9 +80,10 @@ export default function ItemsPage(){
   }; 
   useEffect(()=>{ load(); },[]);
  useEffect(()=>{
- const cat = searchParams.get("cat");
+ const params = new URLSearchParams(window.location.search);
+ const cat = params.get("cat");
  if(cat) setCatFilter(cat);
- }, [searchParams]);
+ }, []);
 
   const uploadImage = async (file: File): Promise<string> => {
     const fd = new FormData();
