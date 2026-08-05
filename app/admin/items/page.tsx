@@ -1,6 +1,9 @@
+"use client";
 import { useEffect, useState, useRef } from "react";
+import { useSearchParams } from "next/navigation";
 import { useSearchParams } from "next/navigation";"use client";
 import { useEffect, useState, useRef } from "react";
+import { useSearchParams } from "next/navigation";
 
 type Cat = { id:string; name:string; parentId?:string|null; order?:number };
 type Item = { 
