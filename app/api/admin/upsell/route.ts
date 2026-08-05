@@ -1,15 +1,18 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getCurrentUser } from "@/lib/auth"
+import { getCurrentUser, getImpersonateId } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { getRestaurantId } from "@/lib/getRestaurantId"
 
 export async function GET(){
   const user = await getCurrentUser()
-  let restaurantId = user?.restaurantId
+  if(!user) return NextResponse.json({error:"Unauthorized"}, {status:401})
+  const impId = await getImpersonateId()
+  const restaurantId = getRestaurantId(user, impId)
   if(!restaurantId){
     const r = await prisma.restaurant.findFirst()
-    restaurantId = r?.id
+    if(!r) return NextResponse.json({rules:[]})
+    return NextResponse.json({rules: await prisma.upsellRule.findMany({where:{restaurantId:r.id}, include:{source:true,target:true})})
   }
-  if(!restaurantId) return NextResponse.json({rules:[]})
   const rules = await prisma.upsellRule.findMany({
     where:{restaurantId},
     include:{ source:true, target:true },
@@ -20,7 +23,9 @@ export async function GET(){
 
 export async function POST(req: NextRequest){
   const user = await getCurrentUser()
-  let restaurantId = user?.restaurantId
+  if(!user) return NextResponse.json({error:"Unauthorized"}, {status:401})
+  const impId = await getImpersonateId()
+  let restaurantId = getRestaurantId(user, impId)
   if(!restaurantId){
     const r = await prisma.restaurant.findFirst()
     restaurantId = r?.id
@@ -29,6 +34,14 @@ export async function POST(req: NextRequest){
   const { sourceId, targetId, strength, type } = await req.json()
   if(!sourceId ||!targetId) return NextResponse.json({error:"sourceId i targetId obavezni"}, {status:400})
   if(sourceId===targetId) return NextResponse.json({error:"Ne može isti artikal"}, {status:400})
+
+  // provjeri da oba artikla pripadaju restoranu
+  const [src, tgt] = await Promise.all([
+    prisma.menuItem.findFirst({where:{id:sourceId, restaurantId}}),
+    prisma.menuItem.findFirst({where:{id:targetId, restaurantId}})
+  ])
+  if(!src || !tgt) return NextResponse.json({error:"Artikli ne pripadaju tvom restoranu"}, {status:400})
+
   try{
     const rule = await prisma.upsellRule.create({
       data:{
@@ -43,7 +56,8 @@ export async function POST(req: NextRequest){
     })
     return NextResponse.json(rule)
   }catch(e:any){
-    if(e.code==="P2002") return NextResponse.json({error:"Pravilo već postoji"}, {status:400})
-    throw e
+    console.error("upsell create error", e)
+    if(e.code==="P2002") return NextResponse.json({error:"Pravilo već postoji za ovu kombinaciju"}, {status:400})
+    return NextResponse.json({error:e.message||"Greška"}, {status:500})
   }
 }
