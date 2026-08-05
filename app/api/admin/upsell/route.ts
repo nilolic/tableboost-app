@@ -11,7 +11,11 @@ export async function GET(){
   if(!restaurantId){
     const r = await prisma.restaurant.findFirst()
     if(!r) return NextResponse.json({rules:[]})
-    return NextResponse.json({rules: await prisma.upsellRule.findMany({where:{restaurantId:r.id}, include:{source:true,target:true})})
+    const rules = await prisma.upsellRule.findMany({
+      where:{restaurantId: r.id},
+      include:{ source:true, target:true }
+    })
+    return NextResponse.json({rules})
   }
   const rules = await prisma.upsellRule.findMany({
     where:{restaurantId},
@@ -35,7 +39,6 @@ export async function POST(req: NextRequest){
   if(!sourceId ||!targetId) return NextResponse.json({error:"sourceId i targetId obavezni"}, {status:400})
   if(sourceId===targetId) return NextResponse.json({error:"Ne može isti artikal"}, {status:400})
 
-  // provjeri da oba artikla pripadaju restoranu
   const [src, tgt] = await Promise.all([
     prisma.menuItem.findFirst({where:{id:sourceId, restaurantId}}),
     prisma.menuItem.findFirst({where:{id:targetId, restaurantId}})
