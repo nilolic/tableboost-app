@@ -79,6 +79,7 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
   const [showCart, setShowCart] = useState(false)
   const [sending, setSending] = useState(false)
   const [paymentMethod, setPaymentMethod] = useState<'CASH'|'CARD_TERMINAL'|'CARD_ONLINE'>('CASH')
+  const [tipPercent, setTipPercent] = useState<number>(0)
   const subRefs = useRef<Record<string, any>>({})
 
   const t = (hr:string, en?:string|null, de?:string|null)=> lang==='en'?(en||hr):lang==='de'?(de||hr):hr
@@ -89,7 +90,9 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
   const currentMain = mains.find(m=>m.id===activeMain) || mains[0]
   const allItems = useMemo(()=> mains.flatMap(m=> [...m.items,...m.children.flatMap(s=>s.items)]), [mains])
   const cartDetailed = useMemo(()=> cart.map(c=>{ const it=allItems.find(i=>i.id===c.id); return it? {...it, qty:c.qty}:null }).filter(Boolean) as any[], [cart, allItems])
-  const total = cartDetailed.reduce((s:any,i:any)=>s+i.price*i.qty,0)
+  const subtotal = cartDetailed.reduce((s:any,i:any)=>s+i.price*i.qty,0)
+  const tipAmount = subtotal * (tipPercent/100)
+  const total = subtotal + tipAmount
   const cartCount = cart.reduce((s,c)=>s+c.qty,0)
 
   const filteredData = useMemo(()=>{
@@ -129,12 +132,11 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
     if(!cart.length) return
     setSending(true)
     try{
-      const res=await fetch('/api/orders',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({restaurantSlug:slug,tableNumber,items:cart,paymentMethod})})
+      const res=await fetch('/api/orders',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({restaurantSlug:slug,tableNumber,items:cart,paymentMethod,tipPercent})})
       const data=await res.json()
       if(!res.ok) throw new Error(data.error||'Greška')
       if(data.order){
         if(paymentMethod==='CARD_ONLINE'){
-          // pokušaj Stripe checkout
           try{
             const payRes = await fetch('/api/payments/create-checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({orderId:data.order.id, restaurantSlug:slug})})
             const payData = await payRes.json()
@@ -143,10 +145,8 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
               return
             }
           }catch{}
-          // fallback ako nema Stripe - idi na success kao mock
-          window.location.href = `/order/${data.order.id}/success`
+          window.location.href = `/order/${data.order.id}/success?method=${paymentMethod}`
         } else {
-          // CASH ili TERMINAL -> success page sa info
           window.location.href = `/order/${data.order.id}/success?method=${paymentMethod}`
         }
       } else throw new Error('Greška')
@@ -163,7 +163,6 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
 
   return (
     <div className="min-h-screen bg-[#fdf8f3] text-zinc-900 selection:bg-black selection:text-white">
-      {/* TOP HEADER */}
       <div className="sticky top-0 z-30 backdrop-blur-2xl bg-white/80 border-b border-zinc-100">
         <div className="max-w-6xl mx-auto px-4 h-[64px] flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -186,7 +185,6 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
         </div>
       </div>
 
-      {/* HERO */}
       <div className="max-w-6xl mx-auto px-4 mt-4">
         <div className="relative h-[160px] md:h-[200px] rounded-[24px] overflow-hidden bg-zinc-900">
           <img src={currentMain.imageUrl || MAIN_IMAGES[currentMain.name] || MAIN_IMAGES["Hrana"]} className="w-full h-full object-cover opacity-80"/>
@@ -198,16 +196,11 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
                 {currentMain.sendsToKitchen && <span className="bg-orange-500 text-white text-[10px] font-black px-2.5 py-1 rounded-full">IDE U KUHINJU 🍳</span>}
               </div>
               <p className="text-white/70 text-[13px] max-w-[520px] leading-snug">{currentMain.description || (currentMain.name==="Hrana" ? "Svježe pripremljeno • Ide direktno u kuhinju" : currentMain.name==="Piće" ? "Alkoholna, bezalkoholna, topli napitci i piva" : "")}</p>
-              <div className="flex gap-1.5 mt-2.5">
-                <span className="bg-white/15 backdrop-blur text-white text-[11px] px-2.5 py-1 rounded-full border border-white/10">{currentMain.children.length} podkategorija</span>
-                <span className="bg-white/15 backdrop-blur text-white text-[11px] px-2.5 py-1 rounded-full border border-white/10">{currentMain.items.length + currentMain.children.reduce((s,c)=>s+c.items.length,0)} artikala</span>
-              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* SUB FILTER */}
       {currentMain.children.length>0 && (
         <div className="max-w-6xl mx-auto px-4 mt-4">
           <div className="flex gap-2.5 overflow-x-auto scrollbar-none pb-2">
@@ -227,7 +220,6 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
         </div>
       )}
 
-      {/* ITEMS */}
       <div className="max-w-6xl mx-auto px-4 mt-6 pb-[120px]">
         {visibleItems.directItems && visibleItems.directItems.length>0 && (
           <section className="mb-8">
@@ -314,7 +306,6 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
         ))}
       </div>
 
-      {/* FOOTER */}
       <div className="fixed bottom-0 left-0 right-0 z-20">
         <div className="max-w-6xl mx-auto p-3">
           <div className="bg-zinc-900/95 backdrop-blur-2xl rounded-[26px] p-1.5 flex gap-1.5 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] border border-white/10">
@@ -335,10 +326,9 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
         </div>
       </div>
 
-      {/* CART WITH PAYMENT */}
       {showCart && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end">
-          <div className="bg-white w-full rounded-t-[28px] max-h-[90vh] flex flex-col shadow-2xl">
+          <div className="bg-white w-full rounded-t-[28px] max-h-[92vh] flex flex-col shadow-2xl">
             <div className="p-5 flex justify-between items-center border-b">
               <div><h2 className="font-black text-[18px] tracking-tight">Košarica • Stol {tableNumber}</h2><p className="text-[11px] text-zinc-500">{cartCount} artikala</p></div>
               <button onClick={()=>setShowCart(false)} className="w-9 h-9 rounded-full bg-zinc-100 grid place-items-center font-bold">✕</button>
@@ -351,15 +341,30 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
                     <div className="flex-1">
                       <div className="flex justify-between"><span className="font-bold text-[13px]">{t(i.name,i.nameEn,i.nameDe)}</span><span className="font-black text-[13px]">{(i.price*i.qty).toFixed(2)}€</span></div>
                       <div className="flex justify-between items-center mt-1">
-                        <span className="text-[10px] text-zinc-500">{i.allergens ? `⚠️ Alergeni: ${i.allergens}` : ''}</span>
+                        <span className="text-[10px] text-zinc-500">{i.allergens ? `⚠️ ${i.allergens}` : ''}</span>
                         <div className="flex items-center gap-1 bg-black text-white rounded-full p-0.5"><button onClick={()=>dec(i.id)} className="w-6 h-6 grid place-items-center">−</button><span className="w-5 text-center text-[11px]">{i.qty}</span><button onClick={()=>add(i.id)} className="w-6 h-6 grid place-items-center bg-white text-black rounded-full">+</button></div>
                       </div>
                     </div>
                   </div>
                 ))}
             </div>
-            {/* PAYMENT SELECTOR */}
             <div className="p-4 border-t bg-zinc-50 space-y-3">
+              {/* TIP SELECTOR - 0% 10% 20% 30% */}
+              <div>
+                <div className="text-[11px] font-black uppercase tracking-wider opacity-60 mb-2 flex justify-between">
+                  <span>💝 Napojnica za osoblje</span>
+                  {tipPercent>0 && <span className="text-black">+{tipAmount.toFixed(2)}€</span>}
+                </div>
+                <div className="grid grid-cols-4 gap-2">
+                  {[0,10,20,30].map(pct=>(
+                    <button key={pct} onClick={()=>setTipPercent(pct)} className={`h-10 rounded-full font-bold text-[13px] border-2 transition ${tipPercent===pct ? 'bg-black text-white border-black' : 'bg-white border-zinc-200 hover:border-zinc-300'}`}>
+                      {pct===0 ? 'Bez tipa' : `${pct}%`}
+                    </button>
+                  ))}
+                </div>
+                {tipPercent>0 && <div className="text-[11px] text-zinc-500 mt-1.5 text-center">Hvala! Tip ide direktno osoblju ❤️</div>}
+              </div>
+
               <div className="text-[11px] font-black uppercase tracking-wider opacity-60">Način plaćanja</div>
               <div className="grid grid-cols-3 gap-2">
                 {payCashEnabled && (
@@ -383,11 +388,16 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
                 )}
               </div>
 
-              <div className="flex justify-between font-black text-[16px] pt-2"><span>Ukupno</span><span>{total.toFixed(2)}€</span></div>
+              <div className="bg-white border rounded-2xl p-3 space-y-1 text-[13px]">
+                <div className="flex justify-between"><span className="text-zinc-500">Međuzbroj</span><span className="font-bold">{subtotal.toFixed(2)}€</span></div>
+                {tipPercent>0 && <div className="flex justify-between"><span className="text-zinc-500">Napojnica {tipPercent}%</span><span className="font-bold">+{tipAmount.toFixed(2)}€</span></div>}
+                <div className="flex justify-between font-black text-[16px] pt-1 border-t mt-1"><span>Ukupno</span><span>{total.toFixed(2)}€</span></div>
+              </div>
+
               <button disabled={sending || cart.length===0} onClick={order} className="w-full bg-black text-white py-4 rounded-full font-black text-[15px] shadow-lg shadow-black/20 disabled:opacity-50 active:scale-[0.98] transition">
                 {sending ? "Šaljem..." : paymentMethod==='CASH' ? `Naruči • Plati gotovinom • ${total.toFixed(2)}€` : paymentMethod==='CARD_TERMINAL' ? `Naruči • POS na stol • ${total.toFixed(2)}€` : `Plati online • ${total.toFixed(2)}€`}
               </button>
-              <p className="text-[10px] text-center text-zinc-500">Hrana ide u kuhinju, piće konobaru • Plaćanje: {paymentMethod==='CASH'?'gotovina':paymentMethod==='CARD_TERMINAL'?'POS terminal':'online kartica'}</p>
+              <p className="text-[10px] text-center text-zinc-500">Hrana ide u kuhinju, piće konobaru • {tipPercent>0 ? `Uključena napojnica ${tipPercent}% • ` : ''}Plaćanje: {paymentMethod==='CASH'?'gotovina':paymentMethod==='CARD_TERMINAL'?'POS terminal':'online kartica'}</p>
             </div>
           </div>
         </div>
