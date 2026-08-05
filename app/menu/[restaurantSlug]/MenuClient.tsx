@@ -1,21 +1,40 @@
 'use client'
 import { useState, useRef, useMemo, useEffect } from 'react'
 
-type Item = { 
-  id:string, name:string, nameEn?:string|null, nameDe?:string|null, 
-  description?:string|null, price:number, imageUrl?:string|null, 
-  categoryId:string, sendsToKitchen?:boolean
+type Item = {
+  id:string, name:string, nameEn?:string|null, nameDe?:string|null,
+  description?:string|null, descriptionEn?:string|null, descriptionDe?:string|null,
+  price:number, imageUrl?:string|null,
+  categoryId:string, sendsToKitchen?:boolean,
+  allergens?:string|null, allergensNote?:string|null, allergensNoteEn?:string|null, allergensNoteDe?:string|null,
 }
-type SubCat = { 
-  id:string, name:string, nameEn?:string|null, nameDe?:string|null, 
+type SubCat = {
+  id:string, name:string, nameEn?:string|null, nameDe?:string|null,
   imageUrl?:string|null, description?:string|null, items: Item[], order:number,
   sendsToKitchen:boolean
 }
-type MainCat = { 
-  id:string, name:string, nameEn?:string|null, nameDe?:string|null, 
-  imageUrl?:string|null, description?:string|null, order:number, 
+type MainCat = {
+  id:string, name:string, nameEn?:string|null, nameDe?:string|null,
+  imageUrl?:string|null, description?:string|null, order:number,
   children: SubCat[], items: Item[], sendsToKitchen:boolean
 }
+
+const ALLERGENS_MAP: Record<string, {label:string, hr:string}> = {
+  "1": {label:"1", hr:"Gluten"},
+  "2": {label:"2", hr:"Rakovi"},
+  "3": {label:"3", hr:"Jaja"},
+  "4": {label:"4", hr:"Riba"},
+  "5": {label:"5", hr:"Kikiriki"},
+  "6": {label:"6", hr:"Soja"},
+  "7": {label:"7", hr:"Mlijeko"},
+  "8": {label:"8", hr:"Orašasti"},
+  "9": {label:"9", hr:"Celer"},
+  "10": {label:"10", hr:"Gorušica"},
+  "11": {label:"11", hr:"Sezam"},
+  "12": {label:"12", hr:"Sulfiti"},
+  "13": {label:"13", hr:"Lupine"},
+  "14": {label:"14", hr:"Mekušci"},
+};
 
 const MAIN_IMAGES: Record<string,string> = {
   "Hrana": "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&h=600&fit=crop",
@@ -35,6 +54,23 @@ const SUB_IMAGES: Record<string,string> = {
   "Piva": "https://images.unsplash.com/photo-1608270586620-248524c67de9?w=400",
 }
 
+function AllergensBadge({ item, lang }: { item: Item, lang: 'hr'|'en'|'de' }) {
+  const codes = (item.allergens||"").split(",").filter(Boolean);
+  if(codes.length===0 && !item.allergensNote) return null;
+  const note = lang==='en' ? item.allergensNoteEn || item.allergensNote : lang==='de' ? item.allergensNoteDe || item.allergensNote : item.allergensNote;
+  return (
+    <div className="flex flex-wrap gap-1 mt-1.5 items-center">
+      {codes.map(c=>(
+        <span key={c} title={ALLERGENS_MAP[c]?.hr || c} className="text-[9px] font-black px-1.5 py-0.5 rounded-full bg-orange-50 text-orange-700 border border-orange-200">
+          {c}
+        </span>
+      ))}
+      {codes.length>0 && <span className="text-[10px] text-orange-700/70 ml-1">{codes.map(c=>ALLERGENS_MAP[c]?.hr).join(", ")}</span>}
+      {note && <span className="text-[10px] text-zinc-500 italic w-full mt-0.5">⚠️ {note}</span>}
+    </div>
+  )
+}
+
 export default function MenuClient({ restaurant, tableNumber, mains, lang, slug }: { restaurant:any, tableNumber:number|null, mains:MainCat[], lang:'hr'|'en'|'de', slug:string }) {
   const [cart, setCart] = useState<{id:string, qty:number}[]>([])
   const [activeMain, setActiveMain] = useState(mains[0]?.id || "")
@@ -42,14 +78,15 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
   const [search, setSearch] = useState("")
   const [showCart, setShowCart] = useState(false)
   const [sending, setSending] = useState(false)
+  const [paymentMethod, setPaymentMethod] = useState<'CASH'|'CARD_TERMINAL'|'CARD_ONLINE'>('CASH')
   const subRefs = useRef<Record<string, any>>({})
 
   const t = (hr:string, en?:string|null, de?:string|null)=> lang==='en'?(en||hr):lang==='de'?(de||hr):hr
+  const tDesc = (item:Item)=> lang==='en' ? (item.descriptionEn || item.description) : lang==='de' ? (item.descriptionDe || item.description) : item.description
 
   useEffect(()=>{ setActiveSub("all") }, [activeMain])
 
   const currentMain = mains.find(m=>m.id===activeMain) || mains[0]
-  
   const allItems = useMemo(()=> mains.flatMap(m=> [...m.items,...m.children.flatMap(s=>s.items)]), [mains])
   const cartDetailed = useMemo(()=> cart.map(c=>{ const it=allItems.find(i=>i.id===c.id); return it? {...it, qty:c.qty}:null }).filter(Boolean) as any[], [cart, allItems])
   const total = cartDetailed.reduce((s:any,i:any)=>s+i.price*i.qty,0)
@@ -58,25 +95,20 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
   const filteredData = useMemo(()=>{
     if(!currentMain) return { subs: [], directItems: [] }
     const q=search.toLowerCase().trim()
-    
-    // filter subs
     let subs = currentMain.children
     if(q){
-      subs = subs.map(s=>({...s, items:s.items.filter(i=> 
+      subs = subs.map(s=>({...s, items:s.items.filter(i=>
         t(i.name,i.nameEn,i.nameDe).toLowerCase().includes(q) ||
-        (i.description||'').toLowerCase().includes(q)
+        (tDesc(i)||'').toLowerCase().includes(q)
       )})).filter(s=>s.items.length>0)
     }
-    
-    // filter direct items of main
     let directItems = currentMain.items
     if(q){
-      directItems = directItems.filter(i=> 
+      directItems = directItems.filter(i=>
         t(i.name,i.nameEn,i.nameDe).toLowerCase().includes(q) ||
-        (i.description||'').toLowerCase().includes(q)
+        (tDesc(i)||'').toLowerCase().includes(q)
       )
     }
-
     return { subs, directItems }
   },[currentMain, search])
 
@@ -97,9 +129,27 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
     if(!cart.length) return
     setSending(true)
     try{
-      const res=await fetch('/api/orders',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({restaurantSlug:slug,tableNumber,items:cart,paymentMethod:'CASH'})})
+      const res=await fetch('/api/orders',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({restaurantSlug:slug,tableNumber,items:cart,paymentMethod})})
       const data=await res.json()
-      if(data.order){ alert('Narudžba poslana! 🍽️ Kuhinja priprema hranu, piće stiže odmah.'); setCart([]); setShowCart(false) } else throw new Error(data.error||'')
+      if(!res.ok) throw new Error(data.error||'Greška')
+      if(data.order){
+        if(paymentMethod==='CARD_ONLINE'){
+          // pokušaj Stripe checkout
+          try{
+            const payRes = await fetch('/api/payments/create-checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({orderId:data.order.id, restaurantSlug:slug})})
+            const payData = await payRes.json()
+            if(payData.url){
+              window.location.href = payData.url
+              return
+            }
+          }catch{}
+          // fallback ako nema Stripe - idi na success kao mock
+          window.location.href = `/order/${data.order.id}/success`
+        } else {
+          // CASH ili TERMINAL -> success page sa info
+          window.location.href = `/order/${data.order.id}/success?method=${paymentMethod}`
+        }
+      } else throw new Error('Greška')
     }catch(e:any){ alert(e.message) } finally{ setSending(false) }
   }
 
@@ -107,9 +157,13 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
     return <div className="min-h-screen bg-[#fdf8f3] flex items-center justify-center p-10 text-center"><div><h1 className="text-2xl font-black">Menu je prazan</h1><p className="text-zinc-500 mt-2">Admin treba dodati kategorije Hrana, Piće, Kokteli, Vina</p></div></div>
   }
 
+  const payCashEnabled = restaurant?.paymentCashEnabled ?? true
+  const payTerminalEnabled = restaurant?.paymentCardTerminalEnabled ?? true
+  const payOnlineEnabled = restaurant?.paymentCardOnlineEnabled ?? false
+
   return (
     <div className="min-h-screen bg-[#fdf8f3] text-zinc-900 selection:bg-black selection:text-white">
-      {/* TOP HEADER - MODERN GLASS */}
+      {/* TOP HEADER */}
       <div className="sticky top-0 z-30 backdrop-blur-2xl bg-white/80 border-b border-zinc-100">
         <div className="max-w-6xl mx-auto px-4 h-[64px] flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -132,7 +186,7 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
         </div>
       </div>
 
-      {/* HERO CATEGORY BANNER */}
+      {/* HERO */}
       <div className="max-w-6xl mx-auto px-4 mt-4">
         <div className="relative h-[160px] md:h-[200px] rounded-[24px] overflow-hidden bg-zinc-900">
           <img src={currentMain.imageUrl || MAIN_IMAGES[currentMain.name] || MAIN_IMAGES["Hrana"]} className="w-full h-full object-cover opacity-80"/>
@@ -153,7 +207,7 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
         </div>
       </div>
 
-      {/* SUBCATEGORY FILTER - MODERN PILLS WITH IMAGES */}
+      {/* SUB FILTER */}
       {currentMain.children.length>0 && (
         <div className="max-w-6xl mx-auto px-4 mt-4">
           <div className="flex gap-2.5 overflow-x-auto scrollbar-none pb-2">
@@ -173,9 +227,8 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
         </div>
       )}
 
-      {/* ITEMS GRID */}
+      {/* ITEMS */}
       <div className="max-w-6xl mx-auto px-4 mt-6 pb-[120px]">
-        {/* Direct items of main (if any) */}
         {visibleItems.directItems && visibleItems.directItems.length>0 && (
           <section className="mb-8">
             <div className="grid md:grid-cols-2 gap-3">
@@ -192,7 +245,8 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
                         <h3 className="font-bold text-[14.5px] leading-[1.2] tracking-tight line-clamp-2">{t(item.name,item.nameEn,item.nameDe)}</h3>
                         <span className="shrink-0 bg-zinc-900 text-white text-[12.5px] font-black px-2.5 py-1 rounded-full">{item.price.toFixed(2)}€</span>
                       </div>
-                      <p className="text-[12px] text-zinc-500 leading-[1.35] mt-1 line-clamp-2">{item.description||"Svježe pripremljeno"}</p>
+                      <p className="text-[12px] text-zinc-500 leading-[1.35] mt-1 line-clamp-2">{tDesc(item)||"Svježe pripremljeno"}</p>
+                      <AllergensBadge item={item} lang={lang} />
                       <div className="mt-auto flex justify-end pt-2">
                         {qty===0 ? (
                           <button onClick={()=>add(item.id)} className="bg-black text-white h-8 px-4 rounded-full text-[12px] font-black hover:bg-zinc-800 active:scale-95 transition">+ Dodaj</button>
@@ -212,20 +266,18 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
           </section>
         )}
 
-        {/* Subcategories */}
         {visibleItems.subs.map(sub=>(
           <section key={sub.id} ref={el=>{subRefs.current[sub.id]=el}} className="mb-10 scroll-mt-[140px]">
             <div className="flex items-center gap-3 mb-3">
               <div className="w-10 h-10 rounded-xl overflow-hidden bg-zinc-100 border"><img src={sub.imageUrl || SUB_IMAGES[sub.name] || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100"} className="w-full h-full object-cover"/></div>
               <div className="flex-1">
                 <h2 className="font-black text-[18px] tracking-tight leading-none flex items-center gap-2">
-                  {t(sub.name,sub.nameEn,sub.nameDe)} 
+                  {t(sub.name,sub.nameEn,sub.nameDe)}
                   {sub.sendsToKitchen && <span className="bg-orange-50 text-orange-600 border border-orange-200 text-[9px] px-1.5 py-0.5 rounded-full">KUHINJA</span>}
                 </h2>
                 <p className="text-[11px] text-zinc-500 mt-0.5">{sub.items.length} artikala {sub.sendsToKitchen ? "• ide u kuhinju" : "• poslužuje konobar"}</p>
               </div>
             </div>
-            
             <div className="grid md:grid-cols-2 gap-3">
               {sub.items.map((item:any)=>{
                 const qty=getQty(item.id)
@@ -240,7 +292,8 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
                         <h3 className="font-bold text-[14.5px] leading-[1.2] tracking-tight line-clamp-2">{t(item.name,item.nameEn,item.nameDe)}</h3>
                         <span className="shrink-0 bg-zinc-900 text-white text-[12.5px] font-black px-2.5 py-1 rounded-full">{item.price.toFixed(2)}€</span>
                       </div>
-                      <p className="text-[12px] text-zinc-500 leading-[1.35] mt-1 line-clamp-2">{item.description||""}</p>
+                      <p className="text-[12px] text-zinc-500 leading-[1.35] mt-1 line-clamp-2">{tDesc(item)||""}</p>
+                      <AllergensBadge item={item} lang={lang} />
                       <div className="mt-auto flex justify-end pt-2">
                         {qty===0 ? (
                           <button onClick={()=>add(item.id)} className="bg-black text-white h-8 px-4 rounded-full text-[12px] font-black hover:bg-zinc-800 active:scale-95 transition">+ Dodaj</button>
@@ -259,13 +312,9 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
             </div>
           </section>
         ))}
-
-        {filteredData.subs?.length || 0===0 && filteredData.directItems?.length || 0===0 && (
-          <div className="py-16 text-center bg-white rounded-[24px] border border-dashed"><p className="font-bold">Nema artikala</p><p className="text-sm text-zinc-500 mt-1">Dodaj artikle u {currentMain.name} u adminu</p></div>
-        )}
       </div>
 
-      {/* FOOTER - 4 GLAVNE KATEGORIJE - PREMIUM */}
+      {/* FOOTER */}
       <div className="fixed bottom-0 left-0 right-0 z-20">
         <div className="max-w-6xl mx-auto p-3">
           <div className="bg-zinc-900/95 backdrop-blur-2xl rounded-[26px] p-1.5 flex gap-1.5 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] border border-white/10">
@@ -279,7 +328,6 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
                   </div>
                   <span className="text-[11px] font-black tracking-wide leading-none">{t(m.name,m.nameEn,m.nameDe)}</span>
                   <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold leading-none ${active ? "bg-black text-white" : "bg-white/15 text-white/70"}`}>{count}</span>
-                  {m.sendsToKitchen && active && <span className="absolute -top-1 -right-1 bg-orange-500 w-2.5 h-2.5 rounded-full border-2 border-zinc-900"/>}
                 </button>
               )
             })}
@@ -287,38 +335,59 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
         </div>
       </div>
 
-      {/* CART SHEET */}
+      {/* CART WITH PAYMENT */}
       {showCart && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end">
-          <div className="bg-white w-full rounded-t-[28px] max-h-[86vh] flex flex-col shadow-2xl">
+          <div className="bg-white w-full rounded-t-[28px] max-h-[90vh] flex flex-col shadow-2xl">
             <div className="p-5 flex justify-between items-center border-b">
-              <div><h2 className="font-black text-[18px] tracking-tight">Košarica • Stol {tableNumber}</h2><p className="text-[11px] text-zinc-500">{cartCount} artikala • Hrana ide u kuhinju, piće direktno konobaru</p></div>
+              <div><h2 className="font-black text-[18px] tracking-tight">Košarica • Stol {tableNumber}</h2><p className="text-[11px] text-zinc-500">{cartCount} artikala</p></div>
               <button onClick={()=>setShowCart(false)} className="w-9 h-9 rounded-full bg-zinc-100 grid place-items-center font-bold">✕</button>
             </div>
             <div className="flex-1 overflow-auto p-4 space-y-2.5">
               {cartDetailed.length===0 && <div className="py-12 text-center text-zinc-400">Košarica je prazna</div>}
-              {cartDetailed.map((i:any)=>{
-                const isKitchen = mains.some(m=> m.sendsToKitchen && (m.items.some(it=>it.id===i.id) || m.children.some(c=> c.sendsToKitchen && c.items.some(it=>it.id===i.id)) ))
-                return (
+              {cartDetailed.map((i:any)=>(
                   <div key={i.id} className="flex gap-3 border border-zinc-100 p-3 rounded-2xl bg-zinc-50/50">
                     <div className="w-12 h-12 rounded-xl bg-zinc-100 overflow-hidden"><img src={i.imageUrl||""} className="w-full h-full object-cover"/></div>
                     <div className="flex-1">
-                      <div className="flex justify-between"><span className="font-bold text-[13px]">{i.name}</span><span className="font-black text-[13px]">{(i.price*i.qty).toFixed(2)}€</span></div>
+                      <div className="flex justify-between"><span className="font-bold text-[13px]">{t(i.name,i.nameEn,i.nameDe)}</span><span className="font-black text-[13px]">{(i.price*i.qty).toFixed(2)}€</span></div>
                       <div className="flex justify-between items-center mt-1">
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${isKitchen?"bg-orange-500 text-white":"bg-zinc-900 text-white"}`}>{isKitchen?"KUHINJA 🍳":"ŠANK"}</span>
+                        <span className="text-[10px] text-zinc-500">{i.allergens ? `⚠️ Alergeni: ${i.allergens}` : ''}</span>
                         <div className="flex items-center gap-1 bg-black text-white rounded-full p-0.5"><button onClick={()=>dec(i.id)} className="w-6 h-6 grid place-items-center">−</button><span className="w-5 text-center text-[11px]">{i.qty}</span><button onClick={()=>add(i.id)} className="w-6 h-6 grid place-items-center bg-white text-black rounded-full">+</button></div>
                       </div>
                     </div>
                   </div>
-                )
-              })}
+                ))}
             </div>
-            <div className="p-5 border-t bg-zinc-50 rounded-t-[28px]">
-              <div className="flex justify-between font-black text-[16px] mb-3"><span>Ukupno</span><span>{total.toFixed(2)}€</span></div>
+            {/* PAYMENT SELECTOR */}
+            <div className="p-4 border-t bg-zinc-50 space-y-3">
+              <div className="text-[11px] font-black uppercase tracking-wider opacity-60">Način plaćanja</div>
+              <div className="grid grid-cols-3 gap-2">
+                {payCashEnabled && (
+                  <button onClick={()=>setPaymentMethod('CASH')} className={`p-3 rounded-2xl border-2 text-left transition ${paymentMethod==='CASH'?'border-black bg-black text-white':'border-zinc-200 bg-white'}`}>
+                    <div className="text-[16px]">💵</div><div className="font-bold text-[12px] mt-1">Gotovina</div><div className="text-[10px] opacity-70 leading-tight mt-0.5">Plati konobaru</div>
+                  </button>
+                )}
+                {payTerminalEnabled && (
+                  <button onClick={()=>setPaymentMethod('CARD_TERMINAL')} className={`p-3 rounded-2xl border-2 text-left transition ${paymentMethod==='CARD_TERMINAL'?'border-black bg-black text-white':'border-zinc-200 bg-white'}`}>
+                    <div className="text-[16px]">💳</div><div className="font-bold text-[12px] mt-1">POS</div><div className="text-[10px] opacity-70 leading-tight mt-0.5">Kartica na stolu</div>
+                  </button>
+                )}
+                {payOnlineEnabled ? (
+                  <button onClick={()=>setPaymentMethod('CARD_ONLINE')} className={`p-3 rounded-2xl border-2 text-left transition ${paymentMethod==='CARD_ONLINE'?'border-black bg-black text-white':'border-zinc-200 bg-white'}`}>
+                    <div className="text-[16px]">🌐</div><div className="font-bold text-[12px] mt-1">Online</div><div className="text-[10px] opacity-70 leading-tight mt-0.5">Apple/Google Pay</div>
+                  </button>
+                ) : (
+                  <button disabled className="p-3 rounded-2xl border-2 border-zinc-100 bg-zinc-100 opacity-50 text-left">
+                    <div className="text-[16px]">🌐</div><div className="font-bold text-[12px] mt-1">Online</div><div className="text-[10px] mt-0.5">Uskoro</div>
+                  </button>
+                )}
+              </div>
+
+              <div className="flex justify-between font-black text-[16px] pt-2"><span>Ukupno</span><span>{total.toFixed(2)}€</span></div>
               <button disabled={sending || cart.length===0} onClick={order} className="w-full bg-black text-white py-4 rounded-full font-black text-[15px] shadow-lg shadow-black/20 disabled:opacity-50 active:scale-[0.98] transition">
-                {sending ? "Šaljem..." : `Naruči • ${total.toFixed(2)}€`}
+                {sending ? "Šaljem..." : paymentMethod==='CASH' ? `Naruči • Plati gotovinom • ${total.toFixed(2)}€` : paymentMethod==='CARD_TERMINAL' ? `Naruči • POS na stol • ${total.toFixed(2)}€` : `Plati online • ${total.toFixed(2)}€`}
               </button>
-              <p className="text-[10px] text-center text-zinc-500 mt-2">Hrana automatski ide u kuhinju, piće konobaru</p>
+              <p className="text-[10px] text-center text-zinc-500">Hrana ide u kuhinju, piće konobaru • Plaćanje: {paymentMethod==='CASH'?'gotovina':paymentMethod==='CARD_TERMINAL'?'POS terminal':'online kartica'}</p>
             </div>
           </div>
         </div>
