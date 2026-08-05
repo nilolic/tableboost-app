@@ -105,6 +105,10 @@ model MenuItem {
   isBoosted Boolean @default(false)
   boostLevel Int @default(0)
   imageUrl String?
+  allergens String?
+  allergensNote String?
+  allergensNoteEn String?
+  allergensNoteDe String?
   order Int @default(0)
   upsellEnabled Boolean @default(true)
   categoryId String

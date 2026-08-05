@@ -14,7 +14,6 @@ export async function GET() {
     include: { items: { orderBy: { order: 'asc' } } },
     orderBy: { order: 'asc' }
   })
-  // vraćamo i flatten items da stari frontend radi
   const items = categories.flatMap(c => c.items.map(i => ({...i, category: { name: c.name, id: c.id } })))
   return NextResponse.json({ categories, items })
 }
@@ -25,7 +24,7 @@ export async function POST(req: Request) {
   const restaurantId = getRestaurantId(user, impId)
   if (!user ||!restaurantId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const body = await req.json()
-  const { name, price, description, categoryId, imageUrl, available, isBoosted, boostLevel } = body
+  const { name, price, description, categoryId, imageUrl, available, isBoosted, boostLevel, nameEn, nameDe, descriptionEn, descriptionDe, allergens, allergensNote, allergensNoteEn, allergensNoteDe } = body
   if (!name || price == null ||!categoryId) return NextResponse.json({ error: 'Ime, cijena, kategorija obavezni' }, { status: 400 })
   const cat = await prisma.menuCategory.findFirst({ where: { id: categoryId, restaurantId } })
   if (!cat) return NextResponse.json({ error: 'Kategorija ne pripada restoranu' }, { status: 400 })
@@ -33,15 +32,23 @@ export async function POST(req: Request) {
   const created = await prisma.menuItem.create({
     data: {
       name: name.trim(),
+      nameEn: nameEn?.trim() || null,
+      nameDe: nameDe?.trim() || null,
       price: Number(price),
       description: description || null,
+      descriptionEn: descriptionEn || null,
+      descriptionDe: descriptionDe || null,
       categoryId,
       restaurantId,
       imageUrl: imageUrl || null,
       available: available?? true,
       isBoosted: isBoosted?? false,
       boostLevel: boostLevel? Number(boostLevel) : 0,
-      order: (maxOrder._max.order?? 0) + 1
+      order: (maxOrder._max.order?? 0) + 1,
+      allergens: allergens || null,
+      allergensNote: allergensNote || null,
+      allergensNoteEn: allergensNoteEn || null,
+      allergensNoteDe: allergensNoteDe || null,
     } as any
   })
   return NextResponse.json(created)

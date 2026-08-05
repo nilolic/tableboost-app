@@ -27,6 +27,10 @@ export async function PATCH(req: NextRequest, {params}:{params:{id:string}}){
   if(body.isBoosted!==undefined) data.isBoosted = Boolean(body.isBoosted)
   if(body.boostLevel!==undefined) data.boostLevel = Number(body.boostLevel)
   if(body.order!==undefined) data.order = Number(body.order)
+  if(body.allergens!==undefined) data.allergens = body.allergens || null
+  if(body.allergensNote!==undefined) data.allergensNote = body.allergensNote || null
+  if(body.allergensNoteEn!==undefined) data.allergensNoteEn = body.allergensNoteEn || null
+  if(body.allergensNoteDe!==undefined) data.allergensNoteDe = body.allergensNoteDe || null
 
   const updated = await prisma.menuItem.update({ where:{id: params.id}, data })
   return NextResponse.json(updated)

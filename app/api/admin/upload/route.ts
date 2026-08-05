@@ -6,7 +6,7 @@ import path from 'path'
 export const dynamic = 'force-dynamic'
 
 const ALLOWED = ['jpg','jpeg','png','webp','avif','svg']
-const MAX_SIZE = 8 * 1024 // 8MB
+const MAX_SIZE = 8 * 1024 * 1024 // 8MB FIXED
 
 export async function POST(req: Request) {
   const user = await getCurrentUser()
@@ -14,17 +14,16 @@ export async function POST(req: Request) {
 
   const form = await req.formData()
   const file = form.get('file') as File | null
-  const type = form.get('type') as string // logo | login
+  const type = form.get('type') as string // logo | login | menu | item | category
 
   if (!file) return NextResponse.json({ error: 'No file' }, { status: 400 })
-  if (!['logo','login'].includes(type)) return NextResponse.json({ error: 'Invalid type' }, { status: 400 })
+  if (!['logo','login','menu','item','category','food'].includes(type)) return NextResponse.json({ error: 'Invalid type: ' + type }, { status: 400 })
 
   const origExt = (file.name.split('.').pop() || '').toLowerCase()
   const ext = ALLOWED.includes(origExt) ? origExt : 'webp'
 
   if(file.size > MAX_SIZE) return NextResponse.json({ error: 'File prevelik (max 8MB)' }, { status: 400 })
-  
-  // check mime
+
   if(!file.type.startsWith('image/')) return NextResponse.json({ error: 'Samo slike: JPG, PNG, WEBP' }, { status: 400 })
 
   const bytes = await file.arrayBuffer()
