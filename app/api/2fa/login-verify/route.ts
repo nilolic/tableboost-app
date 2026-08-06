@@ -10,10 +10,11 @@ export async function POST(req: Request){
   if(Date.now() > pend.expires){ pending2FA.delete(tempId); return NextResponse.json({error:'2FA isteklo'}, {status:401}) }
   const user = await prisma.user.findUnique({where:{id: pend.userId}})
   if(!user?.totp_secret) return NextResponse.json({error:'Nema 2FA'}, {status:400})
-  const ok = verifyToken(user.totp_secret, code.trim())
-  if(!ok) return NextResponse.json({error:'Pogrešan kod'}, {status:401})
+  // FIX: token prvi, secret drugi + window 2 da trpi 30s drift
+  const ok = verifyToken(code.trim(), user.totp_secret)
+  if(!ok) return NextResponse.json({error:'Pogrešan kod - provjeri vrijeme na mobitelu'}, {status:401})
   pending2FA.delete(tempId)
-  const res = NextResponse.json({ok:true, role: user.role, email: user.email, id: user.id})
+  const res = NextResponse.json({ok:true, role: user.role, email: user.email, id: user.id, redirect: user.role==='SUPER_ADMIN' ? '/superadmin' : '/admin'})
   res.cookies.set('tb_user', JSON.stringify({id: user.id, role: user.role, restaurantId: user.restaurantId, email: user.email}), {httpOnly:true, path:'/', maxAge:60*60*24*7, sameSite:'lax'})
   return res
 }

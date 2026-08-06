@@ -19,7 +19,7 @@ export function verifyToken(token: string, secret: string): boolean {
       secret,
       encoding: 'base32',
       token,
-      window: 1,
+      window: 2,
     }) as boolean
   } catch { return false }
 }
@@ -28,7 +28,6 @@ export async function toQRDataUrl(otpauthUrl: string) {
   return await QRCode.toDataURL(otpauthUrl)
 }
 
-// kompatibilnost za sve importe
 export const pending2FA = new Map<string, { userId: string; expires: number }>()
 export const pendingSetup = pending2FA
 export const pendingLogin = pending2FA
