@@ -11,7 +11,7 @@ export async function GET(){
   const restaurantId = getRestaurantId(user, impId)
   if(!user ||!restaurantId) return NextResponse.json({error:'Unauthorized'},{status:401})
   if(!['RESTAURANT_ADMIN','SUPER_ADMIN'].includes(user.role)) return NextResponse.json({error:'Forbidden'},{status:403})
-  const staff = await prisma.user.findMany({ where:{ restaurantId, role:{ in:['WAITER','KITCHEN'] } }, orderBy:{ createdAt:'desc' } })
+  const staff = await prisma.user.findMany({ where:{ restaurantId, role:{ in:['WAITER','KITCHEN'] } }, orderBy:{ createdAt:'desc' }, select:{ id:true, email:true, name:true, role:true, createdAt:true, totp_enabled:true, totp_secret:true } })
   return NextResponse.json({ staff })
 }
 export async function POST(req:Request){

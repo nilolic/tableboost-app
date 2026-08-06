@@ -1,6 +1,6 @@
 "use client"
 import { useState } from 'react'
-import { MoreVertical, Plus, Store, Users, Search, Eye, LogIn, Trash2, KeyRound, QrCode, LogOut, X } from 'lucide-react'
+import { MoreVertical, Plus, Store, Users, Search, Eye, LogIn, Trash2, KeyRound, QrCode, LogOut, X, ShieldCheck } from 'lucide-react'
 
 export default function SuperAdminClient({ restaurants, users, currentUser }: any) {
   const [tab, setTab] = useState<'restaurants'|'users'|'translations'>('restaurants')
@@ -11,9 +11,9 @@ export default function SuperAdminClient({ restaurants, users, currentUser }: an
   const [form, setForm] = useState({ name:'', slug:'', ownerName:'', ownerEmail:'', ownerPass:'' })
   const [resetId, setResetId] = useState<string|null>(null)
   const [newPass, setNewPass] = useState('')
- const [translateStats, setTranslateStats] = useState<any[]>([])
- const [translatingLang, setTranslatingLang] = useState<string|null>(null)
- const [selectedRestaurantForTrans, setSelectedRestaurantForTrans] = useState<string>('')
+  const [translateStats, setTranslateStats] = useState<any[]>([])
+  const [translatingLang, setTranslatingLang] = useState<string|null>(null)
+  const [selectedRestaurantForTrans, setSelectedRestaurantForTrans] = useState<string>('')
 
   const fr = restaurants.filter((r:any)=> r.name.toLowerCase().includes(search.toLowerCase()) || r.slug.toLowerCase().includes(search.toLowerCase()))
   const fu = users.filter((u:any)=> u.email.toLowerCase().includes(search.toLowerCase()) || (u.name||'').toLowerCase().includes(search.toLowerCase()))
@@ -45,13 +45,28 @@ export default function SuperAdminClient({ restaurants, users, currentUser }: an
     if(!res.ok){ const d=await res.json(); return alert(d.error)}
     location.reload()
   }
+  async function toggle2FA(userId:string, enabled:boolean){
+    if(!confirm(enabled? 'Upaliti 2FA? Korisnik ce morati skenirati QR na /2fa/setup' : 'Ugasiti 2FA?')) return
+    const res = await fetch('/api/admin/2fa/toggle',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId, enabled})})
+    const d = await res.json()
+    if(!res.ok) return alert(d.error)
+    alert(enabled? '2FA upaljen - korisnik mora otici na /2fa/setup da skenira QR' : '2FA ugasen')
+    location.reload()
+  }
+  async function reset2FA(userId:string){
+    if(!confirm('Resetirati 2FA? Brise secret i gasi 2FA')) return
+    const res = await fetch('/api/admin/2fa/reset',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId})})
+    const d = await res.json()
+    if(!res.ok) return alert(d.error)
+    location.reload()
+  }
   async function impersonate(rid:string){
     await fetch('/api/superadmin/impersonate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({restaurantId:rid})})
     window.location.href='/admin'
   }
   async function loadTranslateStats(){ const res = await fetch('/api/superadmin/translate'); const d = await res.json(); if(d.stats) setTranslateStats(d.stats) }
- async function bulkTranslate(lang:'EN'|'DE'){ if(!confirm(`Prevesti sve što fali na ${lang}? Troši DeepL!`)) return; setTranslatingLang(lang); const res = await fetch('/api/superadmin/translate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ targetLang: lang, restaurantId: selectedRestaurantForTrans || undefined })}); const d = await res.json(); alert(`Prevedeno: ${d.translated}`); setTranslatingLang(null); loadTranslateStats() }
- async function logout(){
+  async function bulkTranslate(lang:'EN'|'DE'){ if(!confirm(`Prevesti sve što fali na ${lang}? Troši DeepL!`)) return; setTranslatingLang(lang); const res = await fetch('/api/superadmin/translate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ targetLang: lang, restaurantId: selectedRestaurantForTrans || undefined })}); const d = await res.json(); alert(`Prevedeno: ${d.translated}`); setTranslatingLang(null); loadTranslateStats() }
+  async function logout(){
     await fetch('/api/auth/logout',{method:'POST'})
     window.location.href='/login'
   }
@@ -60,34 +75,34 @@ export default function SuperAdminClient({ restaurants, users, currentUser }: an
     <div className="min-h-screen bg-[#0a0a0a] text-white p-4 md:p-6">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row md:justify-between gap-4 mb-6">
-          <div><h1 className="text-3xl font-black">Super Admin</h1><p className="text-zinc-400 text-sm mt-1">{currentUser.email} • {restaurants.length} restorana • {users.length} korisnika {superAdmins.length>1? `• ⚠️ ${superAdmins.length} super admina!`:''}</p>{superAdmins.length>1&&<p className="text-xs text-yellow-400 mt-1">Imaš {superAdmins.length} super admina: {superAdmins.map((s:any)=>s.email).join(', ')} - obriši višak u Korisnici tabu</p>}</div>
+          <div><h1 className="text-3xl font-black">Super Admin</h1><p className="text-zinc-400 text-sm mt-1">{currentUser.email} • {restaurants.length} restorana • {users.length} korisnika • 2FA: {users.filter((u:any)=>u.totp_enabled).length} ON</p></div>
           <div className="flex gap-2"><button onClick={()=>setShowCreate(true)} className="bg-white text-black px-5 py-3 rounded-full font-bold flex items-center gap-2 text-sm"><Plus size={18}/> Novi restoran</button><button onClick={logout} className="bg-zinc-800 border border-zinc-700 px-5 py-3 rounded-full font-bold flex items-center gap-2 text-sm"><LogOut size={16}/> Odjava</button></div>
         </div>
 
         <div className="flex gap-2 mb-4">
           <button onClick={()=>setTab('restaurants')} className={`px-5 py-2.5 rounded-full flex gap-2 text-sm ${tab==='restaurants'?'bg-white text-black':'bg-zinc-900 border border-zinc-800'}`}><Store size={16}/> Restorani ({restaurants.length})</button>
-          <button onClick={()=>{setTab('translations'); loadTranslateStats()}} className={`px-5 py-2.5 rounded-full flex gap-2 text-sm ${tab==='translations'?'bg-white text-black':'bg-zinc-900 border border-zinc-800'}`}><span>🌐</span> Prijevodi</button><button onClick={()=>setTab('users')} className={`px-5 py-2.5 rounded-full flex gap-2 text-sm ${tab==='users'?'bg-white text-black':'bg-zinc-900 border border-zinc-800'}`}><Users size={16}/> Korisnici ({users.length}) {superAdmins.length>1?'⚠️':''}</button>
+          <button onClick={()=>{setTab('translations'); loadTranslateStats()}} className={`px-5 py-2.5 rounded-full flex gap-2 text-sm ${tab==='translations'?'bg-white text-black':'bg-zinc-900 border border-zinc-800'}`}><span>🌐</span> Prijevodi</button>
+          <button onClick={()=>setTab('users')} className={`px-5 py-2.5 rounded-full flex gap-2 text-sm ${tab==='users'?'bg-white text-black':'bg-zinc-900 border border-zinc-800'}`}><Users size={16}/> Korisnici ({users.length})</button>
         </div>
 
         <div className="relative mb-4 max-w-sm"><Search className="absolute left-3 top-3 text-zinc-500" size={18}/><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Traži..." className="w-full bg-zinc-900 border border-zinc-800 rounded-full pl-10 pr-4 py-2.5 text-sm"/></div>
 
         {tab==='restaurants'? (
           <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl overflow-x-auto">
-            <table className="w-full text-sm min-w-"><thead className="bg-zinc-900 text-zinc-400 text- uppercase"><tr><th className="text-left p-4">Restoran</th><th className="text-left p-4">Vlasnik</th><th className="text-left p-4">Osoblje</th><th className="text-right p-4">Akcije</th></tr></thead>
-              <tbody>{fr.map((r:any)=>{const admin=r.users.find((u:any)=>u.role==='RESTAURANT_ADMIN');return(<tr key={r.id} className="border-t border-zinc-800"><td className="p-4"><div className="font-bold">{r.name}</div><div className="text-xs text-zinc-500">{r.slug}</div></td><td className="p-4 text-xs">{admin?.email||<span className="text-red-400">nema</span>}</td><td className="p-4 text-xs"><span className="bg-zinc-800 px-2 py-1 rounded-full mr-1">A:{r.users.filter((u:any)=>u.role==='RESTAURANT_ADMIN').length}</span><span className="bg-zinc-800 px-2 py-1 rounded-full mr-1">K:{r.users.filter((u:any)=>u.role==='WAITER').length}</span><span className="bg-zinc-800 px-2 py-1 rounded-full">Ku:{r.users.filter((u:any)=>u.role==='KITCHEN').length}</span></td><td className="p-4 text-right"><button onClick={()=>{setSelected(r); setSelectedType('r')}} className="p-2.5 bg-zinc-800 hover:bg-zinc-700 rounded-full"><MoreVertical size={18}/></button></td></tr>)})}</tbody></table>
+            <table className="w-full text-sm min-w-"><thead className="bg-zinc-900 text-zinc-400 text-xs uppercase"><tr><th className="text-left p-4">Restoran</th><th className="text-left p-4">Vlasnik</th><th className="text-left p-4">Osoblje / 2FA</th><th className="text-right p-4">Akcije</th></tr></thead>
+              <tbody>{fr.map((r:any)=>{const admin=r.users.find((u:any)=>u.role==='RESTAURANT_ADMIN');return(<tr key={r.id} className="border-t border-zinc-800"><td className="p-4"><div className="font-bold">{r.name}</div><div className="text-xs text-zinc-500">{r.slug}</div></td><td className="p-4 text-xs">{admin?.email||<span className="text-red-400">nema</span>} {admin?.totp_enabled && <span className="ml-2 bg-green-900 text-green-200 px-1.5 py-0.5 rounded-full text-">2FA</span>}</td><td className="p-4 text-xs"><span className="bg-zinc-800 px-2 py-1 rounded-full mr-1">A:{r.users.filter((u:any)=>u.role==='RESTAURANT_ADMIN').length} (2FA:{r.users.filter((u:any)=>u.totp_enabled).length})</span><span className="bg-zinc-800 px-2 py-1 rounded-full mr-1">K:{r.users.filter((u:any)=>u.role==='WAITER').length}</span><span className="bg-zinc-800 px-2 py-1 rounded-full">Ku:{r.users.filter((u:any)=>u.role==='KITCHEN').length}</span></td><td className="p-4 text-right"><button onClick={()=>{setSelected(r); setSelectedType('r')}} className="p-2.5 bg-zinc-800 hover:bg-zinc-700 rounded-full"><MoreVertical size={18}/></button></td></tr>)})}</tbody></table>
           </div>
         ):(
           <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl overflow-x-auto">
-            <table className="w-full text-sm min-w-"><thead className="bg-zinc-900 text-zinc-400 text- uppercase"><tr><th className="text-left p-4">Korisnik</th><th className="text-left p-4">Rola</th><th className="text-left p-4">Restoran</th><th className="text-right p-4">Akcije</th></tr></thead>
-              <tbody>{fu.map((u:any)=>(<tr key={u.id} className={`border-t border-zinc-800 ${u.id===currentUser.id?'bg-zinc-800/30':''}`}><td className="p-4"><div className="font-medium flex gap-2 items-center">{u.name||'—'} {u.id===currentUser.id&&<span className="text- bg-white text-black px-1.5 py-0.5 rounded-full">TI</span>}</div><div className="text-xs text-zinc-400">{u.email}</div></td><td className="p-4"><span className={`px-2 py-1 rounded-full text- font-bold ${u.role==='SUPER_ADMIN'?'bg-purple-900 text-purple-200':u.role==='RESTAURANT_ADMIN'?'bg-blue-900 text-blue-200':u.role==='WAITER'?'bg-green-900 text-green-200':'bg-orange-900 text-orange-200'}`}>{u.role}</span></td><td className="p-4 text-xs">{u.restaurant?.name|| (u.role==='SUPER_ADMIN'?'Super Admin':'—')}</td><td className="p-4 text-right"><button onClick={()=>{setSelected(u); setSelectedType('u')}} className="p-2.5 bg-zinc-800 hover:bg-zinc-700 rounded-full"><MoreVertical size={18}/></button></td></tr>))}</tbody></table>
+            <table className="w-full text-sm min-w-"><thead className="bg-zinc-900 text-zinc-400 text-xs uppercase"><tr><th className="text-left p-4">Korisnik</th><th className="text-left p-4">Rola</th><th className="text-left p-4">Restoran</th><th className="text-left p-4">2FA</th><th className="text-right p-4">Akcije</th></tr></thead>
+              <tbody>{fu.map((u:any)=>(<tr key={u.id} className={`border-t border-zinc-800 ${u.id===currentUser.id?'bg-zinc-800/30':''}`}><td className="p-4"><div className="font-medium flex gap-2 items-center">{u.name||'—'} {u.id===currentUser.id&&<span className="text- bg-white text-black px-1.5 py-0.5 rounded-full">TI</span>}</div><div className="text-xs text-zinc-400">{u.email}</div></td><td className="p-4"><span className={`px-2 py-1 rounded-full text- font-bold ${u.role==='SUPER_ADMIN'?'bg-purple-900 text-purple-200':u.role==='RESTAURANT_ADMIN'?'bg-blue-900 text-blue-200':u.role==='WAITER'?'bg-green-900 text-green-200':'bg-orange-900 text-orange-200'}`}>{u.role}</span></td><td className="p-4 text-xs">{u.restaurant?.name|| (u.role==='SUPER_ADMIN'?'Super Admin':'—')}</td><td className="p-4">{u.totp_enabled? <span className="bg-green-900 text-green-200 px-2 py-1 rounded-full text- font-bold flex items-center gap-1 w-fit"><ShieldCheck size={12}/>ON</span> : u.totp_secret? <span className="bg-yellow-900 text-yellow-200 px-2 py-1 rounded-full text-">SETUP</span> : <span className="bg-zinc-800 text-zinc-400 px-2 py-1 rounded-full text-">OFF</span>}</td><td className="p-4 text-right"><button onClick={()=>{setSelected(u); setSelectedType('u')}} className="p-2.5 bg-zinc-800 hover:bg-zinc-700 rounded-full"><MoreVertical size={18}/></button></td></tr>))}</tbody></table>
           </div>
         )}
 
-        {tab==='translations' && (<div className="space-y-4"><div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6"><h2 className="font-bold text-lg mb-2">🌐 DeepL Prijevodi</h2><p className="text-sm text-zinc-400 mb-4">HR → EN/DE. 500k znakova free mjesečno.</p><div className="flex flex-wrap gap-3 items-center"><select value={selectedRestaurantForTrans} onChange={e=>setSelectedRestaurantForTrans(e.target.value)} className="bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-2 text-sm"><option value="">Svi restorani</option>{restaurants.map((r:any)=><option key={r.id} value={r.id}>{r.name}</option>)}</select><button disabled={!!translatingLang} onClick={()=>bulkTranslate('EN')} className="bg-white text-black px-5 py-2.5 rounded-full text-sm font-bold disabled:opacity-50">{translatingLang==='EN'? 'Prevodim EN...' : '🔁 Prevedi sve na EN'}</button><button disabled={!!translatingLang} onClick={()=>bulkTranslate('DE')} className="bg-white text-black px-5 py-2.5 rounded-full text-sm font-bold disabled:opacity-50">{translatingLang==='DE'? 'Prevodim DE...' : '🔁 Prevedi sve na DE'}</button><button onClick={loadTranslateStats} className="bg-zinc-800 border border-zinc-700 px-5 py-2.5 rounded-full text-sm">Osvježi</button></div></div><div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl overflow-x-auto"><table className="w-full text-sm"><thead className="bg-zinc-900 text-zinc-400 uppercase"><tr><th className="text-left p-4">Restoran</th><th className="text-left p-4">Kat</th><th className="text-left p-4">Jela</th><th className="text-left p-4">Fali EN</th><th className="text-left p-4">Fali DE</th></tr></thead><tbody>{translateStats.map((s:any)=><tr key={s.id} className="border-t border-zinc-800"><td className="p-4"><div className="font-bold">{s.name}</div><div className="text-xs text-zinc-500">{s.slug}</div></td><td className="p-4">{s.cat_count}</td><td className="p-4">{s.item_count}</td><td className="p-4"><span className={`px-2 py-1 rounded-full text-xs ${parseInt(s.missing_en)>0?'bg-red-900 text-red-200':'bg-green-900 text-green-200'}`}>{s.missing_en} fali</span></td><td className="p-4"><span className={`px-2 py-1 rounded-full text-xs ${parseInt(s.missing_de)>0?'bg-red-900 text-red-200':'bg-green-900 text-green-200'}`}>{s.missing_de} fali</span></td></tr>)}</tbody></table></div></div>)}
- {selected && (
+        {selected && (
           <div className="fixed inset-0 bg-black/80 backdrop-blur z-50 flex items-center justify-center p-4" onClick={()=>setSelected(null)}>
             <div className="bg-zinc-900 border border-zinc-700 rounded-2xl w-full max-w-sm overflow-hidden" onClick={e=>e.stopPropagation()}>
-              <div className="p-4 border-b border-zinc-800 flex justify-between items-center"><div><div className="font-bold">{selectedType==='r'?selected.name:selected.email}</div><div className="text-xs text-zinc-500">{selectedType==='r'?selected.slug:selected.role}</div></div><button onClick={()=>setSelected(null)} className="p-2 hover:bg-zinc-800 rounded-full"><X size={18}/></button></div>
+              <div className="p-4 border-b border-zinc-800 flex justify-between items-center"><div><div className="font-bold">{selectedType==='r'?selected.name:selected.email}</div><div className="text-xs text-zinc-500">{selectedType==='r'?selected.slug:selected.role} {selectedType==='u' && (selected.totp_enabled? '• 2FA ON' : '• 2FA OFF')}</div></div><button onClick={()=>setSelected(null)} className="p-2 hover:bg-zinc-800 rounded-full"><X size={18}/></button></div>
               <div className="p-2">
                 {selectedType==='r'? (
                   <>
@@ -102,6 +117,13 @@ export default function SuperAdminClient({ restaurants, users, currentUser }: an
                   <>
                     <button onClick={()=>{setResetId(selected.id); setSelected(null)}} className="w-full text-left px-4 py-3 hover:bg-zinc-800 rounded-xl flex gap-3"><KeyRound size={18}/> Reset lozinke</button>
                     {selected.restaurantId&&<button onClick={()=>impersonate(selected.restaurantId)} className="w-full text-left px-4 py-3 hover:bg-zinc-800 rounded-xl flex gap-3"><LogIn size={18}/> Uđi u restoran {selected.restaurant?.name||''}</button>}
+                    <div className="border-t border-zinc-800 my-2"></div>
+                    {!selected.totp_enabled? (
+                      <button onClick={()=>{const id=selected.id; setSelected(null); toggle2FA(id,true)}} className="w-full text-left px-4 py-3 hover:bg-green-900/30 text-green-400 rounded-xl flex gap-3 font-bold"><ShieldCheck size={18}/> Upali 2FA (admin)</button>
+                    ) : (
+                      <button onClick={()=>{const id=selected.id; setSelected(null); toggle2FA(id,false)}} className="w-full text-left px-4 py-3 hover:bg-red-900/30 text-red-400 rounded-xl flex gap-3"><ShieldCheck size={18}/> Ugasi 2FA</button>
+                    )}
+                    {selected.totp_secret && <button onClick={()=>{const id=selected.id; setSelected(null); reset2FA(id)}} className="w-full text-left px-4 py-3 hover:bg-zinc-800 rounded-xl flex gap-3"><X size={18}/> Reset 2FA secret</button>}
                     <div className="border-t border-zinc-800 my-2"></div>
                     <button disabled={selected.id===currentUser.id} onClick={()=>{setSelected(null); deleteUser(selected.id)}} className={`w-full text-left px-4 py-3 rounded-xl flex gap-3 ${selected.id===currentUser.id?'text-zinc-600':'hover:bg-red-900/30 text-red-400'}`}><Trash2 size={18}/> {selected.id===currentUser.id?'Ne možeš obrisati sebe':'Obriši korisnika'}</button>
                   </>

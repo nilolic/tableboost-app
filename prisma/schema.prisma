@@ -51,6 +51,8 @@ model Restaurant {
 }
 
 model User {
+  totp_secret   String?  @db.Text
+  totp_enabled  Boolean  @default(false)
   id String @id @default(cuid())
   email String @unique
   password String
