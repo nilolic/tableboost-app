@@ -75,7 +75,7 @@ export default function SuperAdminClient({ restaurants, users, currentUser }: an
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row md:justify-between gap-4 mb-6">
           <div><h1 className="text-3xl font-black">Super Admin</h1><p className="text-zinc-400 text-sm mt-1">{currentUser.email} • {restaurants.length} restorana • {users.length} korisnika • 2FA ON: {users.filter((u:any)=>u.totp_enabled).length}</p></div>
-          <div className="flex gap-2"><button onClick={()=>setShowCreate(true)} className="bg-white text-black px-5 py-3 rounded-full font-bold flex items-center gap-2 text-sm"><Plus size={18}/> Novi restoran</button><button onClick={logout} className="bg-zinc-800 border border-zinc-700 px-5 py-3 rounded-full font-bold flex items-center gap-2 text-sm"><LogOut size={16}/> Odjava</button></div>
+          <div className="flex gap-2"><button onClick={()=>setShowCreate(true)} className="bg-white text-black px-5 py-3 rounded-full font-bold flex items-center gap-2 text-sm"><Plus size={18}/> Novi objekt</button><button onClick={logout} className="bg-zinc-800 border border-zinc-700 px-5 py-3 rounded-full font-bold flex items-center gap-2 text-sm"><LogOut size={16}/> Odjava</button></div>
         </div>
 
         <div className="flex gap-2 mb-4">
