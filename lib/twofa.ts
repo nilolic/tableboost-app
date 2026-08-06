@@ -1,25 +1,39 @@
-import speakeasy from 'speakeasy'
+import { authenticator } from 'otpauth'
 import QRCode from 'qrcode'
 
-export const pending2FA: Map<string, {userId: string, expires: number}> = (globalThis as any).pending2FA || new Map()
-export const pendingSetup: Map<string, {userId: string, secret: string, expires: number}> = (globalThis as any).pendingSetup || new Map()
-;(globalThis as any).pending2FA = pending2FA
-;(globalThis as any).pendingSetup = pendingSetup
-
-if(!(globalThis as any)._2faCleaner){
-  (globalThis as any)._2faCleaner = setInterval(()=>{
-    const now = Date.now()
-    for(let [k,v] of pending2FA) if(now > v.expires) pending2FA.delete(k)
-    for(let [k,v] of pendingSetup) if(now > v.expires) pendingSetup.delete(k)
-  }, 60*1000)
+export function generateSecret(email: string) {
+  const secret = authenticator.generateSecret(32)
+  const totp = new authenticator.TOTP({
+    issuer: 'TableBoost',
+    label: email,
+    algorithm: 'SHA1',
+    digits: 6,
+    period: 30,
+    secret: secret,
+  })
+  return {
+    base32: secret,
+    otpauth_url: totp.toString(), // uvijek string
+  }
 }
 
-export function generateSecret(username: string){
-  return speakeasy.generateSecret({name: `TABLEBOOST:${username}`, issuer: 'TABLEBOOST', length: 20})
+export function verifyToken(token: string, secret: string): boolean {
+  try {
+    const totp = new authenticator.TOTP({
+      issuer: 'TableBoost',
+      label: 'verify',
+      algorithm: 'SHA1',
+      digits: 6,
+      period: 30,
+      secret: secret,
+    })
+    const delta = totp.validate({ token, window: 1 })
+    return delta !== null
+  } catch { return false }
 }
-export async function toQRDataUrl(otpauth_url: string){
-  return QRCode.toDataURL(otpauth_url)
+
+export async function toQRDataUrl(otpauthUrl: string) {
+  return await QRCode.toDataURL(otpauthUrl)
 }
-export function verifyToken(secret: string, token: string){
-  return speakeasy.totp.verify({secret, encoding:'base32', token, window:2})
-}
+
+export const pending2FA = new Map<string, { userId: string; expires: number }>()
