@@ -80,7 +80,7 @@ function AllergensBadge({ item, lang }: { item: Item, lang: 'hr'|'en'|'de' }) {
   )
 }
 
-export default function MenuClient({ restaurant, tableNumber, mains, lang, slug }: { restaurant:any, tableNumber:number|null, mains:MainCat[], lang:'hr'|'en'|'de', slug:string }) {
+export default function MenuClient({ restaurant, tableNumber, mains, lang: propLang, slug }: { restaurant:any, tableNumber:number|null, mains:MainCat[], lang:'hr'|'en'|'de', slug:string }) {
   const [cart, setCart] = useState<{id:string, qty:number}[]>([])
   const [activeMain, setActiveMain] = useState(mains[0]?.id || "")
   const [activeSub, setActiveSub] = useState<string>("all")
