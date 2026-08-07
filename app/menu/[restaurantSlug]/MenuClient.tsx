@@ -1,6 +1,24 @@
 'use client'
 import { useState, useRef, useMemo, useEffect } from 'react'
 
+const UI_TEXT = {
+  hr: { search: "Traži jelo, piće...", cart: "Košarica", items: "artikala", tapOpen: "tapni za otvaranje", tapClose: "tapni za zatvaranje", table: "Stol", cartEmpty: "Košarica je prazna", total: "Ukupno", subtotal: "Međuzbroj", tip: "Napojnica", add: "Dodaj", sending: "Šaljem...", orderCash: "Naruči • Gotovina", orderPos: "Naruči • POS", payOnline: "Plati online" },
+  en: { search: "Search dishes, drinks...", cart: "Cart", items: "items", tapOpen: "tap to open", tapClose: "tap to close", table: "Table", cartEmpty: "Cart is empty", total: "Total", subtotal: "Subtotal", tip: "Tip", add: "Add", sending: "Sending...", orderCash: "Order • Cash", orderPos: "Order • POS", payOnline: "Pay online" },
+  de: { search: "Gericht, Getränk suchen...", cart: "Warenkorb", items: "Artikel", tapOpen: "tippen zum Öffnen", tapClose: "tippen zum Schließen", table: "Tisch", cartEmpty: "Warenkorb ist leer", total: "Gesamt", subtotal: "Zwischensumme", tip: "Trinkgeld", add: "Hinzufügen", sending: "Senden...", orderCash: "Bestellen • Bar", orderPos: "Bestellen • POS", payOnline: "Online bezahlen" },
+};
+const getInitialLang = (): "hr"|"en"|"de" => {
+  if (typeof window!== "undefined") {
+    const p = new URLSearchParams(window.location.search);
+    const q = p.get("lang");
+    if (q && ["hr","en","de"].includes(q)) return q as any;
+    const nav = navigator.language?.toLowerCase() || "";
+    if (nav.startsWith("de")) return "de";
+    if (nav.startsWith("en")) return "en";
+  }
+  return "hr";
+};
+
+
 type Item = {
   id:string, name:string, nameEn?:string|null, nameDe?:string|null,
   description?:string|null, descriptionEn?:string|null, descriptionDe?:string|null,
@@ -62,12 +80,14 @@ function AllergensBadge({ item, lang }: { item: Item, lang: 'hr'|'en'|'de' }) {
   )
 }
 
-export default function MenuClient({ restaurant, tableNumber, mains, lang, slug }: { restaurant:any, tableNumber:number|null, mains:MainCat[], lang:'hr'|'en'|'de', slug:string }) {
+export default function MenuClient({ restaurant, tableNumber, mains, lang: propLang, slug }: { restaurant:any, tableNumber:number|null, mains:MainCat[], lang:'hr'|'en'|'de', slug:string }) {
   const [cart, setCart] = useState<{id:string, qty:number}[]>([])
   const [activeMain, setActiveMain] = useState(mains[0]?.id || "")
   const [activeSub, setActiveSub] = useState<string>("all")
   const [openAccordion, setOpenAccordion] = useState<string | null>(null)
-  const [search, setSearch] = useState("")
+  const [lang] = useState<"hr"|"en"|"de">(getInitialLang())
+ const T = UI_TEXT[lang]
+ const [search, setSearch] = useState("")
   const [showCart, setShowCart] = useState(false)
   const [sending, setSending] = useState(false)
   const [paymentMethod, setPaymentMethod] = useState<'CASH'|'CARD_TERMINAL'|'CARD_ONLINE'>('CASH')
@@ -179,11 +199,11 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
           </div>
           <div className="flex items-center gap-2">
             <div className="relative">
-              <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Traži jelo, piće..." className="bg-zinc-100 focus:bg-white border border-transparent focus:border-zinc-200 rounded-full pl-9 pr-4 py-2.5 text- w- md:w- focus:w- transition-all outline-none font-medium"/>
+              <input value={search} onChange={e=>setSearch(e.target.value)} placeholder={T.search} className="bg-zinc-100 focus:bg-white border border-transparent focus:border-zinc-200 rounded-full pl-9 pr-4 py-2.5 text- w- md:w- focus:w- transition-all outline-none font-medium"/>
               <span className="absolute left-3 top-2.5 text-zinc-400">⌕</span>
             </div>
             <button onClick={()=>setShowCart(true)} className="relative bg-black text-white h-10 px-4 rounded-full font-black text- flex items-center gap-2 shadow-lg shadow-black/20 active:scale-95 transition">
-              <span>Košarica</span>
+              <span>{T.cart}</span>
               <span className="bg-white text-black min-w-5 h-5 grid place-items-center rounded-full text- px-1">{cartCount}</span>
             </button>
           </div>
@@ -247,7 +267,7 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
                       <AllergensBadge item={item} lang={lang} />
                       <div className="mt-auto flex justify-end pt-2">
                         {qty===0? (
-                          <button onClick={()=>add(item.id)} className="bg-black text-white h-8 px-4 rounded-full text- font-black hover:bg-zinc-800 active:scale-95 transition">+ Dodaj</button>
+                          <button onClick={()=>add(item.id)} className="bg-black text-white h-8 px-4 rounded-full text- font-black hover:bg-zinc-800 active:scale-95 transition">+ {T.add}</button>
                         ) : (
                           <div className="flex items-center gap-1 bg-black text-white rounded-full p-1 shadow">
                             <button onClick={()=>dec(item.id)} className="w-7 h-7 grid place-items-center rounded-full hover:bg-white/15">−</button>
@@ -289,7 +309,7 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
                   {t(sub.name,sub.nameEn,sub.nameDe)}
                   {sub.sendsToKitchen && <span className="bg-orange-50 text-orange-600 border border-orange-200 text- px-1.5 py-0.5 rounded-full">KUHINJA</span>}
                 </h2>
-                <p className="text- text-zinc-500 mt-1">{sub.items.length} artikala • {isOpen? 'tapni za zatvaranje' : 'tapni za otvaranje'}</p>
+                <p className="text- text-zinc-500 mt-1">{sub.items.length} {T.items} • {isOpen? T.tapClose : T.tapOpen}</p>
               </div>
               <div className={`w-9 h-9 rounded-full bg-zinc-900 text-white grid place-items-center text- transition-transform ${isOpen? 'rotate-180' : ''}`}>⌄</div>
             </button>
@@ -314,7 +334,7 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
                           <AllergensBadge item={item} lang={lang} />
                           <div className="mt-auto flex justify-end pt-2">
                             {qty===0? (
-                              <button onClick={()=>add(item.id)} className="bg-black text-white h-7 px-3.5 rounded-full text- font-black hover:bg-zinc-800 active:scale-95 transition">+ Dodaj</button>
+                              <button onClick={()=>add(item.id)} className="bg-black text-white h-7 px-3.5 rounded-full text- font-black hover:bg-zinc-800 active:scale-95 transition">+ {T.add}</button>
                             ) : (
                               <div className="flex items-center gap-1 bg-black text-white rounded-full p-1 shadow">
                                 <button onClick={()=>dec(item.id)} className="w-6 h-6 grid place-items-center rounded-full hover:bg-white/15">−</button>
@@ -357,11 +377,11 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end">
           <div className="bg-white w-full rounded-t- max-h- flex flex-col shadow-2xl">
             <div className="p-5 flex justify-between items-center border-b">
-              <div><h2 className="font-black text- tracking-tight">Košarica • Stol {tableNumber}</h2><p className="text- text-zinc-500">{cartCount} artikala</p></div>
+              <div><h2 className="font-black text- tracking-tight">{T.cart} • {T.table} {tableNumber}</h2><p className="text- text-zinc-500">{cartCount} {T.items}</p></div>
               <button onClick={()=>setShowCart(false)} className="w-9 h-9 rounded-full bg-zinc-100 grid place-items-center font-bold">✕</button>
             </div>
             <div className="flex-1 overflow-auto p-4 space-y-2.5">
-              {cartDetailed.length===0 && <div className="py-12 text-center text-zinc-400">Košarica je prazna</div>}
+              {cartDetailed.length===0 && <div className="py-12 text-center text-zinc-400">{T.cartEmpty}</div>}
               {cartDetailed.map((i:any)=>(
                   <div key={i.id} className="flex gap-3 border border-zinc-100 p-3 rounded-2xl bg-zinc-50/50">
                     <div className="w-12 h-12 rounded-xl bg-zinc-100 overflow-hidden"><img src={i.imageUrl||""} className="w-full h-full object-cover"/></div>
@@ -388,7 +408,7 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
                         <div className="flex-1 min-w-0">
                           <div className="font-bold text- leading-tight line-clamp-1">{t(u.name,u.nameEn,u.nameDe)}</div>
                           <div className="text- text-zinc-600">{u.price.toFixed(2)}€ {u.isBoosted && `🔥${u.boostLevel}`}</div>
-                          <button onClick={()=>add(u.id)} className="mt-1 bg-black text-white text- font-bold px-3 py-1 rounded-full">+ Dodaj</button>
+                          <button onClick={()=>add(u.id)} className="mt-1 bg-black text-white text- font-bold px-3 py-1 rounded-full">+ {T.add}</button>
                         </div>
                       </div>
                     ))}
@@ -436,13 +456,13 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
               </div>
 
               <div className="bg-white border rounded-2xl p-3 space-y-1 text-">
-                <div className="flex justify-between"><span className="text-zinc-500">Međuzbroj</span><span className="font-bold">{subtotal.toFixed(2)}€</span></div>
-                {tipPercent>0 && <div className="flex justify-between"><span className="text-zinc-500">Napojnica {tipPercent}%</span><span className="font-bold">+{tipAmount.toFixed(2)}€</span></div>}
-                <div className="flex justify-between font-black text- pt-1 border-t mt-1"><span>Ukupno</span><span>{total.toFixed(2)}€</span></div>
+                <div className="flex justify-between"><span className="text-zinc-500">{T.subtotal}</span><span className="font-bold">{subtotal.toFixed(2)}€</span></div>
+                {tipPercent>0 && <div className="flex justify-between"><span className="text-zinc-500">{T.tip} {tipPercent}%</span><span className="font-bold">+{tipAmount.toFixed(2)}€</span></div>}
+                <div className="flex justify-between font-black text- pt-1 border-t mt-1"><span>{T.total}</span><span>{total.toFixed(2)}€</span></div>
               </div>
 
               <button disabled={sending || cart.length===0} onClick={order} className="w-full bg-black text-white py-4 rounded-full font-black text- shadow-lg shadow-black/20 disabled:opacity-50 active:scale-[0.98] transition">
-                {sending? "Šaljem..." : paymentMethod==='CASH'? `Naruči • Gotovina • ${total.toFixed(2)}€` : paymentMethod==='CARD_TERMINAL'? `Naruči • POS • ${total.toFixed(2)}€` : `Plati online • ${total.toFixed(2)}€`}
+                {sending? T.sending : paymentMethod==='CASH'? `${T.orderCash} • ${total.toFixed(2)}€` : paymentMethod==='CARD_TERMINAL'? `${T.orderPos} • ${total.toFixed(2)}€` : `${T.payOnline} • ${total.toFixed(2)}€`}
               </button>
             </div>
           </div>
