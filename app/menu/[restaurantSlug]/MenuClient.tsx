@@ -331,11 +331,10 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
               </div>
             )}
           </section>
-        )})}
+        )})}        <div className="h-32" />
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 z-20">
-        <div className="max-w-6xl mx-auto p-3">
+      <div className="fixed bottom-0 left-0 right-0 z-20 transition-transform duration-300">        <div className="max-w-6xl mx-auto p-3">
           <div className="bg-zinc-900/95 backdrop-blur-2xl rounded- p-1.5 flex gap-1.5 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] border border-white/10">
             {mains.map(m=>{
               const active=m.id===activeMain
