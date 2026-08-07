@@ -232,8 +232,8 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
               {visibleItems.directItems.map((item:any)=>{
                 const qty=getQty(item.id)
                 return (
-                  <div key={item.id} className={`group bg-white rounded- border p-3 flex gap-3.5 shadow-sm hover:shadow-md transition-all ${item.isBoosted? 'border-amber-300 bg-amber-50/30' : 'border-zinc-100 hover:border-zinc-200'}`}>
-                    <div className="w- h- rounded- bg-zinc-100 overflow-hidden shrink-0 relative">
+                  <div key={item.id} className={`group bg-white rounded- border p-3 flex gap-3 shadow-sm hover:shadow-md transition-all ${item.isBoosted? 'border-amber-300 bg-amber-50/30' : 'border-zinc-100 hover:border-zinc-200'}`}>
+                    <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-zinc-100 overflow-hidden shrink-0 relative">
                       <img src={item.imageUrl || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200"} className="w-full h-full object-cover group-hover:scale-105 transition duration-500"/>
                       {item.isBoosted && <div className="absolute top-1 left-1 bg-amber-400 text-black text- font-black px-1.5 py-0.5 rounded-full">🔥 BOOST {item.boostLevel}</div>}
                       {qty>0 && <div className="absolute top-1.5 right-1.5 bg-black text-white text- font-black w-5 h-5 grid place-items-center rounded-full">{qty}</div>}
@@ -299,8 +299,8 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
                   {sub.items.map((item:any)=>{
                     const qty=getQty(item.id)
                     return (
-                      <div key={item.id} className={`group bg-[#fdf8f3] rounded- border p-3 flex gap-3.5 shadow-sm hover:shadow-md transition-all ${item.isBoosted? 'border-amber-300 bg-amber-50/30' : 'border-zinc-100 hover:border-zinc-200'}`}>
-                        <div className="w- h- rounded- bg-zinc-100 overflow-hidden shrink-0 relative">
+                      <div key={item.id} className={`group bg-white rounded- border p-3 flex gap-3 shadow-sm hover:shadow-md transition-all ${item.isBoosted? 'border-amber-300 bg-amber-50/30' : 'border-zinc-100 hover:border-zinc-200'}`}>
+                        <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-zinc-100 overflow-hidden shrink-0 relative">
                           <img src={item.imageUrl || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200"} className="w-full h-full object-cover group-hover:scale-105 transition duration-500"/>
                           {item.isBoosted && <div className="absolute top-1 left-1 bg-amber-400 text-black text- font-black px-1.5 py-0.5 rounded-full">🔥 {item.boostLevel}</div>}
                           {qty>0 && <div className="absolute top-1.5 right-1.5 bg-black text-white text- font-black w-5 h-5 grid place-items-center rounded-full">{qty}</div>}
@@ -334,7 +334,7 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
         )})}        <div className="h-32" />
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 z-20 transition-transform duration-300">        <div className="max-w-6xl mx-auto p-3">
+      <div className={`fixed bottom-0 left-0 right-0 z-20 transition-transform duration-300 ${openAccordion ? "translate-y-[150%]" : "translate-y-0"}`}>>        <div className="max-w-6xl mx-auto p-3">
           <div className="bg-zinc-900/95 backdrop-blur-2xl rounded- p-1.5 flex gap-1.5 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] border border-white/10">
             {mains.map(m=>{
               const active=m.id===activeMain
