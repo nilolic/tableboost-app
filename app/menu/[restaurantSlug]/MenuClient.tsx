@@ -2,9 +2,9 @@
 import { useState, useRef, useMemo, useEffect } from 'react'
 
 const UI_TEXT = {
-  hr: { search: "Traži jelo, piće...", cart: "Košarica", items: "artikala", tapOpen: "tapni za otvaranje", tapClose: "tapni za zatvaranje", table: "Stol", cartEmpty: "Košarica je prazna", total: "Ukupno", subtotal: "Međuzbroj", tip: "Napojnica", add: "Dodaj", sending: "Šaljem...", orderCash: "Naruči • Gotovina", orderPos: "Naruči • POS", payOnline: "Plati online" },
-  en: { search: "Search dishes, drinks...", cart: "Cart", items: "items", tapOpen: "tap to open", tapClose: "tap to close", table: "Table", cartEmpty: "Cart is empty", total: "Total", subtotal: "Subtotal", tip: "Tip", add: "Add", sending: "Sending...", orderCash: "Order • Cash", orderPos: "Order • POS", payOnline: "Pay online" },
-  de: { search: "Gericht, Getränk suchen...", cart: "Warenkorb", items: "Artikel", tapOpen: "tippen zum Öffnen", tapClose: "tippen zum Schließen", table: "Tisch", cartEmpty: "Warenkorb ist leer", total: "Gesamt", subtotal: "Zwischensumme", tip: "Trinkgeld", add: "Hinzufügen", sending: "Senden...", orderCash: "Bestellen • Bar", orderPos: "Bestellen • POS", payOnline: "Online bezahlen" },
+  hr: { search: "Traži jelo, piće...", cart: "Košarica", items: "artikala", tapOpen: "tapni za otvaranje", tapClose: "tapni za zatvaranje", table: "Stol", cartEmpty: "Košarica je prazna", total: "Ukupno", subtotal: "Međuzbroj", tip: "Napojnica", add: "Dodaj", sending: "Šaljem...", orderCash: "Naruči • Gotovina", orderPos: "Naruči • POS", payOnline: "Plati online", tipForStaff: "Napojnica za osoblje", noTip: "Bez tipa", paymentMethod: "Način plaćanja", cash: "Gotovina", payWaiter: "Plati konobaru", pos: "POS", cardAtTable: "Kartica na stolu", online: "Online", applePay: "Apple/Google Pay", soon: "Uskoro", recommended: "Preporučujemo uz narudžbu", loading: "učitavam...", goesToKitchen: "IDE U KUHINJU 🍳", kitchen: "KUHINJA", all: "Sve", menuEmpty: "Menu je prazan", adminAdd: "Admin treba dodati kategorije", fresh: "Svježe pripremljeno" },
+  en: { search: "Search dishes, drinks...", cart: "Cart", items: "items", tapOpen: "tap to open", tapClose: "tap to close", table: "Table", cartEmpty: "Cart is empty", total: "Total", subtotal: "Subtotal", tip: "Tip", add: "Add", sending: "Sending...", orderCash: "Order • Cash", orderPos: "Order • POS", payOnline: "Pay online", tipForStaff: "Tip for staff", noTip: "No tip", paymentMethod: "Payment method", cash: "Cash", payWaiter: "Pay waiter", pos: "POS", cardAtTable: "Card at table", online: "Online", applePay: "Apple/Google Pay", soon: "Soon", recommended: "Recommended with your order", loading: "loading...", goesToKitchen: "GOES TO KITCHEN 🍳", kitchen: "KITCHEN", all: "All", menuEmpty: "Menu is empty", adminAdd: "Admin needs to add categories", fresh: "Freshly prepared" },
+  de: { search: "Gericht, Getränk suchen...", cart: "Warenkorb", items: "Artikel", tapOpen: "tippen zum Öffnen", tapClose: "tippen zum Schließen", table: "Tisch", cartEmpty: "Warenkorb ist leer", total: "Gesamt", subtotal: "Zwischensumme", tip: "Trinkgeld", add: "Hinzufügen", sending: "Senden...", orderCash: "Bestellen • Bar", orderPos: "Bestellen • POS", payOnline: "Online bezahlen", tipForStaff: "Trinkgeld für Personal", noTip: "Kein Trinkgeld", paymentMethod: "Zahlungsart", cash: "Bar", payWaiter: "Beim Kellner zahlen", pos: "POS", cardAtTable: "Karte am Tisch", online: "Online", applePay: "Apple/Google Pay", soon: "Bald", recommended: "Empfohlen zu deiner Bestellung", loading: "lädt...", goesToKitchen: "GEHT IN DIE KÜCHE 🍳", kitchen: "KÜCHE", all: "Alle", menuEmpty: "Menü ist leer", adminAdd: "Admin muss Kategorien hinzufügen", fresh: "Frisch zubereitet" },
 };
 const getInitialLang = (): "hr"|"en"|"de" => {
   if (typeof window!== "undefined") {
@@ -179,7 +179,7 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
   }
 
   if(!currentMain){
-    return <div className="min-h-screen bg-[#fdf8f3] flex items-center justify-center p-10 text-center"><div><h1 className="text-2xl font-black">Menu je prazan</h1><p className="text-zinc-500 mt-2">Admin treba dodati kategorije</p></div></div>
+    return <div className="min-h-screen bg-[#fdf8f3] flex items-center justify-center p-10 text-center"><div><h1 className="text-2xl font-black">{T.menuEmpty}</h1><p className="text-zinc-500 mt-2">{T.adminAdd}</p></div></div>
   }
 
   const payCashEnabled = restaurant?.paymentCashEnabled?? true
@@ -194,7 +194,7 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
             <div className="w-10 h-10 rounded-2xl bg-black text-white grid place-items-center font-black text-">{restaurant?.name?.[0]?.toUpperCase()||"T"}</div>
             <div className="leading-tight">
               <div className="font-black text- tracking-tight">{restaurant?.name}</div>
-              <div className="text- text-zinc-500 font-medium flex items-center gap-1.5"><span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"/> Stol {tableNumber} • QR Menu</div>
+              <div className="text- text-zinc-500 font-medium flex items-center gap-1.5"><span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"/> {T.table} {tableNumber} • QR Menu</div>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -218,7 +218,7 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <h1 className="text-white font-black text- md:text- leading-none tracking-tight">{t(currentMain.name, currentMain.nameEn, currentMain.nameDe)}</h1>
-                {currentMain.sendsToKitchen && <span className="bg-orange-500 text-white text- font-black px-2.5 py-1 rounded-full">IDE U KUHINJU 🍳</span>}
+                {currentMain.sendsToKitchen && <span className="bg-orange-500 text-white text- font-black px-2.5 py-1 rounded-full">{T.goesToKitchen}</span>}
               </div>
               <p className="text-white/70 text- max-w- leading-snug">{currentMain.description || ""}</p>
             </div>
@@ -230,7 +230,7 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
         <div className="max-w-6xl mx-auto px-4 mt-4">
           <div className="flex gap-2.5 overflow-x-auto scrollbar-none pb-2">
             <button onClick={()=>{setActiveSub("all"); setOpenAccordion(null)}} className={`shrink-0 h- px-5 rounded-full font-bold text- border transition-all flex items-center gap-2 ${activeSub==="all"? "bg-black text-white border-black shadow-lg shadow-black/20" : "bg-white border-zinc-200 hover:border-zinc-300"}`}>
-              <span className="text-">✨</span> Sve
+              <span className="text-">✨</span> {T.all}
             </button>
             {filteredData.subs.map(sub=>(
               <button key={sub.id} onClick={()=>{setActiveSub(sub.id); setOpenAccordion(sub.id); subRefs.current[sub.id]?.scrollIntoView({behavior:'smooth', block:'start'})}} className={`shrink-0 group flex items-center gap-2.5 h- pl-1.5 pr-4 rounded-full font-bold text- border transition-all ${activeSub===sub.id? "bg-black text-white border-black shadow-lg" : "bg-white border-zinc-200 hover:border-zinc-300 hover:shadow-sm"}`}>
@@ -263,7 +263,7 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
                         <h3 className="font-bold text-[14.5px] leading-[1.2] tracking-tight line-clamp-2">{t(item.name,item.nameEn,item.nameDe)}</h3>
                         <span className="shrink-0 bg-zinc-900 text-white text-[12.5px] font-black px-2.5 py-1 rounded-full">{item.price.toFixed(2)}€</span>
                       </div>
-                      <p className="text- text-zinc-500 leading-[1.35] mt-1 line-clamp-2">{tDesc(item)||"Svježe pripremljeno"}</p>
+                      <p className="text- text-zinc-500 leading-[1.35] mt-1 line-clamp-2">{tDesc(item)||T.fresh}</p>
                       <AllergensBadge item={item} lang={lang} />
                       <div className="mt-auto flex justify-end pt-2">
                         {qty===0? (
@@ -307,7 +307,7 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
               <div className="flex-1 min-w-0">
                 <h2 className="font-black text- tracking-tight leading-none flex items-center gap-2">
                   {t(sub.name,sub.nameEn,sub.nameDe)}
-                  {sub.sendsToKitchen && <span className="bg-orange-50 text-orange-600 border border-orange-200 text- px-1.5 py-0.5 rounded-full">KUHINJA</span>}
+                  {sub.sendsToKitchen && <span className="bg-orange-50 text-orange-600 border border-orange-200 text- px-1.5 py-0.5 rounded-full">{T.kitchen}</span>}
                 </h2>
                 <p className="text- text-zinc-500 mt-1">{sub.items.length} {T.items} • {isOpen? T.tapClose : T.tapOpen}</p>
               </div>
@@ -398,8 +398,8 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
               {upsells.length>0 && (
                 <div className="pt-4 border-t mt-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text- font-black uppercase tracking-wider">✨ Preporučujemo uz narudžbu</span>
-                    {loadingUpsell && <span className="text- text-zinc-400">učitavam...</span>}
+                    <span className="text- font-black uppercase tracking-wider">✨ {T.recommended}</span>
+                    {loadingUpsell && <span className="text- text-zinc-400">{T.loading}</span>}
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     {upsells.map((u:any)=>(
@@ -420,37 +420,37 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
             <div className="p-4 border-t bg-zinc-50 space-y-3">
               <div>
                 <div className="text- font-black uppercase tracking-wider opacity-60 mb-2 flex justify-between">
-                  <span>💝 Napojnica za osoblje</span>
+                  <span><span>💝 {T.tipForStaff}</span>
                   {tipPercent>0 && <span className="text-black">+{tipAmount.toFixed(2)}€</span>}
                 </div>
                 <div className="grid grid-cols-4 gap-2">
                   {[0,10,20,30].map(pct=>(
                     <button key={pct} onClick={()=>setTipPercent(pct)} className={`h-10 rounded-full font-bold text- border-2 transition ${tipPercent===pct? 'bg-black text-white border-black' : 'bg-white border-zinc-200 hover:border-zinc-300'}`}>
-                      {pct===0? 'Bez tipa' : `${pct}%`}
+                      {pct===0? T.noTip : `${pct}%`}
                     </button>
                   ))}
                 </div>
               </div>
 
-              <div className="text- font-black uppercase tracking-wider opacity-60">Način plaćanja</div>
+              <div className="text- font-black uppercase tracking-wider opacity-60">{T.paymentMethod}</div>
               <div className="grid grid-cols-3 gap-2">
                 {payCashEnabled && (
                   <button onClick={()=>setPaymentMethod('CASH')} className={`p-3 rounded-2xl border-2 text-left transition ${paymentMethod==='CASH'?'border-black bg-black text-white':'border-zinc-200 bg-white'}`}>
-                    <div className="text-">💵</div><div className="font-bold text- mt-1">Gotovina</div><div className="text- opacity-70 leading-tight mt-0.5">Plati konobaru</div>
+                    <div className="text-">💵</div><div className="font-bold text- mt-1">{T.cash}</div><div className="text- opacity-70 leading-tight mt-0.5">{T.payWaiter}</div>
                   </button>
                 )}
                 {payTerminalEnabled && (
                   <button onClick={()=>setPaymentMethod('CARD_TERMINAL')} className={`p-3 rounded-2xl border-2 text-left transition ${paymentMethod==='CARD_TERMINAL'?'border-black bg-black text-white':'border-zinc-200 bg-white'}`}>
-                    <div className="text-">💳</div><div className="font-bold text- mt-1">POS</div><div className="text- opacity-70 leading-tight mt-0.5">Kartica na stolu</div>
+                    <div className="text-">💳</div><div className="font-bold text- mt-1">{T.pos}</div><div className="text- opacity-70 leading-tight mt-0.5">{T.cardAtTable}</div>
                   </button>
                 )}
                 {payOnlineEnabled? (
                   <button onClick={()=>setPaymentMethod('CARD_ONLINE')} className={`p-3 rounded-2xl border-2 text-left transition ${paymentMethod==='CARD_ONLINE'?'border-black bg-black text-white':'border-zinc-200 bg-white'}`}>
-                    <div className="text-">🌐</div><div className="font-bold text- mt-1">Online</div><div className="text- opacity-70 leading-tight mt-0.5">Apple/Google Pay</div>
+                    <div className="text-">🌐</div><div className="font-bold text- mt-1">{T.online}</div><div className="text- opacity-70 leading-tight mt-0.5">{T.applePay}</div>
                   </button>
                 ) : (
                   <button disabled className="p-3 rounded-2xl border-2 border-zinc-100 bg-zinc-100 opacity-50 text-left">
-                    <div className="text-">🌐</div><div className="font-bold text- mt-1">Online</div><div className="text- mt-0.5">Uskoro</div>
+                    <div className="text-">🌐</div><div className="font-bold text- mt-1">{T.online}</div><div className="text- mt-0.5">{T.soon}</div>
                   </button>
                 )}
               </div>
