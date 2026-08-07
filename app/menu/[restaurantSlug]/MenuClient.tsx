@@ -47,17 +47,17 @@ const SUB_IMAGES: Record<string,string> = {
 
 function AllergensBadge({ item, lang }: { item: Item, lang: 'hr'|'en'|'de' }) {
   const codes = (item.allergens||"").split(",").filter(Boolean);
-  if(codes.length===0 && !item.allergensNote) return null;
-  const note = lang==='en' ? item.allergensNoteEn || item.allergensNote : lang==='de' ? item.allergensNoteDe || item.allergensNote : item.allergensNote;
+  if(codes.length===0 &&!item.allergensNote) return null;
+  const note = lang==='en'? item.allergensNoteEn || item.allergensNote : lang==='de'? item.allergensNoteDe || item.allergensNote : item.allergensNote;
   return (
     <div className="flex flex-wrap gap-1 mt-1.5 items-center">
       {codes.map(c=>(
-        <span key={c} title={ALLERGENS_MAP[c]?.hr || c} className="text-[9px] font-black px-1.5 py-0.5 rounded-full bg-orange-50 text-orange-700 border border-orange-200">
+        <span key={c} title={ALLERGENS_MAP[c]?.hr || c} className="text- font-black px-1.5 py-0.5 rounded-full bg-orange-50 text-orange-700 border border-orange-200">
           {c}
         </span>
       ))}
-      {codes.length>0 && <span className="text-[10px] text-orange-700/70 ml-1">{codes.map(c=>ALLERGENS_MAP[c]?.hr).join(", ")}</span>}
-      {note && <span className="text-[10px] text-zinc-500 italic w-full mt-0.5">⚠️ {note}</span>}
+      {codes.length>0 && <span className="text- text-orange-700/70 ml-1">{codes.map(c=>ALLERGENS_MAP[c]?.hr).join(", ")}</span>}
+      {note && <span className="text- text-zinc-500 italic w-full mt-0.5">⚠ {note}</span>}
     </div>
   )
 }
@@ -66,6 +66,7 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
   const [cart, setCart] = useState<{id:string, qty:number}[]>([])
   const [activeMain, setActiveMain] = useState(mains[0]?.id || "")
   const [activeSub, setActiveSub] = useState<string>("all")
+  const [openAccordion, setOpenAccordion] = useState<string | null>(null)
   const [search, setSearch] = useState("")
   const [showCart, setShowCart] = useState(false)
   const [sending, setSending] = useState(false)
@@ -76,9 +77,9 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
   const subRefs = useRef<Record<string, any>>({})
 
   const t = (hr:string, en?:string|null, de?:string|null)=> lang==='en'?(en||hr):lang==='de'?(de||hr):hr
-  const tDesc = (item:Item)=> lang==='en' ? (item.descriptionEn || item.description) : lang==='de' ? (item.descriptionDe || item.description) : item.description
+  const tDesc = (item:Item)=> lang==='en'? (item.descriptionEn || item.description) : lang==='de'? (item.descriptionDe || item.description) : item.description
 
-  useEffect(()=>{ setActiveSub("all") }, [activeMain])
+  useEffect(()=>{ setActiveSub("all"); setOpenAccordion(null) }, [activeMain])
 
   const currentMain = mains.find(m=>m.id===activeMain) || mains[0]
   const allItems = useMemo(()=> mains.flatMap(m=> [...m.items,...m.children.flatMap(s=>s.items)]), [mains])
@@ -88,19 +89,17 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
   const total = subtotal + tipAmount
   const cartCount = cart.reduce((s,c)=>s+c.qty,0)
 
-  // FETCH UPSELLS when cart changes
   useEffect(()=>{
     const ids = cart.map(c=>c.id)
     if(ids.length===0){
-      // bez košarice - prikaži boosted items kao preporuku
       setLoadingUpsell(true)
       fetch(`/api/menu/${slug}/upsell`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cartItemIds:[]})})
-        .then(r=>r.json()).then(d=>setUpsells(d.upsells||[])).catch(()=>setUpsells([])).finally(()=>setLoadingUpsell(false))
+       .then(r=>r.json()).then(d=>setUpsells(d.upsells||[])).catch(()=>setUpsells([])).finally(()=>setLoadingUpsell(false))
       return
     }
     setLoadingUpsell(true)
     fetch(`/api/menu/${slug}/upsell`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cartItemIds:ids})})
-      .then(r=>r.json()).then(d=>setUpsells(d.upsells||[])).catch(()=>setUpsells([])).finally(()=>setLoadingUpsell(false))
+     .then(r=>r.json()).then(d=>setUpsells(d.upsells||[])).catch(()=>setUpsells([])).finally(()=>setLoadingUpsell(false))
   }, [cart, slug])
 
   const filteredData = useMemo(()=>{
@@ -128,7 +127,7 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
       return filteredData
     } else {
       const sub = filteredData.subs.find(s=>s.id===activeSub)
-      return { subs: sub ? [sub] : [], directItems: [] }
+      return { subs: sub? [sub] : [], directItems: [] }
     }
   }, [activeSub, filteredData])
 
@@ -163,45 +162,45 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
     return <div className="min-h-screen bg-[#fdf8f3] flex items-center justify-center p-10 text-center"><div><h1 className="text-2xl font-black">Menu je prazan</h1><p className="text-zinc-500 mt-2">Admin treba dodati kategorije</p></div></div>
   }
 
-  const payCashEnabled = restaurant?.paymentCashEnabled ?? true
-  const payTerminalEnabled = restaurant?.paymentCardTerminalEnabled ?? true
-  const payOnlineEnabled = restaurant?.paymentCardOnlineEnabled ?? false
+  const payCashEnabled = restaurant?.paymentCashEnabled?? true
+  const payTerminalEnabled = restaurant?.paymentCardTerminalEnabled?? true
+  const payOnlineEnabled = restaurant?.paymentCardOnlineEnabled?? false
 
   return (
     <div className="min-h-screen bg-[#fdf8f3] text-zinc-900 selection:bg-black selection:text-white">
       <div className="sticky top-0 z-30 backdrop-blur-2xl bg-white/80 border-b border-zinc-100">
-        <div className="max-w-6xl mx-auto px-4 h-[64px] flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-4 h- flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-black text-white grid place-items-center font-black text-[18px]">{restaurant?.name?.[0]?.toUpperCase()||"T"}</div>
+            <div className="w-10 h-10 rounded-2xl bg-black text-white grid place-items-center font-black text-">{restaurant?.name?.[0]?.toUpperCase()||"T"}</div>
             <div className="leading-tight">
-              <div className="font-black text-[15px] tracking-tight">{restaurant?.name}</div>
-              <div className="text-[11px] text-zinc-500 font-medium flex items-center gap-1.5"><span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"/> Stol {tableNumber} • QR Menu</div>
+              <div className="font-black text- tracking-tight">{restaurant?.name}</div>
+              <div className="text- text-zinc-500 font-medium flex items-center gap-1.5"><span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"/> Stol {tableNumber} • QR Menu</div>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <div className="relative">
-              <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Traži jelo, piće..." className="bg-zinc-100 focus:bg-white border border-transparent focus:border-zinc-200 rounded-full pl-9 pr-4 py-2.5 text-[13px] w-[140px] md:w-[240px] focus:w-[260px] transition-all outline-none font-medium"/>
+              <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Traži jelo, piće..." className="bg-zinc-100 focus:bg-white border border-transparent focus:border-zinc-200 rounded-full pl-9 pr-4 py-2.5 text- w- md:w- focus:w- transition-all outline-none font-medium"/>
               <span className="absolute left-3 top-2.5 text-zinc-400">⌕</span>
             </div>
-            <button onClick={()=>setShowCart(true)} className="relative bg-black text-white h-10 px-4 rounded-full font-black text-[13px] flex items-center gap-2 shadow-lg shadow-black/20 active:scale-95 transition">
+            <button onClick={()=>setShowCart(true)} className="relative bg-black text-white h-10 px-4 rounded-full font-black text- flex items-center gap-2 shadow-lg shadow-black/20 active:scale-95 transition">
               <span>Košarica</span>
-              <span className="bg-white text-black min-w-5 h-5 grid place-items-center rounded-full text-[11px] px-1">{cartCount}</span>
+              <span className="bg-white text-black min-w-5 h-5 grid place-items-center rounded-full text- px-1">{cartCount}</span>
             </button>
           </div>
         </div>
       </div>
 
       <div className="max-w-6xl mx-auto px-4 mt-4">
-        <div className="relative h-[160px] md:h-[200px] rounded-[24px] overflow-hidden bg-zinc-900">
+        <div className="relative h- md:h- rounded- overflow-hidden bg-zinc-900">
           <img src={currentMain.imageUrl || MAIN_IMAGES[currentMain.name] || MAIN_IMAGES["Hrana"]} className="w-full h-full object-cover opacity-80"/>
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"/>
           <div className="absolute bottom-0 left-0 right-0 p-5 md:p-6 flex justify-between items-end">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <h1 className="text-white font-black text-[28px] md:text-[34px] leading-none tracking-tight">{t(currentMain.name, currentMain.nameEn, currentMain.nameDe)}</h1>
-                {currentMain.sendsToKitchen && <span className="bg-orange-500 text-white text-[10px] font-black px-2.5 py-1 rounded-full">IDE U KUHINJU 🍳</span>}
+                <h1 className="text-white font-black text- md:text- leading-none tracking-tight">{t(currentMain.name, currentMain.nameEn, currentMain.nameDe)}</h1>
+                {currentMain.sendsToKitchen && <span className="bg-orange-500 text-white text- font-black px-2.5 py-1 rounded-full">IDE U KUHINJU 🍳</span>}
               </div>
-              <p className="text-white/70 text-[13px] max-w-[520px] leading-snug">{currentMain.description || ""}</p>
+              <p className="text-white/70 text- max-w- leading-snug">{currentMain.description || ""}</p>
             </div>
           </div>
         </div>
@@ -210,49 +209,49 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
       {currentMain.children.length>0 && (
         <div className="max-w-6xl mx-auto px-4 mt-4">
           <div className="flex gap-2.5 overflow-x-auto scrollbar-none pb-2">
-            <button onClick={()=>setActiveSub("all")} className={`shrink-0 h-[46px] px-5 rounded-full font-bold text-[13px] border transition-all flex items-center gap-2 ${activeSub==="all" ? "bg-black text-white border-black shadow-lg shadow-black/20" : "bg-white border-zinc-200 hover:border-zinc-300"}`}>
-              <span className="text-[14px]">✨</span> Sve
+            <button onClick={()=>{setActiveSub("all"); setOpenAccordion(null)}} className={`shrink-0 h- px-5 rounded-full font-bold text- border transition-all flex items-center gap-2 ${activeSub==="all"? "bg-black text-white border-black shadow-lg shadow-black/20" : "bg-white border-zinc-200 hover:border-zinc-300"}`}>
+              <span className="text-">✨</span> Sve
             </button>
             {filteredData.subs.map(sub=>(
-              <button key={sub.id} onClick={()=>{setActiveSub(sub.id); subRefs.current[sub.id]?.scrollIntoView({behavior:'smooth', block:'start'})}} className={`shrink-0 group flex items-center gap-2.5 h-[46px] pl-1.5 pr-4 rounded-full font-bold text-[13px] border transition-all ${activeSub===sub.id ? "bg-black text-white border-black shadow-lg" : "bg-white border-zinc-200 hover:border-zinc-300 hover:shadow-sm"}`}>
+              <button key={sub.id} onClick={()=>{setActiveSub(sub.id); setOpenAccordion(sub.id); subRefs.current[sub.id]?.scrollIntoView({behavior:'smooth', block:'start'})}} className={`shrink-0 group flex items-center gap-2.5 h- pl-1.5 pr-4 rounded-full font-bold text- border transition-all ${activeSub===sub.id? "bg-black text-white border-black shadow-lg" : "bg-white border-zinc-200 hover:border-zinc-300 hover:shadow-sm"}`}>
                 <div className="w-8 h-8 rounded-full overflow-hidden bg-zinc-100">
                   <img src={sub.imageUrl || SUB_IMAGES[sub.name] || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100"} className="w-full h-full object-cover"/>
                 </div>
                 <span className="whitespace-nowrap">{t(sub.name, sub.nameEn, sub.nameDe)}</span>
-                <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${activeSub===sub.id ? "bg-white/20 text-white" : "bg-zinc-100 text-zinc-600"}`}>{sub.items.length}</span>
+                <span className={`text- px-1.5 py-0.5 rounded-full ${activeSub===sub.id? "bg-white/20 text-white" : "bg-zinc-100 text-zinc-600"}`}>{sub.items.length}</span>
               </button>
             ))}
           </div>
         </div>
       )}
 
-      <div className="max-w-6xl mx-auto px-4 mt-6 pb-[120px]">
+      <div className="max-w-6xl mx-auto px-4 mt-6 pb-">
         {visibleItems.directItems && visibleItems.directItems.length>0 && (
           <section className="mb-8">
             <div className="grid md:grid-cols-2 gap-3">
               {visibleItems.directItems.map((item:any)=>{
                 const qty=getQty(item.id)
                 return (
-                  <div key={item.id} className={`group bg-white rounded-[20px] border p-3 flex gap-3.5 shadow-sm hover:shadow-md transition-all ${item.isBoosted ? 'border-amber-300 bg-amber-50/30' : 'border-zinc-100 hover:border-zinc-200'}`}>
-                    <div className="w-[96px] h-[96px] rounded-[16px] bg-zinc-100 overflow-hidden shrink-0 relative">
+                  <div key={item.id} className={`group bg-white rounded- border p-3 flex gap-3.5 shadow-sm hover:shadow-md transition-all ${item.isBoosted? 'border-amber-300 bg-amber-50/30' : 'border-zinc-100 hover:border-zinc-200'}`}>
+                    <div className="w- h- rounded- bg-zinc-100 overflow-hidden shrink-0 relative">
                       <img src={item.imageUrl || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200"} className="w-full h-full object-cover group-hover:scale-105 transition duration-500"/>
-                      {item.isBoosted && <div className="absolute top-1 left-1 bg-amber-400 text-black text-[8px] font-black px-1.5 py-0.5 rounded-full">🔥 BOOST {item.boostLevel}</div>}
-                      {qty>0 && <div className="absolute top-1.5 right-1.5 bg-black text-white text-[10px] font-black w-5 h-5 grid place-items-center rounded-full">{qty}</div>}
+                      {item.isBoosted && <div className="absolute top-1 left-1 bg-amber-400 text-black text- font-black px-1.5 py-0.5 rounded-full">🔥 BOOST {item.boostLevel}</div>}
+                      {qty>0 && <div className="absolute top-1.5 right-1.5 bg-black text-white text- font-black w-5 h-5 grid place-items-center rounded-full">{qty}</div>}
                     </div>
                     <div className="flex-1 min-w-0 flex flex-col">
                       <div className="flex justify-between items-start gap-2">
                         <h3 className="font-bold text-[14.5px] leading-[1.2] tracking-tight line-clamp-2">{t(item.name,item.nameEn,item.nameDe)}</h3>
                         <span className="shrink-0 bg-zinc-900 text-white text-[12.5px] font-black px-2.5 py-1 rounded-full">{item.price.toFixed(2)}€</span>
                       </div>
-                      <p className="text-[12px] text-zinc-500 leading-[1.35] mt-1 line-clamp-2">{tDesc(item)||"Svježe pripremljeno"}</p>
+                      <p className="text- text-zinc-500 leading-[1.35] mt-1 line-clamp-2">{tDesc(item)||"Svježe pripremljeno"}</p>
                       <AllergensBadge item={item} lang={lang} />
                       <div className="mt-auto flex justify-end pt-2">
-                        {qty===0 ? (
-                          <button onClick={()=>add(item.id)} className="bg-black text-white h-8 px-4 rounded-full text-[12px] font-black hover:bg-zinc-800 active:scale-95 transition">+ Dodaj</button>
+                        {qty===0? (
+                          <button onClick={()=>add(item.id)} className="bg-black text-white h-8 px-4 rounded-full text- font-black hover:bg-zinc-800 active:scale-95 transition">+ Dodaj</button>
                         ) : (
                           <div className="flex items-center gap-1 bg-black text-white rounded-full p-1 shadow">
                             <button onClick={()=>dec(item.id)} className="w-7 h-7 grid place-items-center rounded-full hover:bg-white/15">−</button>
-                            <span className="w-6 text-center text-[12px] font-black">{qty}</span>
+                            <span className="w-6 text-center text- font-black">{qty}</span>
                             <button onClick={()=>add(item.id)} className="w-7 h-7 grid place-items-center rounded-full bg-white text-black">+</button>
                           </div>
                         )}
@@ -265,68 +264,89 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
           </section>
         )}
 
-        {visibleItems.subs.map(sub=>(
-          <section key={sub.id} ref={el=>{subRefs.current[sub.id]=el}} className="mb-10 scroll-mt-[140px]">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-xl overflow-hidden bg-zinc-100 border"><img src={sub.imageUrl || SUB_IMAGES[sub.name] || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100"} className="w-full h-full object-cover"/></div>
-              <div className="flex-1">
-                <h2 className="font-black text-[18px] tracking-tight leading-none flex items-center gap-2">
-                  {t(sub.name,sub.nameEn,sub.nameDe)}
-                  {sub.sendsToKitchen && <span className="bg-orange-50 text-orange-600 border border-orange-200 text-[9px] px-1.5 py-0.5 rounded-full">KUHINJA</span>}
-                </h2>
-                <p className="text-[11px] text-zinc-500 mt-0.5">{sub.items.length} artikala</p>
+        {visibleItems.subs.map(sub=>{
+          const isOpen = activeSub!== "all"? true : openAccordion === sub.id
+          return (
+          <section key={sub.id} ref={el=>{subRefs.current[sub.id]=el}} className="mb-3 scroll-mt- bg-white rounded- border border-zinc-100 overflow-hidden shadow-sm">
+            <button
+              onClick={()=>{
+                if(activeSub!== "all"){
+                  setActiveSub("all")
+                  setOpenAccordion(null)
+                } else {
+                  const willOpen = openAccordion!== sub.id
+                  setOpenAccordion(willOpen? sub.id : null)
+                  if(willOpen) setTimeout(()=>subRefs.current[sub.id]?.scrollIntoView({behavior:'smooth', block:'start'}), 80)
+                }
+              }}
+              className="w-full flex items-center gap-3 p-3 text-left"
+            >
+              <div className="w-12 h-12 rounded-xl overflow-hidden bg-zinc-100 border shrink-0">
+                <img src={sub.imageUrl || SUB_IMAGES[sub.name] || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100"} className="w-full h-full object-cover"/>
               </div>
-            </div>
-            <div className="grid md:grid-cols-2 gap-3">
-              {sub.items.map((item:any)=>{
-                const qty=getQty(item.id)
-                return (
-                  <div key={item.id} className={`group bg-white rounded-[20px] border p-3 flex gap-3.5 shadow-sm hover:shadow-md transition-all ${item.isBoosted ? 'border-amber-300 bg-amber-50/30' : 'border-zinc-100 hover:border-zinc-200'}`}>
-                    <div className="w-[96px] h-[96px] rounded-[16px] bg-zinc-100 overflow-hidden shrink-0 relative">
-                      <img src={item.imageUrl || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200"} className="w-full h-full object-cover group-hover:scale-105 transition duration-500"/>
-                      {item.isBoosted && <div className="absolute top-1 left-1 bg-amber-400 text-black text-[8px] font-black px-1.5 py-0.5 rounded-full">🔥 {item.boostLevel}</div>}
-                      {qty>0 && <div className="absolute top-1.5 right-1.5 bg-black text-white text-[10px] font-black w-5 h-5 grid place-items-center rounded-full">{qty}</div>}
-                    </div>
-                    <div className="flex-1 min-w-0 flex flex-col">
-                      <div className="flex justify-between items-start gap-2">
-                        <h3 className="font-bold text-[14.5px] leading-[1.2] tracking-tight line-clamp-2">{t(item.name,item.nameEn,item.nameDe)}</h3>
-                        <span className="shrink-0 bg-zinc-900 text-white text-[12.5px] font-black px-2.5 py-1 rounded-full">{item.price.toFixed(2)}€</span>
-                      </div>
-                      <p className="text-[12px] text-zinc-500 leading-[1.35] mt-1 line-clamp-2">{tDesc(item)||""}</p>
-                      <AllergensBadge item={item} lang={lang} />
-                      <div className="mt-auto flex justify-end pt-2">
-                        {qty===0 ? (
-                          <button onClick={()=>add(item.id)} className="bg-black text-white h-8 px-4 rounded-full text-[12px] font-black hover:bg-zinc-800 active:scale-95 transition">+ Dodaj</button>
-                        ) : (
-                          <div className="flex items-center gap-1 bg-black text-white rounded-full p-1 shadow">
-                            <button onClick={()=>dec(item.id)} className="w-7 h-7 grid place-items-center rounded-full hover:bg-white/15">−</button>
-                            <span className="w-6 text-center text-[12px] font-black">{qty}</span>
-                            <button onClick={()=>add(item.id)} className="w-7 h-7 grid place-items-center rounded-full bg-white text-black">+</button>
+              <div className="flex-1 min-w-0">
+                <h2 className="font-black text- tracking-tight leading-none flex items-center gap-2">
+                  {t(sub.name,sub.nameEn,sub.nameDe)}
+                  {sub.sendsToKitchen && <span className="bg-orange-50 text-orange-600 border border-orange-200 text- px-1.5 py-0.5 rounded-full">KUHINJA</span>}
+                </h2>
+                <p className="text- text-zinc-500 mt-1">{sub.items.length} artikala • {isOpen? 'tapni za zatvaranje' : 'tapni za otvaranje'}</p>
+              </div>
+              <div className={`w-9 h-9 rounded-full bg-zinc-900 text-white grid place-items-center text- transition-transform ${isOpen? 'rotate-180' : ''}`}>⌄</div>
+            </button>
+            {isOpen && (
+              <div className="p-3 pt-0">
+                <div className="grid md:grid-cols-2 gap-3">
+                  {sub.items.map((item:any)=>{
+                    const qty=getQty(item.id)
+                    return (
+                      <div key={item.id} className={`group bg-[#fdf8f3] rounded- border p-3 flex gap-3.5 shadow-sm hover:shadow-md transition-all ${item.isBoosted? 'border-amber-300 bg-amber-50/30' : 'border-zinc-100 hover:border-zinc-200'}`}>
+                        <div className="w- h- rounded- bg-zinc-100 overflow-hidden shrink-0 relative">
+                          <img src={item.imageUrl || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200"} className="w-full h-full object-cover group-hover:scale-105 transition duration-500"/>
+                          {item.isBoosted && <div className="absolute top-1 left-1 bg-amber-400 text-black text- font-black px-1.5 py-0.5 rounded-full">🔥 {item.boostLevel}</div>}
+                          {qty>0 && <div className="absolute top-1.5 right-1.5 bg-black text-white text- font-black w-5 h-5 grid place-items-center rounded-full">{qty}</div>}
+                        </div>
+                        <div className="flex-1 min-w-0 flex flex-col">
+                          <div className="flex justify-between items-start gap-2">
+                            <h3 className="font-bold text- leading-[1.2] tracking-tight line-clamp-2">{t(item.name,item.nameEn,item.nameDe)}</h3>
+                            <span className="shrink-0 bg-zinc-900 text-white text-[11.5px] font-black px-2 py-1 rounded-full">{item.price.toFixed(2)}€</span>
                           </div>
-                        )}
+                          <p className="text- text-zinc-500 leading-[1.35] mt-1 line-clamp-2">{tDesc(item)||""}</p>
+                          <AllergensBadge item={item} lang={lang} />
+                          <div className="mt-auto flex justify-end pt-2">
+                            {qty===0? (
+                              <button onClick={()=>add(item.id)} className="bg-black text-white h-7 px-3.5 rounded-full text- font-black hover:bg-zinc-800 active:scale-95 transition">+ Dodaj</button>
+                            ) : (
+                              <div className="flex items-center gap-1 bg-black text-white rounded-full p-1 shadow">
+                                <button onClick={()=>dec(item.id)} className="w-6 h-6 grid place-items-center rounded-full hover:bg-white/15">−</button>
+                                <span className="w-5 text-center text- font-black">{qty}</span>
+                                <button onClick={()=>add(item.id)} className="w-6 h-6 grid place-items-center rounded-full bg-white text-black">+</button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
           </section>
-        ))}
+        )})}
       </div>
 
       <div className="fixed bottom-0 left-0 right-0 z-20">
         <div className="max-w-6xl mx-auto p-3">
-          <div className="bg-zinc-900/95 backdrop-blur-2xl rounded-[26px] p-1.5 flex gap-1.5 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] border border-white/10">
+          <div className="bg-zinc-900/95 backdrop-blur-2xl rounded- p-1.5 flex gap-1.5 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] border border-white/10">
             {mains.map(m=>{
               const active=m.id===activeMain
               const count = m.items.length + m.children.reduce((s,c)=>s+c.items.length,0)
               return (
-                <button key={m.id} onClick={()=>setActiveMain(m.id)} className={`flex-1 relative flex flex-col items-center justify-center gap-1 py-2.5 rounded-[18px] transition-all ${active ? "bg-white text-black shadow-lg" : "text-white/60 hover:text-white hover:bg-white/10"}`}>
+                <button key={m.id} onClick={()=>setActiveMain(m.id)} className={`flex-1 relative flex flex-col items-center justify-center gap-1 py-2.5 rounded- transition-all ${active? "bg-white text-black shadow-lg" : "text-white/60 hover:text-white hover:bg-white/10"}`}>
                   <div className={`w-7 h-7 rounded-full overflow-hidden ${active?"bg-zinc-100":"bg-white/10"} grid place-items-center`}>
                     <img src={m.imageUrl || MAIN_IMAGES[m.name] || MAIN_IMAGES["Hrana"]} className="w-full h-full object-cover opacity-80"/>
                   </div>
-                  <span className="text-[11px] font-black tracking-wide leading-none">{t(m.name,m.nameEn,m.nameDe)}</span>
-                  <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold leading-none ${active ? "bg-black text-white" : "bg-white/15 text-white/70"}`}>{count}</span>
+                  <span className="text- font-black tracking-wide leading-none">{t(m.name,m.nameEn,m.nameDe)}</span>
+                  <span className={`text- px-1.5 py-0.5 rounded-full font-bold leading-none ${active? "bg-black text-white" : "bg-white/15 text-white/70"}`}>{count}</span>
                 </button>
               )
             })}
@@ -336,9 +356,9 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
 
       {showCart && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end">
-          <div className="bg-white w-full rounded-t-[28px] max-h-[92vh] flex flex-col shadow-2xl">
+          <div className="bg-white w-full rounded-t- max-h- flex flex-col shadow-2xl">
             <div className="p-5 flex justify-between items-center border-b">
-              <div><h2 className="font-black text-[18px] tracking-tight">Košarica • Stol {tableNumber}</h2><p className="text-[11px] text-zinc-500">{cartCount} artikala</p></div>
+              <div><h2 className="font-black text- tracking-tight">Košarica • Stol {tableNumber}</h2><p className="text- text-zinc-500">{cartCount} artikala</p></div>
               <button onClick={()=>setShowCart(false)} className="w-9 h-9 rounded-full bg-zinc-100 grid place-items-center font-bold">✕</button>
             </div>
             <div className="flex-1 overflow-auto p-4 space-y-2.5">
@@ -347,30 +367,29 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
                   <div key={i.id} className="flex gap-3 border border-zinc-100 p-3 rounded-2xl bg-zinc-50/50">
                     <div className="w-12 h-12 rounded-xl bg-zinc-100 overflow-hidden"><img src={i.imageUrl||""} className="w-full h-full object-cover"/></div>
                     <div className="flex-1">
-                      <div className="flex justify-between"><span className="font-bold text-[13px]">{t(i.name,i.nameEn,i.nameDe)}</span><span className="font-black text-[13px]">{(i.price*i.qty).toFixed(2)}€</span></div>
+                      <div className="flex justify-between"><span className="font-bold text-">{t(i.name,i.nameEn,i.nameDe)}</span><span className="font-black text-">{(i.price*i.qty).toFixed(2)}€</span></div>
                       <div className="flex justify-between items-center mt-1">
-                        <span className="text-[10px] text-zinc-500">{i.allergens ? `⚠️ ${i.allergens}` : ''}</span>
-                        <div className="flex items-center gap-1 bg-black text-white rounded-full p-0.5"><button onClick={()=>dec(i.id)} className="w-6 h-6 grid place-items-center">−</button><span className="w-5 text-center text-[11px]">{i.qty}</span><button onClick={()=>add(i.id)} className="w-6 h-6 grid place-items-center bg-white text-black rounded-full">+</button></div>
+                        <span className="text- text-zinc-500">{i.allergens? `⚠ ${i.allergens}` : ''}</span>
+                        <div className="flex items-center gap-1 bg-black text-white rounded-full p-0.5"><button onClick={()=>dec(i.id)} className="w-6 h-6 grid place-items-center">−</button><span className="w-5 text-center text-">{i.qty}</span><button onClick={()=>add(i.id)} className="w-6 h-6 grid place-items-center bg-white text-black rounded-full">+</button></div>
                       </div>
                     </div>
                   </div>
                 ))}
 
-              {/* UPSELL SECTION */}
               {upsells.length>0 && (
                 <div className="pt-4 border-t mt-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-[11px] font-black uppercase tracking-wider">✨ Preporučujemo uz narudžbu</span>
-                    {loadingUpsell && <span className="text-[10px] text-zinc-400">učitavam...</span>}
+                    <span className="text- font-black uppercase tracking-wider">✨ Preporučujemo uz narudžbu</span>
+                    {loadingUpsell && <span className="text- text-zinc-400">učitavam...</span>}
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     {upsells.map((u:any)=>(
                       <div key={u.id} className="bg-amber-50 border border-amber-200 rounded-2xl p-2.5 flex gap-2">
                         <div className="w-12 h-12 rounded-xl bg-white overflow-hidden shrink-0"><img src={u.imageUrl||"https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200"} className="w-full h-full object-cover"/></div>
                         <div className="flex-1 min-w-0">
-                          <div className="font-bold text-[12px] leading-tight line-clamp-1">{t(u.name,u.nameEn,u.nameDe)}</div>
-                          <div className="text-[11px] text-zinc-600">{u.price.toFixed(2)}€ {u.isBoosted && `🔥${u.boostLevel}`}</div>
-                          <button onClick={()=>add(u.id)} className="mt-1 bg-black text-white text-[11px] font-bold px-3 py-1 rounded-full">+ Dodaj</button>
+                          <div className="font-bold text- leading-tight line-clamp-1">{t(u.name,u.nameEn,u.nameDe)}</div>
+                          <div className="text- text-zinc-600">{u.price.toFixed(2)}€ {u.isBoosted && `🔥${u.boostLevel}`}</div>
+                          <button onClick={()=>add(u.id)} className="mt-1 bg-black text-white text- font-bold px-3 py-1 rounded-full">+ Dodaj</button>
                         </div>
                       </div>
                     ))}
@@ -381,50 +400,50 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang, slug 
 
             <div className="p-4 border-t bg-zinc-50 space-y-3">
               <div>
-                <div className="text-[11px] font-black uppercase tracking-wider opacity-60 mb-2 flex justify-between">
+                <div className="text- font-black uppercase tracking-wider opacity-60 mb-2 flex justify-between">
                   <span>💝 Napojnica za osoblje</span>
                   {tipPercent>0 && <span className="text-black">+{tipAmount.toFixed(2)}€</span>}
                 </div>
                 <div className="grid grid-cols-4 gap-2">
                   {[0,10,20,30].map(pct=>(
-                    <button key={pct} onClick={()=>setTipPercent(pct)} className={`h-10 rounded-full font-bold text-[13px] border-2 transition ${tipPercent===pct ? 'bg-black text-white border-black' : 'bg-white border-zinc-200 hover:border-zinc-300'}`}>
-                      {pct===0 ? 'Bez tipa' : `${pct}%`}
+                    <button key={pct} onClick={()=>setTipPercent(pct)} className={`h-10 rounded-full font-bold text- border-2 transition ${tipPercent===pct? 'bg-black text-white border-black' : 'bg-white border-zinc-200 hover:border-zinc-300'}`}>
+                      {pct===0? 'Bez tipa' : `${pct}%`}
                     </button>
                   ))}
                 </div>
               </div>
 
-              <div className="text-[11px] font-black uppercase tracking-wider opacity-60">Način plaćanja</div>
+              <div className="text- font-black uppercase tracking-wider opacity-60">Način plaćanja</div>
               <div className="grid grid-cols-3 gap-2">
                 {payCashEnabled && (
                   <button onClick={()=>setPaymentMethod('CASH')} className={`p-3 rounded-2xl border-2 text-left transition ${paymentMethod==='CASH'?'border-black bg-black text-white':'border-zinc-200 bg-white'}`}>
-                    <div className="text-[16px]">💵</div><div className="font-bold text-[12px] mt-1">Gotovina</div><div className="text-[10px] opacity-70 leading-tight mt-0.5">Plati konobaru</div>
+                    <div className="text-">💵</div><div className="font-bold text- mt-1">Gotovina</div><div className="text- opacity-70 leading-tight mt-0.5">Plati konobaru</div>
                   </button>
                 )}
                 {payTerminalEnabled && (
                   <button onClick={()=>setPaymentMethod('CARD_TERMINAL')} className={`p-3 rounded-2xl border-2 text-left transition ${paymentMethod==='CARD_TERMINAL'?'border-black bg-black text-white':'border-zinc-200 bg-white'}`}>
-                    <div className="text-[16px]">💳</div><div className="font-bold text-[12px] mt-1">POS</div><div className="text-[10px] opacity-70 leading-tight mt-0.5">Kartica na stolu</div>
+                    <div className="text-">💳</div><div className="font-bold text- mt-1">POS</div><div className="text- opacity-70 leading-tight mt-0.5">Kartica na stolu</div>
                   </button>
                 )}
-                {payOnlineEnabled ? (
+                {payOnlineEnabled? (
                   <button onClick={()=>setPaymentMethod('CARD_ONLINE')} className={`p-3 rounded-2xl border-2 text-left transition ${paymentMethod==='CARD_ONLINE'?'border-black bg-black text-white':'border-zinc-200 bg-white'}`}>
-                    <div className="text-[16px]">🌐</div><div className="font-bold text-[12px] mt-1">Online</div><div className="text-[10px] opacity-70 leading-tight mt-0.5">Apple/Google Pay</div>
+                    <div className="text-">🌐</div><div className="font-bold text- mt-1">Online</div><div className="text- opacity-70 leading-tight mt-0.5">Apple/Google Pay</div>
                   </button>
                 ) : (
                   <button disabled className="p-3 rounded-2xl border-2 border-zinc-100 bg-zinc-100 opacity-50 text-left">
-                    <div className="text-[16px]">🌐</div><div className="font-bold text-[12px] mt-1">Online</div><div className="text-[10px] mt-0.5">Uskoro</div>
+                    <div className="text-">🌐</div><div className="font-bold text- mt-1">Online</div><div className="text- mt-0.5">Uskoro</div>
                   </button>
                 )}
               </div>
 
-              <div className="bg-white border rounded-2xl p-3 space-y-1 text-[13px]">
+              <div className="bg-white border rounded-2xl p-3 space-y-1 text-">
                 <div className="flex justify-between"><span className="text-zinc-500">Međuzbroj</span><span className="font-bold">{subtotal.toFixed(2)}€</span></div>
                 {tipPercent>0 && <div className="flex justify-between"><span className="text-zinc-500">Napojnica {tipPercent}%</span><span className="font-bold">+{tipAmount.toFixed(2)}€</span></div>}
-                <div className="flex justify-between font-black text-[16px] pt-1 border-t mt-1"><span>Ukupno</span><span>{total.toFixed(2)}€</span></div>
+                <div className="flex justify-between font-black text- pt-1 border-t mt-1"><span>Ukupno</span><span>{total.toFixed(2)}€</span></div>
               </div>
 
-              <button disabled={sending || cart.length===0} onClick={order} className="w-full bg-black text-white py-4 rounded-full font-black text-[15px] shadow-lg shadow-black/20 disabled:opacity-50 active:scale-[0.98] transition">
-                {sending ? "Šaljem..." : paymentMethod==='CASH' ? `Naruči • Gotovina • ${total.toFixed(2)}€` : paymentMethod==='CARD_TERMINAL' ? `Naruči • POS • ${total.toFixed(2)}€` : `Plati online • ${total.toFixed(2)}€`}
+              <button disabled={sending || cart.length===0} onClick={order} className="w-full bg-black text-white py-4 rounded-full font-black text- shadow-lg shadow-black/20 disabled:opacity-50 active:scale-[0.98] transition">
+                {sending? "Šaljem..." : paymentMethod==='CASH'? `Naruči • Gotovina • ${total.toFixed(2)}€` : paymentMethod==='CARD_TERMINAL'? `Naruči • POS • ${total.toFixed(2)}€` : `Plati online • ${total.toFixed(2)}€`}
               </button>
             </div>
           </div>
