@@ -420,7 +420,7 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
             <div className="p-4 border-t bg-zinc-50 space-y-3">
               <div>
                 <div className="text- font-black uppercase tracking-wider opacity-60 mb-2 flex justify-between">
-                  <span><span>💝 {T.tipForStaff}</span>
+                  <span>💝 {T.tipForStaff}</span>
                   {tipPercent>0 && <span className="text-black">+{tipAmount.toFixed(2)}€</span>}
                 </div>
                 <div className="grid grid-cols-4 gap-2">
