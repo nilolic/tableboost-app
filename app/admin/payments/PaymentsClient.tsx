@@ -92,13 +92,6 @@ export default function PaymentsClient({ initial }: { initial: any }) {
         {msg && <span className="text-sm">{msg}</span>}
       </div>
 
-      <div className="bg-slate-50 border rounded-2xl p-4 text-xs opacity-70">
-        <b>Što je spremno sad bez ključa?</b><br/>
-        • Baza ima paymentMethod, paymentStatus<br/>
-        • Checkout će prikazivati metode koje upališ<br/>
-        • Mock provider simulira plaćanje<br/>
-        • Kad dodaš Stripe ključ, samo zamijenimo MockProvider sa StripeProvider u lib/payments/index.ts - 5 linija koda
-      </div>
     </div>
   )
 }
