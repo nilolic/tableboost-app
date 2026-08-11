@@ -86,6 +86,7 @@ export default async function MenuPage({ params, searchParams }: { params: { res
   const restaurantPublic = {
     name: (restaurant as any).name,
     slug: (restaurant as any).slug,
+    serviceMode: (restaurant as any).serviceMode || 'TABLE',
     paymentCashEnabled: (restaurant as any).paymentCashEnabled ?? true,
     paymentCardTerminalEnabled: (restaurant as any).paymentCardTerminalEnabled ?? true,
     paymentCardOnlineEnabled: (restaurant as any).paymentCardOnlineEnabled ?? false,
