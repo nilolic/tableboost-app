@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/auth'
@@ -41,7 +42,7 @@ export async function POST(req:Request){
           ]
         },
         tables: {
-          create: Array.from({length:8},(_,i)=>({ number:i+1, qrSlug:`${slug}-stol-${i+1}` }))
+          create: Array.from({length:8},(_,i)=>({ number:i+1, qrSlug:`${slug}-stol-${i+1}-${crypto.randomBytes(3).toString('base64url')}` }))
         },
         categories: {
           create: [

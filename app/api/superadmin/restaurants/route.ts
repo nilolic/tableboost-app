@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/auth'
@@ -11,7 +12,7 @@ export async function POST(req: Request){
     const ex = await prisma.restaurant.findUnique({where:{slug}})
     if(ex) return NextResponse.json({error:'Slug postoji'},{status:400})
     const hash = await bcrypt.hash(ownerPass,10)
-    const r = await prisma.restaurant.create({ data: { name, slug, users:{ create:{ email:ownerEmail, name:ownerName, password:hash, role:'RESTAURANT_ADMIN' } }, tables:{ create: Array.from({length:10},(_,i)=>({ number:i+1, qrSlug:`${slug}-stol-${i+1}` })) } } })
+    const r = await prisma.restaurant.create({ data: { name, slug, users:{ create:{ email:ownerEmail, name:ownerName, password:hash, role:'RESTAURANT_ADMIN' } }, tables:{ create: Array.from({length:10},(_,i)=>({ number:i+1, qrSlug:`${slug}-stol-${i+1}-${crypto.randomBytes(3).toString('base64url')}` })) } } })
     return NextResponse.json({ok:true,restaurant:r})
   }catch(e:any){ return NextResponse.json({error:e.message},{status:500}) }
 }
