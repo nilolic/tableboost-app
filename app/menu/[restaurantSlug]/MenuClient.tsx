@@ -438,6 +438,7 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
                   <div>
                     <div className="font-black text- leading-tight uppercase">{lang==='en' ? 'Pickup at the bar' : lang==='de' ? 'Abholung an der Theke' : 'Preuzimanje na šanku'}</div>
                     <div className="text- leading-[1.35] mt-0.5 font-medium">{lang==='en' ? 'Order and pay here, then pick up your food/drinks at the bar when ready. You will get a notification.' : lang==='de' ? 'Hier bestellen und bezahlen, dann Essen/Getränke an der Theke abholen, wenn es fertig ist. Sie erhalten eine Benachrichtigung.' : 'Ovdje naručite i platite, a piće/hranu preuzmite na šanku kad bude spremno. Dobićete obavijest.'}</div>
+                    <div className="text- font-bold mt-2 leading-[1.35]">{lang==='en' ? 'Stay on this page to get notified!' : lang==='de' ? 'Bleiben Sie auf dieser Seite, um benachrichtigt zu werden!' : 'Ostanite na ovoj stranici da biste dobili obavijest!'}</div>
                   </div>
                 </div>
               ) : (
