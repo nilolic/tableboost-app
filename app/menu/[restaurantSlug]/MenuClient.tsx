@@ -437,7 +437,7 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
                   <div className="w-9 h-9 bg-black text-white rounded-full grid place-items-center shrink-0 text-">🛎️</div>
                   <div>
                     <div className="font-black text- leading-tight uppercase">Preuzimanje na šanku</div>
-                    <div className="text- leading-[1.35] mt-0.5 font-medium">Ovdje naručite i platite, a piće/hranu preuzmite na šanku kad bude spremno. Dobićete obavijest.</div>
+                    <div className="text- leading-[1.35] mt-0.5 font-medium">Ovdje naručite i platite, a piće/hranu preuzmite na šanku kad bude spremno. Ostanite na ovoj stranici da biste dobili obavijest - Vaša narudžba je spremna za preuzimanje na šanku!</div>
                   </div>
                 </div>
               ) : (
