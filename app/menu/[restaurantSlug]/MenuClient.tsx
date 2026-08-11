@@ -432,18 +432,18 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
                 </div>
               </div>
 
-               {restaurant?.serviceMode==='BAR'? (
+                             {restaurant?.serviceMode==='BAR'? (
                 <div className="bg-amber-300 border-2 border-black rounded-2xl p-3 flex gap-2.5 items-start shadow-sm">
-                  <div className="w-9 h-9 bg-black text-white rounded-full grid place-items-center shrink-0 text-">🛎️</div>
+                  <div className="w-9 h-9 bg-black text-white rounded-full grid place-items-center shrink-0 text-">🛎</div>
                   <div>
-                    <div className="font-black text- leading-tight uppercase">Preuzimanje na šanku</div>
-                    <div className="text- leading-[1.35] mt-0.5 font-medium">Ovdje naručite i platite, a piće/hranu preuzmite na šanku kad bude spremno. Ostanite na ovoj stranici da biste dobili obavijest - Vaša narudžba je spremna za preuzimanje na šanku!</div>
+                    <div className="font-black text- leading-tight uppercase">{lang==='en' ? 'Pickup at the bar' : lang==='de' ? 'Abholung an der Theke' : 'Preuzimanje na šanku'}</div>
+                    <div className="text- leading-[1.35] mt-0.5 font-medium">{lang==='en' ? 'Order and pay here, then pick up your food/drinks at the bar when ready. You will get a notification.' : lang==='de' ? 'Hier bestellen und bezahlen, dann Essen/Getränke an der Theke abholen, wenn es fertig ist. Sie erhalten eine Benachrichtigung.' : 'Ovdje naručite i platite, a piće/hranu preuzmite na šanku kad bude spremno. Dobićete obavijest.'}</div>
                   </div>
                 </div>
               ) : (
                 <div className="bg-white border border-zinc-200 rounded-2xl p-2.5 flex gap-2 items-center">
-                  <div className="text-">🍽️</div>
-                  <div className="text- font-medium">Poslužuje konobar - dostava na stol {tableNumber}</div>
+                  <div className="text-">🍽</div>
+                  <div className="text- font-medium">{lang==='en' ? `Waiter service - delivery to table ${tableNumber||''}` : lang==='de' ? `Bedienung - Lieferung an Tisch ${tableNumber||''}` : `Poslužuje konobar - dostava na stol ${tableNumber}`}</div>
                 </div>
               )}
 
