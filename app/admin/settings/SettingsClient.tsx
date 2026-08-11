@@ -16,6 +16,7 @@ export default function SettingsClient({ restaurant }: { restaurant:any }) {
     vatNumber: restaurant.vatNumber||"",
     description: restaurant.description||"",
     workingHours: restaurant.workingHours||"",
+    serviceMode: restaurant.serviceMode||"TABLE",
   })
   const [saving, setSaving] = useState(false)
   const [msg, setMsg] = useState("")
@@ -42,6 +43,23 @@ export default function SettingsClient({ restaurant }: { restaurant:any }) {
       <div>
         <h1 className="text-2xl font-bold">Podaci objekta</h1>
         <p className="text-sm opacity-60 mt-1">Ovi podaci se koriste za meni, račune i fiskalizaciju</p>
+      </div>
+
+      <div className="bg-white rounded-2xl border border-black/5 p-5 space-y-5">
+        <h2 className="font-bold text-sm">Način posluživanja</h2>
+        <div className="grid gap-3">
+          <label className="text-xs font-semibold opacity-70 uppercase tracking-widest">Kako gosti preuzimaju narudžbu?</label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <button type="button" onClick={()=>setForm({...form, serviceMode:'TABLE'})} className={`text-left border rounded-xl p-4 transition ${form.serviceMode==='TABLE'? 'border-black bg-black text-white' : 'border-black/10 bg-white hover:border-black/20'}`}>
+              <div className="font-bold text-sm">🍽️ Poslužuje konobar</div>
+              <div className={`text-xs mt-1 ${form.serviceMode==='TABLE'? 'opacity-70' : 'opacity-60'}`}>Standardno - gost naručuje za stol</div>
+            </button>
+            <button type="button" onClick={()=>setForm({...form, serviceMode:'BAR'})} className={`text-left border rounded-xl p-4 transition ${form.serviceMode==='BAR'? 'border-black bg-black text-white' : 'border-black/10 bg-white hover:border-black/20'}`}>
+              <div className="font-bold text-sm">🛎️ Preuzimanje na šanku</div>
+              <div className={`text-xs mt-1 ${form.serviceMode==='BAR'? 'opacity-70' : 'opacity-60'}`}>Gost preuzima sam na šanku - prikaz iznad plaćanja</div>
+            </button>
+          </div>
+        </div>
       </div>
 
       <div className="bg-white rounded-2xl border border-black/5 p-5 space-y-5">

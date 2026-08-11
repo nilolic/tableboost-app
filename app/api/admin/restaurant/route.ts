@@ -16,7 +16,7 @@ export async function PATCH(req: Request) {
   if (!user?.restaurantId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const body = await req.json()
 
-  const allowed = ["name","legalName","address","city","postalCode","oib","phone","email","website","iban","vatNumber","description","workingHours","logoUrl","loginImageUrl"]
+  const allowed = ["name","legalName","address","city","postalCode","oib","phone","email","website","iban","vatNumber","description","workingHours","logoUrl","loginImageUrl","serviceMode"]
   const data:any = {}
   for(const k of allowed){
     if(k in body) data[k] = body[k] || null

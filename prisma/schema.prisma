@@ -32,6 +32,7 @@ model Restaurant {
   vatNumber String?
   description String?
   workingHours String?
+  serviceMode String @default("TABLE") // TABLE=konobar, BAR=sank
   paymentCashEnabled Boolean @default(true)
   paymentCardTerminalEnabled Boolean @default(true)
   paymentCardOnlineEnabled Boolean @default(false)

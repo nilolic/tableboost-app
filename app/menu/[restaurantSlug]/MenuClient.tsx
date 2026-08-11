@@ -432,6 +432,21 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
                 </div>
               </div>
 
+               {restaurant?.serviceMode==='BAR'? (
+                <div className="bg-amber-300 border-2 border-black rounded-2xl p-3 flex gap-2.5 items-start shadow-sm">
+                  <div className="w-9 h-9 bg-black text-white rounded-full grid place-items-center shrink-0 text-">🛎️</div>
+                  <div>
+                    <div className="font-black text- leading-tight uppercase">Preuzimanje na šanku</div>
+                    <div className="text- leading-[1.35] mt-0.5 font-medium">Ovdje naručite i platite, a piće/hranu preuzmite na šanku kad bude spremno. Dobićete obavijest.</div>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-white border border-zinc-200 rounded-2xl p-2.5 flex gap-2 items-center">
+                  <div className="text-">🍽️</div>
+                  <div className="text- font-medium">Poslužuje konobar - dostava na stol {tableNumber}</div>
+                </div>
+              )}
+
               <div className="text- font-black uppercase tracking-wider opacity-60">Način plaćanja</div>
               <div className="grid grid-cols-3 gap-2">
                 {payCashEnabled && (
