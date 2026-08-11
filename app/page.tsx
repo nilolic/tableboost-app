@@ -637,6 +637,21 @@ export default function Page() {
       </section>
 
       {/* FOOTER */}
+       {/* EKOSUSTAV SEO BAR */}
+      <div className="border-t border-zinc-200 bg-white">
+        <div className="mx-auto max-w- px-5 lg:px-6 py-3 flex flex-col sm:flex-row items-center justify-center gap-2 text- text-zinc-600 text-center">
+          <span className="inline-flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#d4ff00] animate-pulse border border-black/10"></span>
+            Dio istog ekosustava:
+          </span>
+          <a href="https://haccp-pro.app" target="_blank" className="font-bold text-zinc-900 underline decoration-zinc-300 decoration-2 underline-offset-2 hover:decoration-black">
+            HACCP-PRO - digitalna HACCP knjiga koja OCR-om očitava LOT i rok trajanja
+          </a>
+          <a href="https://haccp-pro.app" target="_blank" className="ml-1 inline-flex rounded-full bg-zinc-900 text-white px-2.5 py-0.5 text- font-bold">
+            HACCP-PRO →
+          </a>
+        </div>
+      </div>
       <footer className="border-t border-zinc-200 bg-[#FFFEFB]">
         <div className="mx-auto flex max-w-[1240px] flex-col lg:flex-row items-center justify-between gap-3 px-5 lg:px-6 py-6">
           <div className="flex items-center gap-3">
