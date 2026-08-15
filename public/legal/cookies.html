@@ -12,8 +12,18 @@ fetch('/api/public/company').then(r=>r.json()).then(co=>{
   document.getElementById('badge').textContent=co.is_demo?'DEMO':'Ažurirano: '+new Date().toLocaleDateString('hr-HR');
   document.getElementById('who').innerHTML=`<b>Pružatelj:</b> ${c.naziv} - TableBoost<br>${c.email}`;
   document.getElementById('c').innerHTML=`
-<h2>1. Nužni</h2><table><tr><th>Naziv</th><th>Svrha</th><th>Trajanje</th></tr><tr><td>tableboost-token</td><td>Prijava</td><td>7 dana</td></tr><tr><td>session</td><td>Sigurnost</td><td>Sesija</td></tr></table>
-<h2>2. Stripe kad objekt naplaćuje</h2><p>Ako objekt koristi svoj Stripe, Stripe.js može postaviti __stripe_mid, m za zaštitu. To postavlja Stripe u ime objekta.</p>
+<h2>1. Nužni kolačići (uvijek aktivni)</h2>
+<table><tr><th>Naziv</th><th>Svrha</th><th>Trajanje</th><th>Vrsta</th></tr>
+<tr><td>tableboost-token</td><td>Prijava, sesija objekta</td><td>7 dana</td><td>HttpOnly, Secure</td></tr>
+<tr><td>session / auth</td><td>Sigurnost, CSRF</td><td>Sesija</td><td>HttpOnly</td></tr>
+<tr><td>cookie-consent</td><td>Pamti pristanak</td><td>12 mjeseci</td><td>LocalStorage</td></tr>
+</table>
+<h2>2. Stripe kolačići - samo kad objekt naplaćuje goste</h2><p>Kad objekt u TableBoost postavkama poveže <b>svoj vlastiti Stripe račun</b> i uključi naplatu pologa/no-show-a, na javnoj stranici za rezervaciju (koju hosta TableBoost u ime objekta) učitava se Stripe.js sa Stripe računa objekta. Tada Stripe može postaviti:</p>
+<table><tr><th>Naziv</th><th>Svrha</th><th>Postavlja</th></tr><tr><td>__stripe_mid, __stripe_sid, m, private_machine_identifier</td><td>Sprječavanje prijevara, sigurnost plaćanja</td><td>Stripe u ime objekta (trgovca)</td></tr></table>
+<p>To su kolačići treće strane u ime objekta kao trgovca. ${c.naziv} ih ne kontrolira, ne čita za vlastite svrhe.</p>
+<h2>3. Analitika</h2><p>Trenutno ne koristimo Google Analytics. Ako uvedemo, tražit ćemo pristanak.</p>
+<h2>4. Upravljanje</h2><p>Kolačiće brišeš u postavkama preglednika. Nužni su obavezni za rad.</p>
 ${!co.legal_visible?'<p style=background:#fff9c4;padding:12px;border-radius:12px>DEMO</p>':""}
+<p><a href="/legal/terms.html">Uvjeti</a> | <a href="/legal/privacy.html">Privatnost</a> | <a href="/legal/dpa.html">DPA</a></p>
 `;});
 </script>

@@ -9,13 +9,16 @@
 <script>
 fetch('/api/public/company').then(r=>r.json()).then(co=>{
   const c={naziv:co.naziv_obrta||'CoreCode',oib:co.oib||'[OIB]',mbo:co.broj_obrta||'[MBO]',adresa:co.adresa||'[adresa]',grad:co.grad||'',email:co.email||'info@tableboost.app'};
-  document.getElementById('badge').textContent=co.is_demo?'DEMO':'Zadnje ažuriranje: '+new Date().toLocaleDateString('hr-HR');
-  document.getElementById('who').innerHTML=`<b>Voditelj:</b> ${c.naziv}<br>TableBoost<br>OIB: ${c.oib} | MBO: ${c.mbo}<br>${c.adresa} ${c.grad}<br>${c.email}`;
+  document.getElementById('badge').textContent=co.is_demo?'DEMO':'Ažurirano: '+new Date().toLocaleDateString('hr-HR');
+  document.getElementById('who').innerHTML=`<b>Voditelj obrade (platforma):</b> ${c.naziv}<br>TableBoost - ${c.adresa} ${c.grad}<br>OIB: ${c.oib} | MBO: ${c.mbo}<br>Email: ${c.email}`;
   document.getElementById('c').innerHTML=`
-<h2>1. Što prikupljamo</h2><p>Email, korisnici, rezervacije. Kartice ne pohranjujemo.</p>
-<h2>2. Plaćanja</h2><p><b>Pretplata:</b> virman/gotovina, paušalac, nije u PDV-u.<br><b>Gost preko Stripe-a objekta:</b> podaci idu direktno u Stripe račun objekta. Puni broj kartice obrađuje isključivo Stripe.</p>
-<h2>3. Dijeljenje</h2><p>Ne prodajemo. Serveri u EU. Ako objekt koristi svoj Stripe, podaci idu njegovom Stripe-u.</p>
-<h2>4. Prava</h2><p>Na ${c.email}. Za plaćanja gostiju - prava kod objekta kao trgovca.</p>
-${!co.legal_visible?'<p style=background:#fff9c4;padding:12px;border-radius:12px>DEMO</p>':""}
+<h2>1. Što prikupljamo</h2><p>Podatke objekta: ime, email, OIB objekta, rezervacije, stolovi, narudžbe. Podatke gostiju objekta: ime, email, telefon, vrijeme rezervacije. Ne pohranjujemo puni broj kartice.</p>
+<h2>2. Dva modela plaćanja</h2><p><b>Pretplata:</b> virman/gotovina na račun ${c.naziv} - paušalac, nije u PDV-u. Ne obrađujemo kartice za pretplatu.<br><b>Gost preko Stripe-a objekta:</b> Kad objekt uključi svoj Stripe, podaci o kartici idu direktno u Stripe infrastrukturu objekta (Stripe.js). Puni PAN obrađuje isključivo Stripe. TableBoost vidi samo zadnje 4 znamenke, iznos, Stripe PaymentIntent ID.</p>
+<h2>3. Svrha i pravna osnova</h2><p>Izvršenje ugovora (SaaS), legitimni interes (sigurnost, sprječavanje zlouporaba), zakonska obveza (računovodstvo).</p>
+<h2>4. Dijeljenje</h2><p>Ne prodajemo podatke. Hosting u EU (Hetzner/Coolify). Ako objekt koristi svoj Stripe, podaci se dijele sa Stripe Inc. kao izvršiteljem u ime objekta. Objekt je voditelj za te transakcije.</p>
+<h2>5. Rokovi</h2><p>Podaci objekta za vrijeme pretplate + 11 godina za račune. Podaci rezervacija prema postavkama objekta.</p>
+<h2>6. Prava ispitanika</h2><p>Pristup, ispravak, brisanje, prigovor na ${c.email}. Za plaćanja gostiju ostvarena preko Stripe-a objekta - prava se ostvaruju i kod objekta kao trgovca.</p>
+${!co.legal_visible?'<p style=background:#fff9c4;padding:12px;border-radius:12px>DEMO PREDLOŽAK</p>':""}
+<p><a href="/legal/terms.html">Uvjeti</a> | <a href="/legal/cookies.html">Kolačići</a> | <a href="/legal/dpa.html">DPA</a></p>
 `;});
 </script>

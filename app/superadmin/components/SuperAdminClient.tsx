@@ -1,6 +1,7 @@
 "use client"
 import { useState, useEffect } from 'react'
 import { MoreVertical, Plus, Store, Users, Search, LogIn, Trash2, KeyRound, LogOut, X, ShieldCheck, FlaskConical } from 'lucide-react'
+import { Settings } from 'lucide-react'
 
 export default function SuperAdminClient({ restaurants, users, currentUser }: any) {
   const [tab, setTab] = useState<'restaurants'|'demos'|'users'|'translations'>('restaurants')
@@ -87,6 +88,7 @@ export default function SuperAdminClient({ restaurants, users, currentUser }: an
         <div className="flex flex-col md:flex-row md:justify-between gap-4 mb-6">
           <div><h1 className="text-3xl font-black">Super Admin</h1><p className="text-zinc-400 text-sm mt-1">{currentUser.email} • {restaurants.length} objekata • {users.length} korisnika • DEMO: {restaurants.filter((r:any)=>r.slug.startsWith('demo-')).length}</p></div>
           <div className="flex gap-2">
+            <a href="/superadmin/postavke" className="bg-[#d4ff00] text-black px-6 py-3 rounded-full font-black flex items-center gap-2 text-sm hover:bg-[#e0ff33]"><ShieldCheck size={18}/> CoreCode postavke</a>
             <button onClick={()=>setShowCreate(true)} className="bg-white text-black px-6 py-3 rounded-full font-black flex items-center gap-2 text-sm hover:bg-zinc-200"><Plus size={18}/> Novi objekt</button>
             <button onClick={logout} className="bg-zinc-800 border border-zinc-700 px-5 py-3 rounded-full font-bold flex items-center gap-2 text-sm"><LogOut size={16}/> Odjava</button>
           </div>

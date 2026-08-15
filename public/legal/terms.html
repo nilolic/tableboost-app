@@ -8,17 +8,19 @@
 <div id="c"></div>
 <script>
 fetch('/api/public/company').then(r=>r.json()).then(co=>{
-  const c={naziv:co.naziv_obrta||'CoreCode',oib:co.oib||'[OIB]',mbo:co.broj_obrta||'[MBO]',adresa:co.adresa||'[adresa]',grad:co.grad||'',email:co.email||'info@tableboost.app',web:co.web||'https://tableboost.app'};
-  document.getElementById('badge').textContent=co.is_demo?'DEMO':'Zadnje ažuriranje: '+new Date().toLocaleDateString('hr-HR');
-  document.getElementById('who').innerHTML=`<b>Pružatelj platforme:</b> ${c.naziv}<br>Platforma: TableBoost na ${c.web}<br>OIB: ${c.oib} | MBO: ${c.mbo}<br>${c.adresa} ${c.grad}<br>${c.email}`;
+  const c={naziv:co.naziv_obrta||'CoreCode',oib:co.oib||'[OIB]',mbo:co.broj_obrta||'[MBO]',adresa:co.adresa||'[adresa]',grad:co.grad||'',email:co.email||'info@tableboost.app',web:co.web||'https://tableboost.app',iban:co.iban||''};
+  document.getElementById('badge').textContent=co.is_demo?'DEMO PREDLOŽAK - nije pravno valjano':'Zadnje ažuriranje: '+new Date().toLocaleDateString('hr-HR');
+  document.getElementById('who').innerHTML=`<b>Pružatelj platforme:</b> ${c.naziv}<br>Platforma: TableBoost na ${c.web}<br>OIB: ${c.oib} | MBO: ${c.mbo}<br>${c.adresa} ${c.grad}<br>Email: ${c.email}<br>IBAN: ${c.iban}<br><br><small>Paušalni obrt, nije u sustavu PDV-a. Pretplata se plaća virmanom/gotovinom uz račun.</small>`;
   document.getElementById('c').innerHTML=`
-<h2>1. Što je TableBoost</h2><p>TableBoost je SaaS u vlasništvu ${c.naziv} za rezervacije stolova, pologe i no-show zaštitu.</p>
-<h2>2. Dva odvojena plaćanja</h2>
-<p><b>A) Pretplata za TableBoost:</b> Objekt plaća ${c.naziv} <b>virmanom na IBAN ili gotovinom uz račun</b>. ${c.naziv} je paušalni obrt, nije u sustavu PDV-a. Nema online naplate karticama za pretplatu, nema POS.</p>
-<p><b>B) Naplata gosta od strane objekta (opcionalno):</b> Objekt može povezati <b>svoj vlastiti Stripe račun</b>. Trgovac je isključivo objekt, novac ide direktno na njegov Stripe, ${c.naziv} ne dodiruje novac, ne pohranjuje kartice. Objekt odgovara za cijene, povrate, fiskalizaciju i PCI.</p>
-<h2>3. Reklamacije</h2><p>Na ${c.email} u 15 dana.</p>
-<h2>4. Odgovornost</h2><p>${c.naziv} ne odgovara za neuspjele naplate preko Stripe računa objekta.</p>
-<h2>5. Pravo</h2><p>Pravo RH, sud prema sjedištu ${c.naziv}.</p>
-${!co.legal_visible?'<p style=background:#fff9c4;padding:12px;border-radius:12px><b>DEMO - nije pravno valjano dok se ne upiše obrt</b></p>':""}
+<h2>1. Što je TableBoost</h2><p>TableBoost je SaaS u vlasništvu ${c.naziv} za rezervacije stolova, pologe, no-show zaštitu i upravljanje stolovima.</p>
+<h2>2. Dva odvojena plaćanja - ključno</h2>
+<p><b>A) Pretplata za TableBoost (objekt -> CoreCode):</b> Objekt plaća ${c.naziv} <b>isključivo virmanom na IBAN ${c.iban} ili gotovinom uz račun</b>. ${c.naziv} je paušalni obrt, nije u sustavu PDV-a. Nema online naplate karticama za pretplatu, nema POS terminala, nema Stripe-a za pretplatu. Račun izdaje ${c.naziv}.</p>
+<p><b>B) Naplata gosta od strane objekta (gost -> objekt, opcionalno):</b> Ako objekt želi uzimati pologe / no-show naknade, može povezati <b>svoj vlastiti Stripe račun</b> u postavkama TableBoost-a. U tom slučaju trgovac (merchant of record) je isključivo objekt. Novac ide direktno na Stripe račun objekta, ${c.naziv} ne dodiruje novac, ne pohranjuje kartice, ne vrši povrate. Objekt odgovara za cijene, povrate, fiskalizaciju i PCI usklađenost.</p>
+<h2>3. Trajanje i otkaz</h2><p>Pretplata mjesečna. Otkaz bilo kad, vrijedi do kraja plaćenog razdoblja.</p>
+<h2>4. Reklamacije</h2><p>Na ${c.email} u 15 dana od računa.</p>
+<h2>5. Odgovornost</h2><p>${c.naziv} ne odgovara za neuspjele naplate preko Stripe računa objekta, niti za odluke objekta o naplati gostiju. Objekt je sam odgovoran za informiranje gostiju o pologu.</p>
+<h2>6. Pravo i sud</h2><p>Pravo RH, stvarno nadležan sud prema sjedištu ${c.naziv}.</p>
+${!co.legal_visible?'<p style=background:#fff9c4;padding:12px;border-radius:12px;border:1px solid #e6d200><b>DEMO - nije pravno valjano dok se ne upiše OIB, MBO i ne uključi legal_visible u /superadmin/postavke</b></p>':""}
+<p style="margin-top:30px"><a href="/legal/privacy.html">Privatnost</a> | <a href="/legal/cookies.html">Kolačići</a> | <a href="/legal/dpa.html">DPA</a></p>
 `;});
 </script>

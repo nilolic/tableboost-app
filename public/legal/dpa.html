@@ -1,23 +1,28 @@
 <!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>DPA - TableBoost</title>
-<style>body{max-width:860px;margin:30px auto;padding:20px;font-family:system-ui;line-height:1.65}h1{font-size:22px}h2{font-size:14px;margin-top:24px;text-transform:uppercase;border-bottom:2px solid #000;padding-bottom:4px}.badge{background:#d4ff00;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:800}.box{background:#f6f6f6;padding:14px;border-radius:12px;font-size:14px}.field{border:1px dashed #999;padding:6px 10px;min-width:160px;display:inline-block;background:#fff9c4;border-radius:6px}.sig{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:40px}.sig div{border-top:1px solid #000;padding-top:8px;font-size:13px}.muted{color:#666;font-size:12px}</style>
+<title>DPA - TableBoost - čl.28 GDPR</title>
+<style>body{max-width:900px;margin:30px auto;padding:20px;font-family:system-ui;line-height:1.65}h1{font-size:22px}h2{font-size:13px;margin-top:24px;text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid #000;padding-bottom:4px}.badge{background:#d4ff00;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:800}.box{background:#f6f6f6;padding:14px;border-radius:12px;font-size:14px}.field{border:1px dashed #999;padding:6px 10px;min-width:160px;display:inline-block;background:#fff9c4;border-radius:6px}.sig{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:40px}.sig div{border-top:1px solid #000;padding-top:8px;font-size:13px}.muted{color:#666;font-size:12px}</style>
 <body>
 <span class="badge" id="badge">UČITAVANJE...</span>
-<h1>DPA - TableBoost - čl. 28 GDPR</h1>
+<h1>Ugovor o obradi podataka (DPA) - TableBoost - čl. 28 GDPR</h1>
 <div class="box" id="who"></div>
 <div id="c"></div>
-<p class="muted"><button onclick="window.print()">🖨️ Ispiši / PDF</button></p>
+<p class="muted"><button onclick="window.print()">🖨 Ispiši / spremi kao PDF</button> - ispunite polja ispod pa ispišite</p>
 <script>
 fetch('/api/public/company').then(r=>r.json()).then(co=>{
   const c={naziv:co.naziv_obrta||'CoreCode',oib:co.oib||'[OIB]',mbo:co.broj_obrta||'[MBO]',adresa:co.adresa||'[adresa]',grad:co.grad||'',email:co.email||'info@tableboost.app',web:co.web||'https://tableboost.app'};
-  document.getElementById('badge').textContent=co.is_demo?'DEMO PREDLOŽAK':'Valjani';
-  document.getElementById('who').innerHTML=`<b>Izvršitelj:</b> ${c.naziv}, OIB: ${c.oib}, ${c.adresa} ${c.grad}, ${c.email}<br><br><b>Voditelj - Objekt:</b><br>Naziv: <span class="field"> naziv </span> OIB: <span class="field"> OIB </span>`;
+  document.getElementById('badge').textContent=co.is_demo?'DEMO PREDLOŽAK - nije potpisan':'DPA PREDLOŽAK - valjan nakon unosa obrta';
+  document.getElementById('who').innerHTML=`<b>Izvršitelj obrade:</b> ${c.naziv}, OIB: ${c.oib}, MBO: ${c.mbo}, ${c.adresa} ${c.grad}, Email: ${c.email}, Web: ${c.web}<br><br><b>Voditelj obrade - Objekt (klijent TableBoost-a):</b><br>Naziv objekta: <span class="field" contenteditable="true"> upiši naziv objekta </span> OIB objekta: <span class="field" contenteditable="true"> OIB objekta </span><br>Adresa objekta: <span class="field" contenteditable="true"> adresa </span> Kontakt: <span class="field" contenteditable="true"> email </span>`;
   document.getElementById('c').innerHTML=`
-<p class="muted">Datum: <span class="field">${new Date().toLocaleDateString('hr-HR')}</span> | Broj: <span class="field">TB-DPA-____/2026</span></p>
-<h2>1. Predmet</h2><p>TableBoost za rezervacije. Obrada po uputama Voditelja.</p>
-<h2>2. Podaci</h2><p>Bez Stripe-a: ime, email, tel gosta. Sa Stripe-om objekta: + iznos, zadnje 4, Stripe ID. Puni broj kartice samo Stripe.</p>
-<h2>3. Vlastiti Stripe</h2><p>Kad Voditelj unese svoje ključeve, Voditelj je trgovac i voditelj za kartice. CoreCode samo tehnički prosljeđuje u njegov Stripe, bez pohrane broja kartice.</p>
-<h2>4. Sigurnost</h2><p>TLS, bcrypt, EU hosting. Incident 24h.</p>
-<div class="sig"><div><b>Voditelj - Objekt</b><br><br>Potpis:<br><br>Datum:</div><div><b>Izvršitelj - ${c.naziv}</b><br><br>Potpis:<br><br>Datum:</div></div>
+<p class="muted">Datum: <span class="field" contenteditable="true">${new Date().toLocaleDateString('hr-HR')}</span> | Broj ugovora: <span class="field" contenteditable="true">TB-DPA-____/2026</span> | Verzija TableBoost: 1.0</p>
+<h2>1. Predmet i trajanje</h2><p>Izvršitelj pruža SaaS TableBoost za upravljanje stolovima, rezervacijama, pologom/no-show zaštitom. Obrada osobnih podataka gostiju objekta vrši se isključivo po pisanim uputama Voditelja (objekta) za vrijeme trajanja pretplate na TableBoost.</p>
+<h2>2. Vrste podataka i ispitanici</h2><p><b>Bez Stripe-a objekta:</b> Ispitanici su gosti objekta koji rezerviraju stol. Podaci: ime, email, telefon, vrijeme rezervacije, broj osoba, interna napomena.<br><b>Sa Stripe-om objekta (kad Voditelj poveže svoj Stripe):</b> + iznos pologa / no-show naknade, valuta, zadnje 4 znamenke kartice, Stripe PaymentIntent ID, status naplate. Puni broj kartice (PAN), CVC, datum isteka obrađuje isključivo Stripe kao podizvršitelj Voditelja. Izvršitelj ne pohranjuje PAN.</p>
+<h2>3. Dva odvojena novčana toka - bitno za uloge</h2><p><b>3.1 Pretplata TableBoost:</b> Voditelj plaća Izvršitelju ${c.naziv} virmanom na IBAN ili gotovinom uz račun. Izvršitelj je paušalni obrt, nije u PDV-u. Za pretplatu se ne koristi Stripe, nema online naplate karticama Izvršitelja.<br><b>3.2 Naplata gosta od strane Voditelja preko vlastitog Stripe-a:</b> Kad Voditelj unese API ključeve svog Stripe računa u TableBoost, Voditelj postaje trgovac (merchant of record) i voditelj obrade za podatke o kartici. Izvršitelj djeluje samo kao tehnički posrednik koji prosljeđuje zahtjev u Stripe račun Voditelja. Novac, povrati, chargebackovi idu direktno između Voditelja i Stripe-a. Izvršitelj nema pristup sredstvima.</p>
+<h2>4. Podizvršitelji</h2><p>Hetzner (hosting EU), Coolify. Ako Voditelj koristi vlastiti Stripe, dodatni podizvršitelj je Stripe Inc. / Stripe Payments Europe za obradu kartica u ime Voditelja. Popis na upit.</p>
+<h2>5. Sigurnost - čl.32</h2><p>TLS 1.2+, bcrypt za lozinke, RBAC (SUPER_ADMIN / RESTAURANT_ADMIN / WAITER), logiranje pristupa, dnevni backup. Incident koji utječe na podatke Voditelja - obavijest Voditelju bez odgađanja, najkasnije 24h od saznanja.</p>
+<h2>6. Prava ispitanika i suradnja</h2><p>Izvršitelj pomaže Voditelju tehničkim mjerama za ostvarenje prava gostiju (pristup, brisanje rezervacije). Za zahtjeve koji se odnose na naplate karticama preko Stripe-a Voditelja, Voditelj odgovara kao trgovac, Izvršitelj pruža Stripe ID-eve i logove.</p>
+<h2>7. Povrat i brisanje nakon prestanka</h2><p>Na zahtjev Voditelja - izvoz CSV + brisanje u 30 dana, osim zakonskih obveza čuvanja računa (11g).</p>
+<h2>8. Međunarodni prijenosi</h2><p>Primarno EU. Ako Stripe obrađuje izvan EU, primjenjuju se SCC-ovi Stripe-a u ime Voditelja.</p>
+<div class="sig"><div><b>Voditelj - Objekt</b><br><br>Ime i funkcija:<br><span class="field" contenteditable="true" style="min-width:240px"> </span><br><br>Potpis:<br><br><br>Datum: <span class="field" contenteditable="true"> </span></div><div><b>Izvršitelj - ${c.naziv}</b><br>OIB: ${c.oib}<br><br>Ime:<br><span class="field" contenteditable="true" style="min-width:240px"> </span><br><br>Potpis:<br><br><br>Datum: <span class="field" contenteditable="true"> </span></div></div>
+<p class="muted" style="margin-top:30px">Ovaj predložak postaje valjan tek kad se u <a href="/superadmin/postavke">/superadmin/postavke</a> upiše puni OIB, MBO, adresa i uključi legal_visible. Do tada je DEMO.</p>
 `;});
 </script>
