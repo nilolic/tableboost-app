@@ -1,0 +1,21 @@
+<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Privatnost - TableBoost</title>
+<style>body{max-width:860px;margin:40px auto;padding:20px;font-family:system-ui;line-height:1.7}h2{margin-top:28px;border-bottom:1px solid #eee}.badge{background:#d4ff00;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:800}.box{background:#f6f6f6;padding:14px;border-radius:12px}</style>
+<body>
+<span class="badge" id="badge">UČITAVANJE...</span>
+<h1>Politika privatnosti - TableBoost</h1>
+<div class="box" id="who"></div>
+<div id="c"></div>
+<script>
+fetch('/api/public/company').then(r=>r.json()).then(co=>{
+  const c={naziv:co.naziv_obrta||'CoreCode',oib:co.oib||'[OIB]',mbo:co.broj_obrta||'[MBO]',adresa:co.adresa||'[adresa]',grad:co.grad||'',email:co.email||'info@tableboost.app'};
+  document.getElementById('badge').textContent=co.is_demo?'DEMO':'Zadnje ažuriranje: '+new Date().toLocaleDateString('hr-HR');
+  document.getElementById('who').innerHTML=`<b>Voditelj:</b> ${c.naziv}<br>TableBoost<br>OIB: ${c.oib} | MBO: ${c.mbo}<br>${c.adresa} ${c.grad}<br>${c.email}`;
+  document.getElementById('c').innerHTML=`
+<h2>1. Što prikupljamo</h2><p>Email, korisnici, rezervacije. Kartice ne pohranjujemo.</p>
+<h2>2. Plaćanja</h2><p><b>Pretplata:</b> virman/gotovina, paušalac, nije u PDV-u.<br><b>Gost preko Stripe-a objekta:</b> podaci idu direktno u Stripe račun objekta. Puni broj kartice obrađuje isključivo Stripe.</p>
+<h2>3. Dijeljenje</h2><p>Ne prodajemo. Serveri u EU. Ako objekt koristi svoj Stripe, podaci idu njegovom Stripe-u.</p>
+<h2>4. Prava</h2><p>Na ${c.email}. Za plaćanja gostiju - prava kod objekta kao trgovca.</p>
+${!co.legal_visible?'<p style=background:#fff9c4;padding:12px;border-radius:12px>DEMO</p>':""}
+`;});
+</script>

@@ -189,3 +189,18 @@ model UpsellRule {
   @@unique([sourceId, targetId])
   @@index([restaurantId])
 }
+
+model PlatformCompany {
+  id String @id @default("1")
+  naziv_obrta String? @default("CoreCode")
+  oib String?
+  broj_obrta String?
+  adresa String?
+  grad String?
+  email String? @default("info@tableboost.app")
+  web String? @default("https://tableboost.app")
+  iban String?
+  legal_visible Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

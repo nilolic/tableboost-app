@@ -1,0 +1,24 @@
+<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Opći uvjeti - TableBoost</title>
+<style>body{max-width:860px;margin:40px auto;padding:20px;font-family:system-ui;line-height:1.7}h2{margin-top:32px;border-bottom:1px solid #eee;padding-bottom:6px}.badge{background:#d4ff00;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:800}.box{background:#f6f6f6;padding:14px;border-radius:12px}</style>
+<body>
+<span class="badge" id="badge">UČITAVANJE...</span>
+<h1>Opći uvjeti poslovanja - TableBoost</h1>
+<div class="box" id="who"></div>
+<div id="c"></div>
+<script>
+fetch('/api/public/company').then(r=>r.json()).then(co=>{
+  const c={naziv:co.naziv_obrta||'CoreCode',oib:co.oib||'[OIB]',mbo:co.broj_obrta||'[MBO]',adresa:co.adresa||'[adresa]',grad:co.grad||'',email:co.email||'info@tableboost.app',web:co.web||'https://tableboost.app'};
+  document.getElementById('badge').textContent=co.is_demo?'DEMO':'Zadnje ažuriranje: '+new Date().toLocaleDateString('hr-HR');
+  document.getElementById('who').innerHTML=`<b>Pružatelj platforme:</b> ${c.naziv}<br>Platforma: TableBoost na ${c.web}<br>OIB: ${c.oib} | MBO: ${c.mbo}<br>${c.adresa} ${c.grad}<br>${c.email}`;
+  document.getElementById('c').innerHTML=`
+<h2>1. Što je TableBoost</h2><p>TableBoost je SaaS u vlasništvu ${c.naziv} za rezervacije stolova, pologe i no-show zaštitu.</p>
+<h2>2. Dva odvojena plaćanja</h2>
+<p><b>A) Pretplata za TableBoost:</b> Objekt plaća ${c.naziv} <b>virmanom na IBAN ili gotovinom uz račun</b>. ${c.naziv} je paušalni obrt, nije u sustavu PDV-a. Nema online naplate karticama za pretplatu, nema POS.</p>
+<p><b>B) Naplata gosta od strane objekta (opcionalno):</b> Objekt može povezati <b>svoj vlastiti Stripe račun</b>. Trgovac je isključivo objekt, novac ide direktno na njegov Stripe, ${c.naziv} ne dodiruje novac, ne pohranjuje kartice. Objekt odgovara za cijene, povrate, fiskalizaciju i PCI.</p>
+<h2>3. Reklamacije</h2><p>Na ${c.email} u 15 dana.</p>
+<h2>4. Odgovornost</h2><p>${c.naziv} ne odgovara za neuspjele naplate preko Stripe računa objekta.</p>
+<h2>5. Pravo</h2><p>Pravo RH, sud prema sjedištu ${c.naziv}.</p>
+${!co.legal_visible?'<p style=background:#fff9c4;padding:12px;border-radius:12px><b>DEMO - nije pravno valjano dok se ne upiše obrt</b></p>':""}
+`;});
+</script>

@@ -1,0 +1,23 @@
+<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DPA - TableBoost</title>
+<style>body{max-width:860px;margin:30px auto;padding:20px;font-family:system-ui;line-height:1.65}h1{font-size:22px}h2{font-size:14px;margin-top:24px;text-transform:uppercase;border-bottom:2px solid #000;padding-bottom:4px}.badge{background:#d4ff00;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:800}.box{background:#f6f6f6;padding:14px;border-radius:12px;font-size:14px}.field{border:1px dashed #999;padding:6px 10px;min-width:160px;display:inline-block;background:#fff9c4;border-radius:6px}.sig{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:40px}.sig div{border-top:1px solid #000;padding-top:8px;font-size:13px}.muted{color:#666;font-size:12px}</style>
+<body>
+<span class="badge" id="badge">UČITAVANJE...</span>
+<h1>DPA - TableBoost - čl. 28 GDPR</h1>
+<div class="box" id="who"></div>
+<div id="c"></div>
+<p class="muted"><button onclick="window.print()">🖨️ Ispiši / PDF</button></p>
+<script>
+fetch('/api/public/company').then(r=>r.json()).then(co=>{
+  const c={naziv:co.naziv_obrta||'CoreCode',oib:co.oib||'[OIB]',mbo:co.broj_obrta||'[MBO]',adresa:co.adresa||'[adresa]',grad:co.grad||'',email:co.email||'info@tableboost.app',web:co.web||'https://tableboost.app'};
+  document.getElementById('badge').textContent=co.is_demo?'DEMO PREDLOŽAK':'Valjani';
+  document.getElementById('who').innerHTML=`<b>Izvršitelj:</b> ${c.naziv}, OIB: ${c.oib}, ${c.adresa} ${c.grad}, ${c.email}<br><br><b>Voditelj - Objekt:</b><br>Naziv: <span class="field"> naziv </span> OIB: <span class="field"> OIB </span>`;
+  document.getElementById('c').innerHTML=`
+<p class="muted">Datum: <span class="field">${new Date().toLocaleDateString('hr-HR')}</span> | Broj: <span class="field">TB-DPA-____/2026</span></p>
+<h2>1. Predmet</h2><p>TableBoost za rezervacije. Obrada po uputama Voditelja.</p>
+<h2>2. Podaci</h2><p>Bez Stripe-a: ime, email, tel gosta. Sa Stripe-om objekta: + iznos, zadnje 4, Stripe ID. Puni broj kartice samo Stripe.</p>
+<h2>3. Vlastiti Stripe</h2><p>Kad Voditelj unese svoje ključeve, Voditelj je trgovac i voditelj za kartice. CoreCode samo tehnički prosljeđuje u njegov Stripe, bez pohrane broja kartice.</p>
+<h2>4. Sigurnost</h2><p>TLS, bcrypt, EU hosting. Incident 24h.</p>
+<div class="sig"><div><b>Voditelj - Objekt</b><br><br>Potpis:<br><br>Datum:</div><div><b>Izvršitelj - ${c.naziv}</b><br><br>Potpis:<br><br>Datum:</div></div>
+`;});
+</script>

@@ -1,0 +1,19 @@
+<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kolačići - TableBoost</title>
+<style>body{max-width:860px;margin:40px auto;padding:20px;font-family:system-ui;line-height:1.7}h2{margin-top:28px;border-bottom:1px solid #eee}.badge{background:#d4ff00;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:800}.box{background:#f6f6f6;padding:14px;border-radius:12px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:8px;font-size:14px}</style>
+<body>
+<span class="badge" id="badge">UČITAVANJE...</span>
+<h1>Politika kolačića - TableBoost</h1>
+<div class="box" id="who"></div>
+<div id="c"></div>
+<script>
+fetch('/api/public/company').then(r=>r.json()).then(co=>{
+  const c={naziv:co.naziv_obrta||'CoreCode',email:co.email||'info@tableboost.app'};
+  document.getElementById('badge').textContent=co.is_demo?'DEMO':'Ažurirano: '+new Date().toLocaleDateString('hr-HR');
+  document.getElementById('who').innerHTML=`<b>Pružatelj:</b> ${c.naziv} - TableBoost<br>${c.email}`;
+  document.getElementById('c').innerHTML=`
+<h2>1. Nužni</h2><table><tr><th>Naziv</th><th>Svrha</th><th>Trajanje</th></tr><tr><td>tableboost-token</td><td>Prijava</td><td>7 dana</td></tr><tr><td>session</td><td>Sigurnost</td><td>Sesija</td></tr></table>
+<h2>2. Stripe kad objekt naplaćuje</h2><p>Ako objekt koristi svoj Stripe, Stripe.js može postaviti __stripe_mid, m za zaštitu. To postavlja Stripe u ime objekta.</p>
+${!co.legal_visible?'<p style=background:#fff9c4;padding:12px;border-radius:12px>DEMO</p>':""}
+`;});
+</script>
