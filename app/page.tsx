@@ -23,6 +23,7 @@ import {
   Crown,
   Soup,
 } from "lucide-react";
+import LegalFooter from "./components/LegalFooter";
 
 export default function Page() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -664,6 +665,7 @@ export default function Page() {
           </div>
           <div className="flex items-center gap-5 text-[12px] text-zinc-500">
             <span className="inline-flex items-center gap-1">Made in HR <Heart className="h-3.5 w-3.5 fill-rose-500 text-rose-500" /></span>
+            <LegalFooter />
             <a href="/login" className="font-semibold text-zinc-700 hover:text-zinc-900">Prijava</a>
           </div>
         </div>
