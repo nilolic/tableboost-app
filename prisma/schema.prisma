@@ -32,6 +32,9 @@ model Restaurant {
   vatNumber String?
   description String?
   workingHours String?
+  isDemo      Boolean   @default(false)
+  expiresAt   DateTime?
+  convertedAt DateTime?
   serviceMode String @default("TABLE") // TABLE=konobar, BAR=sank
   paymentCashEnabled Boolean @default(true)
   paymentCardTerminalEnabled Boolean @default(true)
