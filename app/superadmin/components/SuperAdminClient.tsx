@@ -1,10 +1,8 @@
 "use client"
 import { useState, useEffect } from 'react'
-import { MoreVertical, Plus, Store, Users, Search, LogIn, Trash2, KeyRound, LogOut, X, ShieldCheck, FlaskConical } from 'lucide-react'
-import { Settings } from 'lucide-react'
-
+import { MoreVertical, Plus, Store, Users, Search, LogIn, Trash2, KeyRound, LogOut, X, ShieldCheck, FlaskConical, ArrowRight, Clock } from 'lucide-react'
 export default function SuperAdminClient({ restaurants, users, currentUser }: any) {
-  const [tab, setTab] = useState<'restaurants'|'demos'|'users'|'translations'>('restaurants')
+  const [tab, setTab] = useState<'restaurants'|'demos'|'users'>('restaurants')
   const [selected, setSelected] = useState<any>(null)
   const [selectedType, setSelectedType] = useState<'r'|'u'|null>(null)
   const [search, setSearch] = useState('')
@@ -15,138 +13,69 @@ export default function SuperAdminClient({ restaurants, users, currentUser }: an
   const [demos, setDemos] = useState<any[]>([])
   const [demoForm, setDemoForm] = useState({ demoId:'', naziv:'' })
   const [creatingDemo, setCreatingDemo] = useState(false)
-
   const fr = restaurants.filter((r:any)=> r.name.toLowerCase().includes(search.toLowerCase()) || r.slug.toLowerCase().includes(search.toLowerCase()))
   const fu = users.filter((u:any)=> u.email.toLowerCase().includes(search.toLowerCase()) || (u.name||'').toLowerCase().includes(search.toLowerCase()))
-  const demoRestaurants = fr.filter((r:any)=> r.slug.startsWith('demo-'))
-
-  async function loadDemos(){
-    try{ const res=await fetch('/api/superadmin/demos'); const d=await res.json(); if(Array.isArray(d)) setDemos(d); }catch(e){}
-  }
+  const demoRestaurants = fr.filter((r:any)=> r.slug.startsWith('demo-') || r.isDemo)
+  async function loadDemos(){ try{ const res=await fetch('/api/superadmin/demos'); const d=await res.json(); if(Array.isArray(d)) setDemos(d); }catch(e){} }
   useEffect(()=>{ if(tab==='demos') loadDemos(); },[tab])
-
-  async function createRestaurant(){
-    if(!form.name ||!form.slug ||!form.ownerEmail ||!form.ownerPass) return alert('Popuni sva polja')
-    const res = await fetch('/api/superadmin/restaurants',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(form)})
-    const d = await res.json()
-    if(!res.ok) return alert(d.error || 'Greška')
-    alert('Objekt kreiran!'); location.reload()
-  }
-  async function deleteRestaurant(id:string){
-    if(!confirm('OBRISATI objekt + sve podatke? Ovo briše SVE tablice kaskadno!')) return
-    const res = await fetch(`/api/superadmin/restaurants/${id}`,{method:'DELETE'})
-    if(!res.ok){ const d=await res.json(); return alert(d.error) }
-    location.reload()
-  }
-  async function createDemo(){
-    if(!demoForm.demoId) return alert('Unesi ID npr. pizzeria-roma')
-    setCreatingDemo(true)
-    try{
-      const res = await fetch('/api/superadmin/demos',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(demoForm)})
-      const d = await res.json()
-      if(!res.ok) return alert(d.error)
-      alert(`DEMO kreiran: ${d.restaurant.slug}\nAdmin: ${d.creds.admin}`)
-      setDemoForm({demoId:'', naziv:''}); loadDemos(); location.reload()
-    }catch(e:any){ alert(e.message) } finally{ setCreatingDemo(false) }
-  }
-  async function deleteDemo(id:string){
-    if(!confirm('Obrisati DEMO '+id+'? Briše se sve: stolovi, artikli, narudžbe, useri!')) return
-    const res = await fetch(`/api/superadmin/demos/${id}`,{method:'DELETE'})
-    if(!res.ok){ const d=await res.json(); return alert(d.error) }
-    loadDemos(); location.reload()
-  }
-  async function resetPass(){
-    if(!resetId) return
-    const res = await fetch(`/api/superadmin/users/${resetId}/reset-password`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({newPassword:newPass})})
-    const d = await res.json()
-    if(!res.ok) return alert(d.error)
-    alert('Lozinka promijenjena'); setResetId(null); setNewPass('')
-  }
-  async function deleteUser(id:string){
-    if(id===currentUser.id) return alert('Ne možeš obrisati sam sebe!')
-    if(!confirm('Obrisati korisnika?')) return
-    const res = await fetch(`/api/superadmin/users/${id}`,{method:'DELETE'})
-    if(!res.ok){ const d=await res.json(); return alert(d.error)}
-    location.reload()
-  }
-  async function toggle2FA(userId:string, enabled:boolean){
-    if(!confirm(enabled? 'Upaliti 2FA?' : 'Ugasiti 2FA?')) return
-    const res = await fetch('/api/admin/2fa/toggle',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId, enabled})})
-    const d = await res.json()
-    if(!res.ok) return alert(d.error || 'Greška')
-    location.reload()
-  }
-  async function impersonate(rid:string){
-    await fetch('/api/superadmin/impersonate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({restaurantId:rid})})
-    window.location.href='/admin'
-  }
+  async function createRestaurant(){ if(!form.name ||!form.slug ||!form.ownerEmail ||!form.ownerPass) return alert('Popuni sva polja'); const res = await fetch('/api/superadmin/restaurants',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(form)}); const d = await res.json(); if(!res.ok) return alert(d.error || 'Greška'); alert('Objekt kreiran!'); location.reload() }
+  async function deleteRestaurant(id:string){ if(!confirm('OBRISATI objekt + sve podatke?')) return; const res = await fetch(`/api/superadmin/restaurants/${id}`,{method:'DELETE'}); if(!res.ok){ const d=await res.json(); return alert(d.error) } location.reload() }
+  async function createDemo(){ if(!demoForm.demoId) return alert('Unesi ID'); setCreatingDemo(true); try{ const res = await fetch('/api/superadmin/demos',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(demoForm)}); const d = await res.json(); if(!res.ok) return alert(d.error); alert(`DEMO kreiran: ${d.restaurant.slug}\nVrijedi 14 dana: ${new Date(d.restaurant.createdAt).toLocaleDateString()} → ${new Date(d.restaurant.expiresAt).toLocaleDateString()}\nAdmin: ${d.creds.admin}`); setDemoForm({demoId:'', naziv:''}); loadDemos(); location.reload() }catch(e:any){ alert(e.message) } finally{ setCreatingDemo(false) } }
+  async function deleteDemo(id:string){ if(!confirm('Obrisati DEMO '+id+'?')) return; const res = await fetch(`/api/superadmin/demos/${id}`,{method:'DELETE'}); if(!res.ok){ const d=await res.json(); return alert(d.error) } loadDemos(); location.reload() }
+  async function convertDemo(id:string){ if(!confirm('Prebaciti DEMO u plaćeni (pravi) account?')) return; const res = await fetch(`/api/superadmin/demos/${id}/convert`,{method:'POST'}); const d = await res.json(); if(!res.ok) return alert(d.error); alert('✅ Prebačen u plaćeni!'); location.reload() }
+  function daysLeft(exp:string){ if(!exp) return null; const diff = Math.ceil((new Date(exp).getTime() - Date.now())/86400000); return diff }
+  async function resetPass(){ if(!resetId) return; const res = await fetch(`/api/superadmin/users/${resetId}/reset-password`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({newPassword:newPass})}); const d = await res.json(); if(!res.ok) return alert(d.error); alert('Lozinka promijenjena'); setResetId(null); setNewPass('') }
+  async function deleteUser(id:string){ if(id===currentUser.id) return alert('Ne možeš obrisati sam sebe!'); if(!confirm('Obrisati korisnika?')) return; const res = await fetch(`/api/superadmin/users/${id}`,{method:'DELETE'}); if(!res.ok){ const d=await res.json(); return alert(d.error)} location.reload() }
+  async function impersonate(rid:string){ await fetch('/api/superadmin/impersonate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({restaurantId:rid})}); window.location.href='/admin' }
   async function logout(){ await fetch('/api/auth/logout',{method:'POST'}); window.location.href='/login' }
-
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white p-4 md:p-6">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row md:justify-between gap-4 mb-6">
-          <div><h1 className="text-3xl font-black">Super Admin</h1><p className="text-zinc-400 text-sm mt-1">{currentUser.email} • {restaurants.length} objekata • {users.length} korisnika • DEMO: {restaurants.filter((r:any)=>r.slug.startsWith('demo-')).length}</p></div>
+          <div><h1 className="text-3xl font-black">Super Admin</h1><p className="text-zinc-400 text-sm mt-1">{currentUser.email} • {restaurants.length} objekata • {users.length} korisnika • DEMO: {restaurants.filter((r:any)=>r.isDemo||r.slug.startsWith('demo-')).length}</p></div>
           <div className="flex gap-2">
             <a href="/superadmin/postavke" className="bg-[#d4ff00] text-black px-6 py-3 rounded-full font-black flex items-center gap-2 text-sm hover:bg-[#e0ff33]"><ShieldCheck size={18}/> CoreCode postavke</a>
             <button onClick={()=>setShowCreate(true)} className="bg-white text-black px-6 py-3 rounded-full font-black flex items-center gap-2 text-sm hover:bg-zinc-200"><Plus size={18}/> Novi objekt</button>
             <button onClick={logout} className="bg-zinc-800 border border-zinc-700 px-5 py-3 rounded-full font-bold flex items-center gap-2 text-sm"><LogOut size={16}/> Odjava</button>
           </div>
         </div>
-
         <div className="flex gap-2 mb-4 flex-wrap">
           <button onClick={()=>setTab('restaurants')} className={`px-5 py-2.5 rounded-full flex gap-2 text-sm ${tab==='restaurants'?'bg-white text-black':'bg-zinc-900 border border-zinc-800'}`}><Store size={16}/> Objekti ({restaurants.length})</button>
-          <button onClick={()=>setTab('demos')} className={`px-5 py-2.5 rounded-full flex gap-2 text-sm ${tab==='demos'?'bg-yellow-400 text-black font-black':'bg-zinc-900 border border-yellow-800/50 text-yellow-200'}`}><FlaskConical size={16}/> DEMO ({restaurants.filter((r:any)=>r.slug.startsWith('demo-')).length})</button>
+          <button onClick={()=>setTab('demos')} className={`px-5 py-2.5 rounded-full flex gap-2 text-sm ${tab==='demos'?'bg-yellow-400 text-black font-black':'bg-zinc-900 border border-yellow-800/50 text-yellow-200'}`}><FlaskConical size={16}/> DEMO ({restaurants.filter((r:any)=>r.isDemo||r.slug.startsWith('demo-')).length}) • 14 dana</button>
           <button onClick={()=>setTab('users')} className={`px-5 py-2.5 rounded-full flex gap-2 text-sm ${tab==='users'?'bg-white text-black':'bg-zinc-900 border border-zinc-800'}`}><Users size={16}/> Korisnici ({users.length})</button>
         </div>
-
         <div className="relative mb-4 max-w-sm"><Search className="absolute left-3 top-3 text-zinc-500" size={18}/><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Traži..." className="w-full bg-zinc-900 border border-zinc-800 rounded-full pl-10 pr-4 py-2.5 text-sm"/></div>
-
         {tab==='restaurants' && (
           <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl overflow-x-auto">
-            <table className="w-full text-sm"><thead className="bg-zinc-900 text-zinc-400 text-xs uppercase"><tr><th className="text-left p-4">Objekt</th><th className="text-left p-4">Vlasnik / 2FA</th><th className="text-left p-4">Stolovi / Artikli</th><th className="text-right p-4">Akcije</th></tr></thead>
-              <tbody>{fr.map((r:any)=>{const admin=r.users.find((u:any)=>u.role==='RESTAURANT_ADMIN');return(<tr key={r.id} className="border-t border-zinc-800 hover:bg-zinc-900"><td className="p-4"><div className="font-bold flex gap-2 items-center">{r.name} {r.slug.startsWith('demo-') && <span className="bg-yellow-500 text-black text- px-2 py-0.5 rounded-full font-black">DEMO</span>}</div><div className="text-xs text-zinc-500">{r.slug} • {r.id.slice(0,8)}</div></td><td className="p-4 text-xs"><div>{admin?.email||<span className="text-red-400">nema</span>} {admin?.totp_enabled? <span className="bg-green-900 text-green-200 px-2 py-0.5 rounded-full">2FA ON</span>:<span className="bg-zinc-800 px-2 py-0.5 rounded-full">OFF</span>}</div></td><td className="p-4 text-xs"><span className="bg-zinc-800 px-2 py-1 rounded-full mr-1">S:{r.tables?.length||r._count?.tables||0}</span><span className="bg-zinc-800 px-2 py-1 rounded-full">A:{r._count?.items||0}</span></td><td className="p-4 text-right"><button onClick={()=>{setSelected(r); setSelectedType('r')}} className="p-2.5 bg-zinc-800 hover:bg-zinc-700 rounded-full"><MoreVertical size={18}/></button></td></tr>)})}</tbody></table>
+            <table className="w-full text-sm"><thead className="bg-zinc-900 text-zinc-400 text-xs uppercase"><tr><th className="text-left p-4">Objekt</th><th className="text-left p-4">Vlasnik</th><th className="text-left p-4">Podaci</th><th className="text-left p-4">Demo status</th><th className="text-right p-4">Akcije</th></tr></thead>
+              <tbody>{fr.map((r:any)=>{const admin=r.users.find((u:any)=>u.role==='RESTAURANT_ADMIN'); const dl = r.expiresAt? daysLeft(r.expiresAt):null; return(<tr key={r.id} className="border-t border-zinc-800 hover:bg-zinc-900"><td className="p-4"><div className="font-bold flex gap-2 items-center">{r.name} {r.isDemo && <span className="bg-yellow-500 text-black text- px-2 py-0.5 rounded-full font-black">DEMO</span>} {r.convertedAt &&!r.isDemo && <span className="bg-green-500 text-black text- px-2 py-0.5 rounded-full font-black">PLAĆENI</span>}</div><div className="text-xs text-zinc-500">{r.slug}</div></td><td className="p-4 text-xs">{admin?.email||'nema'}</td><td className="p-4 text-xs">S:{r.tables?.length||0} A:{r._count?.items||0}</td><td className="p-4 text-xs">{r.isDemo? <div><div className="flex gap-1 items-center"><Clock size={12}/> {new Date(r.createdAt).toLocaleDateString()} → {r.expiresAt? new Date(r.expiresAt).toLocaleDateString():'—'}</div><div className={`mt-1 px-2 py-0.5 rounded-full inline-block font-bold ${dl!==null && dl<3?'bg-red-900 text-red-200':'bg-zinc-800'}`}>{dl!==null? (dl<=0? 'ISTEKAO': `${dl} dana`):''}</div></div> : r.convertedAt? <span className="text-green-300">Plaćeni od {new Date(r.convertedAt).toLocaleDateString()}</span> : <span className="text-zinc-500">—</span>}</td><td className="p-4 text-right"><button onClick={()=>{setSelected(r); setSelectedType('r')}} className="p-2.5 bg-zinc-800 hover:bg-zinc-700 rounded-full"><MoreVertical size={18}/></button></td></tr>)})}</tbody></table>
           </div>
         )}
-
         {tab==='demos' && (
           <div className="space-y-4">
             <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-2xl p-5">
-              <h2 className="font-black text-yellow-200 flex items-center gap-2"><FlaskConical size={18}/> Kreiraj DEMO klijenta (isto kao haccp-pro)</h2>
-              <p className="text-xs text-yellow-200/70 mt-1">Kreira restoran sa slugom demo-xxxx, 3 usera, 8 stolova, 4 kategorije + artikle. Za brisanje jučerašnjih demo-a koristi gumb obriši.</p>
+              <h2 className="font-black text-yellow-200 flex items-center gap-2"><FlaskConical size={18}/> Kreiraj DEMO - 14 dana</h2>
+              <p className="text-xs text-yellow-200/70 mt-1">Automatski istječe za 14 dana. Jednim klikom prebaci u plaćeni.</p>
               <div className="grid md:grid-cols-3 gap-3 mt-4">
-                <input value={demoForm.demoId} onChange={e=>setDemoForm({...demoForm, demoId:e.target.value})} placeholder="npr. pizzeria-roma (bez demo-)" className="bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-3 text-sm"/>
+                <input value={demoForm.demoId} onChange={e=>setDemoForm({...demoForm, demoId:e.target.value})} placeholder="npr. pizzeria-roma" className="bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-3 text-sm"/>
                 <input value={demoForm.naziv} onChange={e=>setDemoForm({...demoForm, naziv:e.target.value})} placeholder="Naziv: DEMO Pizzeria Roma" className="bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-3 text-sm"/>
-                <button onClick={createDemo} disabled={creatingDemo} className="bg-yellow-400 text-black font-black rounded-xl px-4 py-3 text-sm hover:bg-yellow-300 disabled:opacity-50">{creatingDemo?'Kreiram...':'🧪 Kreiraj DEMO'}</button>
+                <button onClick={createDemo} disabled={creatingDemo} className="bg-yellow-400 text-black font-black rounded-xl px-4 py-3 text-sm">{creatingDemo?'Kreiram...':'🧪 Kreiraj DEMO (14 dana)'}</button>
               </div>
-              <div className="mt-3 text- font-mono bg-black/30 p-2 rounded">Login: demo-xxxx-admin@demo.local / Sef12345!</div>
             </div>
             <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl overflow-x-auto">
-              <table className="w-full text-sm"><thead className="bg-zinc-900 text-zinc-400 text-xs uppercase"><tr><th className="text-left p-4">DEMO Objekt</th><th className="text-left p-4">Korisnici</th><th className="text-left p-4">Podaci</th><th className="text-right p-4">Akcija</th></tr></thead>
-                <tbody>{(demos.length?demos:demoRestaurants).map((r:any)=>(<tr key={r.id} className="border-t border-zinc-800"><td className="p-4"><div className="font-bold">{r.name}</div><div className="text-xs text-zinc-500">{r.slug} • {new Date(r.createdAt).toLocaleDateString()}</div></td><td className="p-4 text-xs">{r.users?.length||0} korisnika</td><td className="p-4 text-xs">Stolova: {r.tables?.length||r._count?.tables||8} • Art: {r._count?.items||8}</td><td className="p-4 text-right flex gap-2 justify-end"><button onClick={()=>impersonate(r.id)} className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 rounded-full text-xs">Uđi</button><button onClick={()=>deleteDemo(r.id)} className="px-3 py-1.5 bg-red-900/50 text-red-300 border border-red-800 rounded-full text-xs hover:bg-red-900">Obriši</button></td></tr>))}</tbody></table>
-              {demos.length===0 && demoRestaurants.length===0 && <div className="p-10 text-center text-zinc-500 text-sm">Nema DEMO objekata - kreiraj prvi gore</div>}
+              <table className="w-full text-sm"><thead className="bg-zinc-900 text-zinc-400 text-xs uppercase"><tr><th className="text-left p-4">DEMO Objekt</th><th className="text-left p-4">Trajanje (OD-DO)</th><th className="text-left p-4">Podaci</th><th className="text-right p-4">Akcija</th></tr></thead>
+                <tbody>{(demos.length?demos:demoRestaurants).map((r:any)=>{ const dl = r.expiresAt? daysLeft(r.expiresAt):null; return(<tr key={r.id} className="border-t border-zinc-800"><td className="p-4"><div className="font-bold flex gap-2">{r.name} {r.isDemo?<span className="bg-yellow-400 text-black px-2 py-0.5 rounded-full text- font-black">DEMO</span>:<span className="bg-green-500 text-black px-2 py-0.5 rounded-full text-">PLAĆENI</span>}</div><div className="text-xs text-zinc-500">{r.slug}</div></td><td className="p-4 text-xs"><div>{new Date(r.createdAt).toLocaleDateString()} → {r.expiresAt? new Date(r.expiresAt).toLocaleDateString():'∞'}</div><div className={`mt-1 inline-block px-2 py-0.5 rounded-full font-bold text- ${dl!==null && dl<=0?'bg-red-900 text-red-200': dl!==null && dl<3?'bg-red-900/50 text-red-300': dl!==null && dl<7?'bg-amber-900/50 text-amber-200':'bg-zinc-800'}`}>{dl!==null? (dl<=0? `ISTEKAO prije ${Math.abs(dl)} dana`: `Još ${dl} dana`): (r.convertedAt? `Plaćeni od ${new Date(r.convertedAt).toLocaleDateString()}`:'Trajni')}</div></td><td className="p-4 text-xs">Stolova: {r.tables?.length||8} • Art: {r._count?.items||8}</td><td className="p-4 text-right flex gap-2 justify-end">{r.isDemo && <button onClick={()=>convertDemo(r.id)} className="px-3 py-1.5 bg-[#d4ff00] text-black rounded-full text-xs font-black flex items-center gap-1"><ArrowRight size={12}/> U plaćeni</button>}<button onClick={()=>impersonate(r.id)} className="px-3 py-1.5 bg-zinc-800 rounded-full text-xs">Uđi</button><button onClick={()=>deleteDemo(r.id)} className="px-3 py-1.5 bg-red-900/50 text-red-300 border border-red-800 rounded-full text-xs">Obriši</button></td></tr>)})}</tbody></table>
             </div>
           </div>
         )}
-
         {tab==='users' && (
           <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl overflow-x-auto">
-            <table className="w-full text-sm"><thead className="bg-zinc-900 text-zinc-400 text-xs uppercase"><tr><th className="text-left p-4">Korisnik</th><th className="text-left p-4">Rola</th><th className="text-left p-4">2FA</th><th className="text-right p-4">...</th></tr></thead>
-              <tbody>{fu.map((u:any)=>(<tr key={u.id} className="border-t border-zinc-800"><td className="p-4"><div className="font-medium">{u.name||'—'}</div><div className="text-xs text-zinc-400">{u.email}</div><div className="text- text-zinc-600">{u.restaurant?.slug||'no restaurant'}</div></td><td className="p-4"><span className="px-2 py-1 rounded-full text-xs font-bold bg-blue-900 text-blue-200">{u.role}</span></td><td className="p-4">{u.totp_enabled? <span className="bg-green-900 text-green-200 px-3 py-1 rounded-full text-xs font-bold">ON</span> : <span className="bg-zinc-800 text-zinc-400 px-3 py-1 rounded-full text-xs">OFF</span>}</td><td className="p-4 text-right"><button onClick={()=>{setSelected(u); setSelectedType('u')}} className="p-2.5 bg-zinc-800 hover:bg-zinc-700 rounded-full"><MoreVertical size={18}/></button></td></tr>))}</tbody></table>
+            <table className="w-full text-sm"><thead className="bg-zinc-900 text-zinc-400 text-xs uppercase"><tr><th className="text-left p-4">Korisnik</th><th className="text-left p-4">Rola</th><th className="text-right p-4">...</th></tr></thead>
+              <tbody>{fu.map((u:any)=>(<tr key={u.id} className="border-t border-zinc-800"><td className="p-4"><div className="font-medium">{u.name||'—'}</div><div className="text-xs text-zinc-400">{u.email}</div></td><td className="p-4"><span className="px-2 py-1 rounded-full text-xs font-bold bg-blue-900 text-blue-200">{u.role}</span></td><td className="p-4 text-right"><button onClick={()=>{setSelected(u); setSelectedType('u')}} className="p-2.5 bg-zinc-800 hover:bg-zinc-700 rounded-full"><MoreVertical size={18}/></button></td></tr>))}</tbody></table>
           </div>
         )}
-
-        {selected && (
-          <div className="fixed inset-0 bg-black/80 backdrop-blur z-50 flex items-center justify-center p-4" onClick={()=>setSelected(null)}>
-            <div className="bg-zinc-900 border border-zinc-700 rounded-2xl w-full max-w-sm overflow-hidden" onClick={e=>e.stopPropagation()}>
-              <div className="p-4 border-b border-zinc-800 flex justify-between items-center"><div className="font-bold">{selectedType==='r'?selected.name:selected.email}</div><button onClick={()=>setSelected(null)} className="p-2 hover:bg-zinc-800 rounded-full"><X size={18}/></button></div>
-              <div className="p-2">
-                {selectedType==='r'? (<><button onClick={()=>impersonate(selected.id)} className="w-full text-left px-4 py-3 hover:bg-zinc-800 rounded-xl flex gap-3 font-bold"><LogIn size={18}/> Uđi kao vlasnik</button><button onClick={()=>{setSelected(null); deleteRestaurant(selected.id)}} className="w-full text-left px-4 py-3 hover:bg-red-900/30 text-red-400 rounded-xl flex gap-3"><Trash2 size={18}/> Obriši objekt (kaskadno)</button></>):(<><button onClick={()=>{setResetId(selected.id); setSelected(null)}} className="w-full text-left px-4 py-3 hover:bg-zinc-800 rounded-xl flex gap-3"><KeyRound size={18}/> Reset lozinke</button><button onClick={()=>{setSelected(null); deleteUser(selected.id)}} className="w-full text-left px-4 py-3 hover:bg-red-900/30 text-red-400 rounded-xl flex gap-3"><Trash2 size={18}/> Obriši korisnika</button></>)}
-              </div>
-            </div>
-          </div>
-        )}
-        {showCreate&&(<div className="fixed inset-0 bg-black/90 backdrop-blur z-[100] flex items-center justify-center p-4"><div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 w-full max-w-lg"><div className="flex justify-between items-center mb-4"><h2 className="text-xl font-bold">Novi objekt + vlasnik</h2><button onClick={()=>setShowCreate(false)} className="p-2 hover:bg-zinc-800 rounded-full"><X size={18}/></button></div><div className="space-y-3"><input placeholder="Ime objekta" value={form.name} onChange={e=>{const v=e.target.value; setForm({...form,name:v,slug:v.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')})}} className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3"/><input placeholder="Slug" value={form.slug} onChange={e=>setForm({...form,slug:e.target.value})} className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-sm"/><input placeholder="Ime vlasnika" value={form.ownerName} onChange={e=>setForm({...form,ownerName:e.target.value})} className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3"/><input placeholder="Email vlasnika" value={form.ownerEmail} onChange={e=>setForm({...form,ownerEmail:e.target.value})} className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3"/><input placeholder="Lozinka vlasnika" type="password" value={form.ownerPass} onChange={e=>setForm({...form,ownerPass:e.target.value})} className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3"/></div><div className="flex gap-2 mt-6"><button onClick={()=>setShowCreate(false)} className="flex-1 bg-zinc-800 py-3 rounded-xl">Odustani</button><button onClick={createRestaurant} className="flex-1 bg-white text-black font-bold py-3 rounded-xl">Kreiraj</button></div></div></div>)}
+        {selected && (<div className="fixed inset-0 bg-black/80 backdrop-blur z-50 flex items-center justify-center p-4" onClick={()=>setSelected(null)}><div className="bg-zinc-900 border border-zinc-700 rounded-2xl w-full max-w-sm overflow-hidden" onClick={e=>e.stopPropagation()}><div className="p-4 border-b border-zinc-800 flex justify-between items-center"><div className="font-bold">{selectedType==='r'?selected.name:selected.email}</div><button onClick={()=>setSelected(null)} className="p-2 hover:bg-zinc-800 rounded-full"><X size={18}/></button></div><div className="p-2">{selectedType==='r'? (<><button onClick={()=>impersonate(selected.id)} className="w-full text-left px-4 py-3 hover:bg-zinc-800 rounded-xl flex gap-3 font-bold"><LogIn size={18}/> Uđi kao vlasnik</button>{selected.isDemo && <button onClick={()=>{setSelected(null); convertDemo(selected.id)}} className="w-full text-left px-4 py-3 hover:bg-[#d4ff00]/20 text-[#d4ff00] rounded-xl flex gap-3 font-black"><ArrowRight size={18}/> Prebaci u plaćeni</button>}<button onClick={()=>{setSelected(null); deleteRestaurant(selected.id)}} className="w-full text-left px-4 py-3 hover:bg-red-900/30 text-red-400 rounded-xl flex gap-3"><Trash2 size={18}/> Obriši objekt</button></>):(<><button onClick={()=>{setResetId(selected.id); setSelected(null)}} className="w-full text-left px-4 py-3 hover:bg-zinc-800 rounded-xl flex gap-3"><KeyRound size={18}/> Reset lozinke</button><button onClick={()=>{setSelected(null); deleteUser(selected.id)}} className="w-full text-left px-4 py-3 hover:bg-red-900/30 text-red-400 rounded-xl flex gap-3"><Trash2 size={18}/> Obriši korisnika</button></>)}</div></div></div>)}
+        {showCreate&&(<div className="fixed inset-0 bg-black/90 backdrop-blur z-[100] flex items-center justify-center p-4"><div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 w-full max-w-lg"><div className="flex justify-between items-center mb-4"><h2 className="text-xl font-bold">Novi objekt</h2><button onClick={()=>setShowCreate(false)} className="p-2 hover:bg-zinc-800 rounded-full"><X size={18}/></button></div><div className="space-y-3"><input placeholder="Ime objekta" value={form.name} onChange={e=>{const v=e.target.value; setForm({...form,name:v,slug:v.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')})}} className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3"/><input placeholder="Slug" value={form.slug} onChange={e=>setForm({...form,slug:e.target.value})} className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-sm"/><input placeholder="Ime vlasnika" value={form.ownerName} onChange={e=>setForm({...form,ownerName:e.target.value})} className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3"/><input placeholder="Email vlasnika" value={form.ownerEmail} onChange={e=>setForm({...form,ownerEmail:e.target.value})} className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3"/><input placeholder="Lozinka vlasnika" type="password" value={form.ownerPass} onChange={e=>setForm({...form,ownerPass:e.target.value})} className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3"/></div><div className="flex gap-2 mt-6"><button onClick={()=>setShowCreate(false)} className="flex-1 bg-zinc-800 py-3 rounded-xl">Odustani</button><button onClick={createRestaurant} className="flex-1 bg-white text-black font-bold py-3 rounded-xl">Kreiraj</button></div></div></div>)}
         {resetId&&(<div className="fixed inset-0 bg-black/80 backdrop-blur z-50 flex items-center justify-center p-4"><div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 w-full max-w-sm"><h2 className="font-bold mb-4">Nova lozinka</h2><input placeholder="Nova lozinka" value={newPass} onChange={e=>setNewPass(e.target.value)} className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 mb-4"/><div className="flex gap-2"><button onClick={()=>setResetId(null)} className="flex-1 bg-zinc-800 py-3 rounded-xl">Odustani</button><button onClick={resetPass} className="flex-1 bg-white text-black font-bold py-3 rounded-xl">Spremi</button></div></div></div>)}
       </div>
     </div>
