@@ -1,9 +1,33 @@
+# Next.js
 .next
+out
+build
+dist
+
+# Dependencies
 node_modules
 
+# TS
 *.tsbuildinfo
-*.bak
-*.backup
+next-env.d.ts
+
+# Env
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Backups & OS junk
 *.bak
 *.bak*
 *.bak2
+*.backup
+*.orig
+*.rej
+*~
+.DS_Store
+Thumbs.db
+
+# Prisma
+prisma/migrations/.env
