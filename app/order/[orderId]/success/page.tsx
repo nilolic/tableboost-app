@@ -44,7 +44,7 @@ export default async function SuccessPage({ params, searchParams }: { params: { 
             <div className="flex justify-between text-zinc-500"><span>Napojnica {order.tipPercent}%</span><span>{order.tipAmount.toFixed(2)}€</span></div>
           )}
           <div className="border-t pt-2 flex justify-between font-black text-[15px]"><span>Ukupno</span><span>{order.total.toFixed(2)}€</span></div>
-          <div className="text-[11px] text-zinc-500 pt-1">ID: {order.id.slice(0,8)} • {new Date().toLocaleTimeString('hr-HR', {hour:'2-digit', minute:'2-digit'})}</div>
+          <div suppressHydrationWarning className="text- text-zinc-500 pt-1">ID: {order.id.slice(0,8)} • {new Date().toLocaleTimeString('hr-HR', {hour:'2-digit', minute:'2-digit'})}</div>
         </div>
 
         <div className="mt-4 grid grid-cols-2 gap-2 text-[11px]">
