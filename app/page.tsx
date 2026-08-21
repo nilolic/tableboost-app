@@ -66,7 +66,7 @@ export default function Page() {
   return (
     <div className="min-h-screen bg-[#FFFBF7] text-zinc-900 selection:bg-emerald-200/60 antialiased overflow-x-hidden">
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        
         *{font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif}
         html{scroll-behavior:smooth}
         body{overflow-x:hidden}

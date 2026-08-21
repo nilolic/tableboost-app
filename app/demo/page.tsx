@@ -51,7 +51,7 @@ export default function DemoPage(){
 
   return (
     <div className="min-h-screen bg-[#FFFBF7] text-zinc-900 antialiased">
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap'); *{font-family:Inter,sans-serif}`}</style>
+      <style>{` *{font-family:Inter,sans-serif}`}</style>
 
       <div className="sticky top-0 z-[60] bg-zinc-900 text-white text-[13px] font-medium">
         <div className="mx-auto max-w-[1240px] px-5 h-10 flex items-center justify-between">
