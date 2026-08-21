@@ -46,7 +46,7 @@ export default async function LoginPage({ searchParams }: { searchParams: { r?: 
             </div>
           )}
           <LoginForm />
-          <p className="mt-6 text-xs text-zinc-400 text-center tracking-wide">© {new Date().getFullYear()} TableBoost • tableboost.app</p>
+          <p className="mt-6 text-xs text-zinc-400 text-center tracking-wide">© {2026} TableBoost • tableboost.app</p>
         </div>
       </div>
     </div>

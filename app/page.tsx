@@ -661,7 +661,7 @@ export default function Page() {
             </div>
             <span className="text-[14px] font-bold tracking-tight">TableBoost<span className="font-medium text-zinc-400">.app</span></span>
             <span className="text-zinc-300">•</span>
-            <span className="text-[12px] text-zinc-500">© {new Date().getFullYear()}</span>
+            <span className="text-[12px] text-zinc-500">© {2026}</span>
           </div>
           <div className="flex items-center gap-5 text-[12px] text-zinc-500">
             <span className="inline-flex items-center gap-1">Made in HR <Heart className="h-3.5 w-3.5 fill-rose-500 text-rose-500" /></span>
