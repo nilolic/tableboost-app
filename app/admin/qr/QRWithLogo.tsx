@@ -16,7 +16,7 @@ export default function QRWithLogo({ url, logoUrl, size=600 }: { url: string, lo
       if (logoUrl) {
         try {
           const img = new Image()
-          img.crossOrigin = "anonymous"
+          if (!logoUrl.startsWith('data:')) img.crossOrigin = "anonymous"
           img.src = logoUrl
           await new Promise((res, rej) => { img.onload = res; img.onerror = rej })
           const logoSize = size * 0.22

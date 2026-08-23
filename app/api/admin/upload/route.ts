@@ -19,16 +19,25 @@ export async function POST(req: Request) {
   if(!file.type.startsWith('image/')) return NextResponse.json({ error: 'Samo slike' }, { status: 400 })
   const bytes = await file.arrayBuffer()
   let buffer = Buffer.from(bytes)
+
+  // LOGO - uvijek vrati base64, ne file - radi na Vercelu i VPS-u
   if (type === 'logo') {
     try {
       const sharp = (await import('sharp')).default
       buffer = await sharp(buffer).resize(400, 400, { fit: 'contain', background: { r: 255, g: 255, b: 255, alpha: 1 } }).png().toBuffer()
-      ext = 'png'
     } catch (e) { console.log('sharp fallback', e) }
+    const base64 = buffer.toString('base64')
+    return NextResponse.json({ url: `data:image/png;base64,${base64}` })
   }
+
   const fileName = `${type}-${Date.now()}.${ext}`
-  const dir = path.join(process.cwd(), 'public', 'uploads', user.restaurantId)
-  await mkdir(dir, { recursive: true })
-  await writeFile(path.join(dir, fileName), buffer)
+  try {
+    const dir = path.join(process.cwd(), 'public', 'uploads', user.restaurantId)
+    await mkdir(dir, { recursive: true })
+    await writeFile(path.join(dir, fileName), buffer)
+  } catch {
+    const base64 = buffer.toString('base64')
+    return NextResponse.json({ url: `data:${file.type};base64,${base64}` })
+  }
   return NextResponse.json({ url: `/uploads/${user.restaurantId}/${fileName}` })
 }
