@@ -391,27 +391,7 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
                     </div>
                   </div>
                 ))}
-                {upsells.length>0 && (
-                  <div className="pt-3 border-t-2 border-dashed border-zinc-200 mt-3">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text- font-black uppercase tracking-widest">✨ Preporučujemo</span>
-                      {loadingUpsell && <span className="text- text-zinc-400">učitavam...</span>}
-                    </div>
-                    <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none -mx-1 px-1">
-                      {upsells.map((u:any)=>(
-                        <div key={u.id} className="min-w- bg-amber-50 border border-amber-200 rounded-2xl p-2.5 flex gap-2 shrink-0">
-                          <div className="w-10 h-10 rounded-xl bg-white overflow-hidden shrink-0"><img src={u.imageUrl||"https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200"} className="w-full h-full object-cover"/></div>
-                          <div className="flex-1 min-w-0">
-                            <div className="font-bold text- leading-tight line-clamp-1">{t(u.name,u.nameEn,u.nameDe)}</div>
-                            <div className="text- text-zinc-600">{u.price.toFixed(2)}€</div>
-                            <button onClick={()=>add(u.id)} className="mt-1 bg-black text-white text- font-bold px-2.5 py-1 rounded-full">+ {T.add}</button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
+                              </div>
 
               <div className="p-4 bg-zinc-50 space-y-4 border-t">
                 <div>
@@ -466,6 +446,27 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
                     </button>
                   )}
                 </div>
+
+                {cartDetailed.length>0 && upsells.length>0 && (
+                  <div className="pt-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text- font-black uppercase tracking-widest">✨ Još nešto uz to?</span>
+                      {loadingUpsell && <span className="text- text-zinc-400">učitavam...</span>}
+                    </div>
+                    <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none -mx-1 px-1">
+                      {upsells.map((u:any)=>(
+                        <div key={u.id} className="min-w- bg-amber-50 border-2 border-amber-200 rounded-2xl p-2.5 flex gap-2 shrink-0">
+                          <div className="w-10 h-10 rounded-xl bg-white overflow-hidden shrink-0"><img src={u.imageUrl||"https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200"} className="w-full h-full object-cover"/></div>
+                          <div className="flex-1 min-w-0">
+                            <div className="font-bold text- leading-tight line-clamp-1">{t(u.name,u.nameEn,u.nameDe)}</div>
+                            <div className="text- text-zinc-600">{u.price.toFixed(2)}€</div>
+                            <button onClick={()=>add(u.id)} className="mt-1 bg-black text-white text- font-bold px-2.5 py-1 rounded-full">+ {T.add}</button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 <div className="bg-white border rounded-2xl p-3 space-y-1 text-">
                   <div className="flex justify-between"><span className="text-zinc-500">{T.subtotal}</span><span className="font-bold">{subtotal.toFixed(2)}€</span></div>
