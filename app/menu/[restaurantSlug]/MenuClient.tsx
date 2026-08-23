@@ -360,41 +360,45 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
             </div>
             <div className="flex-1 overflow-auto p-4 space-y-3">
               {cartDetailed.length===0 && <div className="py-12 text-center text-zinc-400">{T.cartEmpty}</div>}
+              {cartDetailed.length>0 && (
+                <div className="text- font-black uppercase tracking-widest text-zinc-500 mb-1">Vaša narudžba • dodajte napomenu ispod svakog jela</div>
+              )}
               {cartDetailed.map((i:any)=>(
-                  <div key={i.id} className="flex flex-col gap-2 border border-zinc-100 p-3 rounded-2xl bg-zinc-50/50">
+                  <div key={i.id} className="flex flex-col gap-2 border-2 border-zinc-900 p-3 rounded-2xl bg-white shadow-sm">
                     <div className="flex gap-3">
                       <div className="w-12 h-12 rounded-xl bg-zinc-100 overflow-hidden"><img src={i.imageUrl||""} className="w-full h-full object-cover"/></div>
                       <div className="flex-1">
-                        <div className="flex justify-between"><span className="font-bold text-">{t(i.name,i.nameEn,i.nameDe)}</span><span className="font-black text-">{(i.price*i.qty).toFixed(2)}€</span></div>
+                        <div className="flex justify-between"><span className="font-black text-">{t(i.name,i.nameEn,i.nameDe)}</span><span className="font-black text-">{(i.price*i.qty).toFixed(2)}€</span></div>
                         <div className="flex justify-between items-center mt-1">
                           <span className="text- text-zinc-500">{i.allergens? `⚠ ${i.allergens}` : ''}</span>
-                          <div className="flex items-center gap-1 bg-black text-white rounded-full p-0.5"><button onClick={()=>dec(i.id)} className="w-6 h-6 grid place-items-center">−</button><span className="w-5 text-center text-">{i.qty}</span><button onClick={()=>add(i.id)} className="w-6 h-6 grid place-items-center bg-white text-black rounded-full">+</button></div>
+                          <div className="flex items-center gap-1 bg-black text-white rounded-full p-0.5"><button onClick={()=>dec(i.id)} className="w-7 h-7 grid place-items-center">−</button><span className="w-6 text-center text- font-black">{i.qty}</span><button onClick={()=>add(i.id)} className="w-7 h-7 grid place-items-center bg-white text-black rounded-full">+</button></div>
                         </div>
                       </div>
                     </div>
                     <div className="relative">
+                      <div className="text- font-black uppercase tracking-wider text-amber-700 mb-1 ml-1">📝 Napomena za kuhinju</div>
                       <input
                         type="text"
                         value={i.note||""}
                         onChange={e=>updateNote(i.id, e.target.value)}
                         placeholder={T.notePlaceholder}
                         maxLength={120}
-                        className="w-full bg-white border border-zinc-200 focus:border-black rounded-full pl-9 pr-3 py-2 text- outline-none font-medium placeholder:text-zinc-400"
+                        className="w-full bg-amber-50 border-2 border-amber-300 focus:border-black rounded-2xl pl-9 pr-10 py-2.5 text- outline-none font-bold placeholder:text-zinc-400 placeholder:font-medium"
                       />
-                      <span className="absolute left-3 top-2 text-">📝</span>
-                      {i.note && i.note.length>0 && <span className="absolute right-3 top-2 text- text-zinc-400">{i.note.length}/120</span>}
+                      <span className="absolute left-3 top- text-">📝</span>
+                      {i.note && i.note.length>0 && <span className="absolute right-3 top- text- font-bold bg-black text-white px-1.5 py-0.5 rounded-full">{i.note.length}/120</span>}
                     </div>
                   </div>
                 ))}
               {upsells.length>0 && (
-                <div className="pt-4 border-t mt-4">
+                <div className="pt-3 border-t-2 border-dashed border-zinc-200 mt-3">
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text- font-black uppercase tracking-wider">✨ Preporučujemo uz narudžbu</span>
+                    <span className="text- font-black uppercase tracking-widest">✨ Preporučujemo uz narudžbu</span>
                     {loadingUpsell && <span className="text- text-zinc-400">učitavam...</span>}
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
                     {upsells.map((u:any)=>(
-                      <div key={u.id} className="bg-amber-50 border border-amber-200 rounded-2xl p-2.5 flex gap-2">
+                      <div key={u.id} className="min-w- bg-amber-50 border border-amber-200 rounded-2xl p-2.5 flex gap-2 shrink-0">
                         <div className="w-12 h-12 rounded-xl bg-white overflow-hidden shrink-0"><img src={u.imageUrl||"https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200"} className="w-full h-full object-cover"/></div>
                         <div className="flex-1 min-w-0">
                           <div className="font-bold text- leading-tight line-clamp-1">{t(u.name,u.nameEn,u.nameDe)}</div>
