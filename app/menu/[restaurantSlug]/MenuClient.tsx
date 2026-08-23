@@ -358,12 +358,13 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
               <div><h2 className="font-black text- tracking-tight">{T.cart} • {T.table} {tableNumber}</h2><p className="text- text-zinc-500">{cartCount} {T.items}</p></div>
               <button onClick={()=>setShowCart(false)} className="w-9 h-9 rounded-full bg-zinc-100 grid place-items-center font-bold">✕</button>
             </div>
-            <div className="flex-1 overflow-auto p-4 space-y-3">
-              {cartDetailed.length===0 && <div className="py-12 text-center text-zinc-400">{T.cartEmpty}</div>}
-              {cartDetailed.length>0 && (
-                <div className="text- font-black uppercase tracking-widest text-zinc-500 mb-1">Vaša narudžba • dodajte napomenu ispod svakog jela</div>
-              )}
-              {cartDetailed.map((i:any)=>(
+            <div className="flex-1 overflow-y-auto overscroll-contain bg-white">
+              <div className="p-4 space-y-3">
+                {cartDetailed.length===0 && <div className="py-12 text-center text-zinc-400">{T.cartEmpty}</div>}
+                {cartDetailed.length>0 && (
+                  <div className="text- font-black uppercase tracking-widest text-zinc-500 mb-1">Vaša narudžba • dodajte napomenu ispod svakog jela</div>
+                )}
+                {cartDetailed.map((i:any)=>(
                   <div key={i.id} className="flex flex-col gap-2 border-2 border-zinc-900 p-3 rounded-2xl bg-white shadow-sm">
                     <div className="flex gap-3">
                       <div className="w-12 h-12 rounded-xl bg-zinc-100 overflow-hidden"><img src={i.imageUrl||""} className="w-full h-full object-cover"/></div>
@@ -383,93 +384,103 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
                         onChange={e=>updateNote(i.id, e.target.value)}
                         placeholder={T.notePlaceholder}
                         maxLength={120}
-                        className="w-full bg-amber-50 border-2 border-amber-300 focus:border-black rounded-2xl pl-9 pr-10 py-2.5 text- outline-none font-bold placeholder:text-zinc-400 placeholder:font-medium"
+                        className="w-full bg-amber-50 border-2 border-amber-300 focus:border-black rounded-2xl pl-9 pr-10 py-2.5 text- outline-none font-bold placeholder:text-zinc-400"
                       />
                       <span className="absolute left-3 top- text-">📝</span>
                       {i.note && i.note.length>0 && <span className="absolute right-3 top- text- font-bold bg-black text-white px-1.5 py-0.5 rounded-full">{i.note.length}/120</span>}
                     </div>
                   </div>
                 ))}
-              {upsells.length>0 && (
-                <div className="pt-3 border-t-2 border-dashed border-zinc-200 mt-3">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text- font-black uppercase tracking-widest">✨ Preporučujemo uz narudžbu</span>
-                    {loadingUpsell && <span className="text- text-zinc-400">učitavam...</span>}
-                  </div>
-                  <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
-                    {upsells.map((u:any)=>(
-                      <div key={u.id} className="min-w- bg-amber-50 border border-amber-200 rounded-2xl p-2.5 flex gap-2 shrink-0">
-                        <div className="w-12 h-12 rounded-xl bg-white overflow-hidden shrink-0"><img src={u.imageUrl||"https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200"} className="w-full h-full object-cover"/></div>
-                        <div className="flex-1 min-w-0">
-                          <div className="font-bold text- leading-tight line-clamp-1">{t(u.name,u.nameEn,u.nameDe)}</div>
-                          <div className="text- text-zinc-600">{u.price.toFixed(2)}€ {u.isBoosted && `🔥${u.boostLevel}`}</div>
-                          <button onClick={()=>add(u.id)} className="mt-1 bg-black text-white text- font-bold px-3 py-1 rounded-full">+ {T.add}</button>
+                {upsells.length>0 && (
+                  <div className="pt-3 border-t-2 border-dashed border-zinc-200 mt-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text- font-black uppercase tracking-widest">✨ Preporučujemo</span>
+                      {loadingUpsell && <span className="text- text-zinc-400">učitavam...</span>}
+                    </div>
+                    <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none -mx-1 px-1">
+                      {upsells.map((u:any)=>(
+                        <div key={u.id} className="min-w- bg-amber-50 border border-amber-200 rounded-2xl p-2.5 flex gap-2 shrink-0">
+                          <div className="w-10 h-10 rounded-xl bg-white overflow-hidden shrink-0"><img src={u.imageUrl||"https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200"} className="w-full h-full object-cover"/></div>
+                          <div className="flex-1 min-w-0">
+                            <div className="font-bold text- leading-tight line-clamp-1">{t(u.name,u.nameEn,u.nameDe)}</div>
+                            <div className="text- text-zinc-600">{u.price.toFixed(2)}€</div>
+                            <button onClick={()=>add(u.id)} className="mt-1 bg-black text-white text- font-bold px-2.5 py-1 rounded-full">+ {T.add}</button>
+                          </div>
                         </div>
-                      </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="p-4 bg-zinc-50 space-y-4 border-t">
+                <div>
+                  <div className="text- font-black uppercase tracking-wider opacity-60 mb-2 flex justify-between">
+                    <span>💝 Napojnica za osoblje</span>
+                    {tipPercent>0 && <span className="text-black">+{tipAmount.toFixed(2)}€</span>}
+                  </div>
+                  <div className="grid grid-cols-4 gap-2">
+                    {[0,10,20,30].map(pct=>(
+                      <button key={pct} onClick={()=>setTipPercent(pct)} className={`h-11 rounded-full font-bold text- border-2 transition ${tipPercent===pct? 'bg-black text-white border-black' : 'bg-white border-zinc-200'}`}>
+                        {pct===0? 'Bez tipa' : `${pct}%`}
+                      </button>
                     ))}
                   </div>
                 </div>
-              )}
-            </div>
-            <div className="p-4 border-t bg-zinc-50 space-y-3">
-              <div>
-                <div className="text- font-black uppercase tracking-wider opacity-60 mb-2 flex justify-between">
-                  <span>💝 Napojnica za osoblje</span>
-                  {tipPercent>0 && <span className="text-black">+{tipAmount.toFixed(2)}€</span>}
-                </div>
-                <div className="grid grid-cols-4 gap-2">
-                  {[0,10,20,30].map(pct=>(
-                    <button key={pct} onClick={()=>setTipPercent(pct)} className={`h-10 rounded-full font-bold text- border-2 transition ${tipPercent===pct? 'bg-black text-white border-black' : 'bg-white border-zinc-200 hover:border-zinc-300'}`}>
-                      {pct===0? 'Bez tipa' : `${pct}%`}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              {restaurant?.serviceMode==='BAR'? (
-                <div className="bg-amber-300 border-2 border-black rounded-2xl p-3 flex gap-2.5 items-start shadow-sm">
-                  <div className="w-9 h-9 bg-black text-white rounded-full grid place-items-center shrink-0 text-">🛎</div>
-                  <div>
-                    <div className="font-black text- leading-tight uppercase">{lang==='en'? 'Pickup at the bar' : lang==='de'? 'Abholung an der Theke' : 'Preuzimanje na šanku'}</div>
-                    <div className="text- leading-[1.35] mt-0.5 font-medium">{lang==='en'? 'Order and pay here, then pick up your food/drinks at the bar when ready. You will get a notification.' : lang==='de'? 'Hier bestellen und bezahlen, dann Essen/Getränke an der Theke abholen, wenn es fertig ist. Sie erhalten eine Benachrichtigung.' : 'Ovdje naručite i platite, a piće/hranu preuzmite na šanku kad bude spremno. Dobićete obavijest.'}</div>
-                    <div className="text- font-bold mt-2 leading-[1.35]">{lang==='en'? 'Stay on this page to get notified!' : lang==='de'? 'Bleiben Sie auf dieser Seite, um benachrichtigt zu werden!' : 'Ostanite na ovoj stranici da biste dobili obavijest!'}</div>
+
+                {restaurant?.serviceMode==='BAR'? (
+                  <div className="bg-amber-300 border-2 border-black rounded-2xl p-3 flex gap-2.5 items-start">
+                    <div className="w-9 h-9 bg-black text-white rounded-full grid place-items-center shrink-0">🛎</div>
+                    <div>
+                      <div className="font-black text- leading-tight uppercase">{lang==='en'? 'Pickup at the bar' : lang==='de'? 'Abholung an der Theke' : 'Preuzimanje na šanku'}</div>
+                      <div className="text- leading-[1.35] mt-1 font-medium">{lang==='en'? 'Order and pay here, then pick up at the bar when ready.' : lang==='de'? 'Hier bestellen und bezahlen, dann an der Theke abholen.' : 'Ovdje naručite i platite, a piće/hranu preuzmite na šanku kad bude spremno. Dobićete obavijest.'}</div>
+                      <div className="text- font-bold mt-2">Ostanite na ovoj stranici da biste dobili obavijest!</div>
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <div className="bg-white border border-zinc-200 rounded-2xl p-2.5 flex gap-2 items-center">
-                  <div className="text-">🍽</div>
-                  <div className="text- font-medium">{lang==='en'? `Waiter service - delivery to table ${tableNumber||''}` : lang==='de'? `Bedienung - Lieferung an Tisch ${tableNumber||''}` : `Poslužuje konobar - dostava na stol ${tableNumber}`}</div>
-                </div>
-              )}
-              <div className="text- font-black uppercase tracking-wider opacity-60">Način plaćanja</div>
-              <div className="grid grid-cols-3 gap-2">
-                {payCashEnabled && (
-                  <button onClick={()=>setPaymentMethod('CASH')} className={`p-3 rounded-2xl border-2 text-left transition ${paymentMethod==='CASH'?'border-black bg-black text-white':'border-zinc-200 bg-white'}`}>
-                    <div className="text-">💵</div><div className="font-bold text- mt-1">Gotovina</div><div className="text- opacity-70 leading-tight mt-0.5">Plati konobaru</div>
-                  </button>
-                )}
-                {payTerminalEnabled && (
-                  <button onClick={()=>setPaymentMethod('CARD_TERMINAL')} className={`p-3 rounded-2xl border-2 text-left transition ${paymentMethod==='CARD_TERMINAL'?'border-black bg-black text-white':'border-zinc-200 bg-white'}`}>
-                    <div className="text-">💳</div><div className="font-bold text- mt-1">POS</div><div className="text- opacity-70 leading-tight mt-0.5">Kartica na stolu</div>
-                  </button>
-                )}
-                {payOnlineEnabled? (
-                  <button onClick={()=>setPaymentMethod('CARD_ONLINE')} className={`p-3 rounded-2xl border-2 text-left transition ${paymentMethod==='CARD_ONLINE'?'border-black bg-black text-white':'border-zinc-200 bg-white'}`}>
-                    <div className="text-">🌐</div><div className="font-bold text- mt-1">Online</div><div className="text- opacity-70 leading-tight mt-0.5">Apple/Google Pay</div>
-                  </button>
                 ) : (
-                  <button disabled className="p-3 rounded-2xl border-2 border-zinc-100 bg-zinc-100 opacity-50 text-left">
-                    <div className="text-">🌐</div><div className="font-bold text- mt-1">Online</div><div className="text- mt-0.5">Uskoro</div>
-                  </button>
+                  <div className="bg-white border border-zinc-200 rounded-2xl p-2.5 flex gap-2 items-center">
+                    <div>🍽</div>
+                    <div className="text- font-medium">Poslužuje konobar - dostava na stol {tableNumber}</div>
+                  </div>
                 )}
+
+                <div className="text- font-black uppercase tracking-wider opacity-60">Način plaćanja</div>
+                <div className="grid grid-cols-3 gap-2">
+                  {payCashEnabled && (
+                    <button onClick={()=>setPaymentMethod('CASH')} className={`p-3 rounded-2xl border-2 text-left ${paymentMethod==='CASH'?'border-black bg-black text-white':'border-zinc-200 bg-white'}`}>
+                      <div>💵</div><div className="font-bold text- mt-1">Gotovina</div><div className="text- opacity-70 leading-tight">Plati konobaru</div>
+                    </button>
+                  )}
+                  {payTerminalEnabled && (
+                    <button onClick={()=>setPaymentMethod('CARD_TERMINAL')} className={`p-3 rounded-2xl border-2 text-left ${paymentMethod==='CARD_TERMINAL'?'border-black bg-black text-white':'border-zinc-200 bg-white'}`}>
+                      <div>💳</div><div className="font-bold text- mt-1">POS</div><div className="text- opacity-70">Kartica na stolu</div>
+                    </button>
+                  )}
+                  {payOnlineEnabled? (
+                    <button onClick={()=>setPaymentMethod('CARD_ONLINE')} className={`p-3 rounded-2xl border-2 text-left ${paymentMethod==='CARD_ONLINE'?'border-black bg-black text-white':'border-zinc-200 bg-white'}`}>
+                      <div>🌐</div><div className="font-bold text- mt-1">Online</div><div className="text- opacity-70">Apple/Google Pay</div>
+                    </button>
+                  ) : (
+                    <button disabled className="p-3 rounded-2xl border-2 border-zinc-100 bg-zinc-100 opacity-50 text-left">
+                      <div>🌐</div><div className="font-bold text- mt-1">Online</div><div className="text-">Uskoro</div>
+                    </button>
+                  )}
+                </div>
+
+                <div className="bg-white border rounded-2xl p-3 space-y-1 text-">
+                  <div className="flex justify-between"><span className="text-zinc-500">{T.subtotal}</span><span className="font-bold">{subtotal.toFixed(2)}€</span></div>
+                  {tipPercent>0 && <div className="flex justify-between"><span className="text-zinc-500">{T.tip} {tipPercent}%</span><span className="font-bold">+{tipAmount.toFixed(2)}€</span></div>}
+                  <div className="flex justify-between font-black text- pt-2 border-t mt-1"><span>{T.total}</span><span>{total.toFixed(2)}€</span></div>
+                </div>
+                <div className="h-6"></div>
               </div>
-              <div className="bg-white border rounded-2xl p-3 space-y-1 text-">
-                <div className="flex justify-between"><span className="text-zinc-500">{T.subtotal}</span><span className="font-bold">{subtotal.toFixed(2)}€</span></div>
-                {tipPercent>0 && <div className="flex justify-between"><span className="text-zinc-500">{T.tip} {tipPercent}%</span><span className="font-bold">+{tipAmount.toFixed(2)}€</span></div>}
-                <div className="flex justify-between font-black text- pt-1 border-t mt-1"><span>{T.total}</span><span>{total.toFixed(2)}€</span></div>
-              </div>
-              <button disabled={sending || cart.length===0} onClick={order} className="w-full bg-black text-white py-4 rounded-full font-black text- shadow-lg shadow-black/20 disabled:opacity-50 active:scale-[0.98] transition">
+            </div>
+            <div className="p-4 border-t bg-white sticky bottom-0 z-10 pb-[max(1rem,env(safe-area-inset-bottom))]">
+              <button disabled={sending || cart.length===0} onClick={order} className="w-full bg-black text-white py-4 rounded-full font-black text- shadow-xl shadow-black/20 disabled:opacity-50 active:scale-[0.98] transition">
                 {sending? T.sending : paymentMethod==='CASH'? `${T.orderCash} • ${total.toFixed(2)}€` : paymentMethod==='CARD_TERMINAL'? `${T.orderPos} • ${total.toFixed(2)}€` : `${T.payOnline} • ${total.toFixed(2)}€`}
               </button>
+            </div>
+
             </div>
           </div>
         </div>
