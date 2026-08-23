@@ -13,7 +13,17 @@ export async function POST(req: Request) {
   if (!table) return NextResponse.json({ error: 'No table' }, { status: 400 })
   const menuItems = await prisma.menuItem.findMany({ where: { id: { in: items.map((i:any)=>i.id) } } })
   let subtotal = 0
-  const orderItems = items.map((i:any)=>{ const mi = menuItems.find(m=>m.id===i.id); if(!mi) return null; subtotal += mi.price * i.qty; return { menuItemId: mi.id, quantity: i.qty, price: mi.price } }).filter(Boolean)
+  const orderItems = items.map((i:any)=>{
+    const mi = menuItems.find(m=>m.id===i.id);
+    if(!mi) return null;
+    subtotal += mi.price * i.qty;
+    return {
+      menuItemId: mi.id,
+      quantity: i.qty,
+      price: mi.price,
+      note: (i.note && typeof i.note === 'string' && i.note.trim().length>0)? i.note.trim().slice(0,120) : null
+    }
+  }).filter(Boolean)
   const tipAmount = subtotal * (tipPercent / 100)
   const total = subtotal + tipAmount
   const isCash = (paymentMethod||'').toUpperCase().includes('CASH') || (paymentMethod||'').toUpperCase().includes('POS') || (paymentMethod||'').toUpperCase().includes('TERMINAL')
