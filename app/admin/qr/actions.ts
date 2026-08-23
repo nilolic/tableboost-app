@@ -1,11 +1,10 @@
 "use server"
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
+import crypto from "crypto"
 
-function genSlug(base: string, num: number) {
-  const clean = base.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,20)
-  const rnd = Math.random().toString(36).slice(2,6)
-  return `${clean}-stol-${num}-${rnd}`
+function genSlug() {
+  return crypto.randomBytes(6).toString('base64url')
 }
 
 export async function addTable(restaurantId: string, customNumber?: number) {
@@ -21,7 +20,7 @@ export async function addTable(restaurantId: string, customNumber?: number) {
   const exists = await prisma.table.findFirst({ where: { restaurantId, number } })
   if (exists) throw new Error(`Stol ${number} već postoji`)
 
-  const qrSlug = genSlug(restaurant.slug || restaurant.name, number)
+  const qrSlug = genSlug()
   const table = await prisma.table.create({ data: { number, qrSlug, restaurantId } })
   revalidatePath("/admin/qr")
   return table
@@ -40,7 +39,6 @@ export async function addMultipleTables(restaurantId: string, count: number) {
 export async function deleteTable(tableId: string) {
   const table = await prisma.table.findUnique({ where: { id: tableId }, include: { orders: { take: 1 } } })
   if (!table) throw new Error("Stol ne postoji")
-  // ako ima narudžbi - ne daj brisati zadnjih 24h aktivnih
   const hasActiveOrders = await prisma.order.findFirst({ where: { tableId, status: { notIn: ["COMPLETED","CANCELLED"] } } })
   if (hasActiveOrders) throw new Error("Stol ima aktivne narudžbe - ne može se obrisati")
   await prisma.table.delete({ where: { id: tableId } })

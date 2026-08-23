@@ -34,7 +34,7 @@ export async function POST(req:Request){
           { email: `${slug}-kuhar@demo.local`, name: 'Kuhar DEMO', password: hashKuhar, role: 'KITCHEN' },
           { email: `${slug}-konobar@demo.local`, name: 'Konobar DEMO', password: hashKuhar, role: 'WAITER' },
         ]},
-        tables: { create: Array.from({length:8},(_,i)=>({ number:i+1, qrSlug:`${slug}-stol-${i+1}-${crypto.randomBytes(3).toString('base64url')}` })) },
+        tables: { create: Array.from({length:8},(_,i)=>({ number:i+1, qrSlug: crypto.randomBytes(6).toString('base64url') })) },
         categories: { create: [{ name: 'Predjela', order: 1 },{ name: 'Glavna jela', order: 2 },{ name: 'Deserti', order: 3 },{ name: 'Pića', order: 4 }] }
       }, include: { categories:true }
     })
