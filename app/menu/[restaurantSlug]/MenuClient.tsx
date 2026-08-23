@@ -177,7 +177,7 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-black text-white grid place-items-center font-black text-">{restaurant?.name?.[0]?.toUpperCase()||"T"}</div>
             <div className="leading-tight">
-              <div className="font-black text- tracking-tight">{restaurant?.name}</div>
+              <div className="font-black text- tracking-tight leading-none">{restaurant?.name}</div>
               <div className="text- text-zinc-500 font-medium flex items-center gap-1.5"><span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"/> Stol {tableNumber} • QR Menu</div>
             </div>
           </div>
@@ -354,8 +354,8 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
       {showCart && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end">
           <div className="bg-white w-full rounded-t- max-h- flex flex-col shadow-2xl">
-            <div className="p-5 flex justify-between items-center border-b">
-              <div><h2 className="font-black text- tracking-tight">{T.cart} • {T.table} {tableNumber}</h2><p className="text- text-zinc-500">{cartCount} {T.items}</p></div>
+            <div className="p-5 flex justify-between items-center border-b sticky top-0 bg-white z-10 rounded-t-">
+              <div><h2 className="font-black text- tracking-tight">{T.cart} • {T.table} {tableNumber}</h2><p className="text- text-zinc-500 font-medium mt-1">{cartCount} {T.items}</p></div>
               <button onClick={()=>setShowCart(false)} className="w-9 h-9 rounded-full bg-zinc-100 grid place-items-center font-bold">✕</button>
             </div>
             <div className="flex-1 overflow-y-auto overscroll-contain bg-white">
@@ -447,20 +447,25 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
                   )}
                 </div>
 
+                <div className="bg-white border rounded-2xl p-3 space-y-1 text-">
+                  <div className="flex justify-between"><span className="text-zinc-500">{T.subtotal}</span><span className="font-bold">{subtotal.toFixed(2)}€</span></div>
+                  {tipPercent>0 && <div className="flex justify-between"><span className="text-zinc-500">{T.tip} {tipPercent}%</span><span className="font-bold">+{tipAmount.toFixed(2)}€</span></div>}
+                  <div className="flex justify-between font-black text- pt-2 border-t mt-1"><span>{T.total}</span><span>{total.toFixed(2)}€</span></div>
+                </div>
+
                 {cartDetailed.length>0 && upsells.length>0 && (
-                  <div className="pt-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text- font-black uppercase tracking-widest">✨ Još nešto uz to?</span>
-                      {loadingUpsell && <span className="text- text-zinc-400">učitavam...</span>}
-                    </div>
-                    <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none -mx-1 px-1">
+                  <div className="px-1 pt-2">
+                    <div className="text- font-black uppercase tracking-widest text-zinc-500 mb-2">✨ PREPORUČUJEMO UZ NARUDŽBU</div>
+                    <div className="grid grid-cols-2 gap-2">
                       {upsells.map((u:any)=>(
-                        <div key={u.id} className="min-w- bg-amber-50 border-2 border-amber-200 rounded-2xl p-2.5 flex gap-2 shrink-0">
-                          <div className="w-10 h-10 rounded-xl bg-white overflow-hidden shrink-0"><img src={u.imageUrl||"https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200"} className="w-full h-full object-cover"/></div>
-                          <div className="flex-1 min-w-0">
-                            <div className="font-bold text- leading-tight line-clamp-1">{t(u.name,u.nameEn,u.nameDe)}</div>
-                            <div className="text- text-zinc-600">{u.price.toFixed(2)}€</div>
-                            <button onClick={()=>add(u.id)} className="mt-1 bg-black text-white text- font-bold px-2.5 py-1 rounded-full">+ {T.add}</button>
+                        <div key={u.id} className="bg-[#FFFBE5] border border-[#FFE99A] rounded-2xl p-2.5 flex gap-2">
+                          <div className="w-11 h-11 rounded-xl bg-white overflow-hidden shrink-0 border"><img src={u.imageUrl||"https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200"} className="w-full h-full object-cover"/></div>
+                          <div className="flex-1 min-w-0 flex flex-col justify-between">
+                            <div>
+                              <div className="font-bold text- leading-tight line-clamp-1">{t(u.name,u.nameEn,u.nameDe)}</div>
+                              <div className="text- text-zinc-600 font-medium">{u.price.toFixed(2)}€</div>
+                            </div>
+                            <button onClick={()=>add(u.id)} className="mt-1.5 bg-black text-white text- font-black px-3 py-1 rounded-full w-fit">+ Dodaj</button>
                           </div>
                         </div>
                       ))}
@@ -468,11 +473,6 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
                   </div>
                 )}
 
-                <div className="bg-white border rounded-2xl p-3 space-y-1 text-">
-                  <div className="flex justify-between"><span className="text-zinc-500">{T.subtotal}</span><span className="font-bold">{subtotal.toFixed(2)}€</span></div>
-                  {tipPercent>0 && <div className="flex justify-between"><span className="text-zinc-500">{T.tip} {tipPercent}%</span><span className="font-bold">+{tipAmount.toFixed(2)}€</span></div>}
-                  <div className="flex justify-between font-black text- pt-2 border-t mt-1"><span>{T.total}</span><span>{total.toFixed(2)}€</span></div>
-                </div>
                 <div className="h-6"></div>
               </div>
             </div>
