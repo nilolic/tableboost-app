@@ -2,9 +2,9 @@
 import { useState, useRef, useMemo, useEffect } from 'react'
 
 const UI_TEXT = {
-  hr: { search: "Traži jelo, piće...", cart: "Košarica", items: "artikala", tapOpen: "tapni za otvaranje", tapClose: "tapni za zatvaranje", table: "Stol", cartEmpty: "Košarica je prazna", total: "Ukupno", subtotal: "Međuzbroj", tip: "Napojnica", add: "Dodaj", sending: "Šaljem...", orderCash: "Naruči • Gotovina", orderPos: "Naruči • POS", payOnline: "Plati online" },
-  en: { search: "Search dishes, drinks...", cart: "Cart", items: "items", tapOpen: "tap to open", tapClose: "tap to close", table: "Table", cartEmpty: "Cart is empty", total: "Total", subtotal: "Subtotal", tip: "Tip", add: "Add", sending: "Sending...", orderCash: "Order • Cash", orderPos: "Order • POS", payOnline: "Pay online" },
-  de: { search: "Gericht, Getränk suchen...", cart: "Warenkorb", items: "Artikel", tapOpen: "tippen zum Öffnen", tapClose: "tippen zum Schließen", table: "Tisch", cartEmpty: "Warenkorb ist leer", total: "Gesamt", subtotal: "Zwischensumme", tip: "Trinkgeld", add: "Hinzufügen", sending: "Senden...", orderCash: "Bestellen • Bar", orderPos: "Bestellen • POS", payOnline: "Online bezahlen" },
+  hr: { search: "Traži jelo, piće...", cart: "Košarica", items: "artikala", tapOpen: "tapni za otvaranje", tapClose: "tapni za zatvaranje", table: "Stol", cartEmpty: "Košarica je prazna", total: "Ukupno", subtotal: "Međuzbroj", tip: "Napojnica", add: "Dodaj", sending: "Šaljem...", orderCash: "Naruči • Gotovina", orderPos: "Naruči • POS", payOnline: "Plati online", notePlaceholder: "Napomena npr. jače pečeno, bez luka...", noteLabel: "Napomena za kuhinju" },
+  en: { search: "Search dishes, drinks...", cart: "Cart", items: "items", tapOpen: "tap to open", tapClose: "tap to close", table: "Table", cartEmpty: "Cart is empty", total: "Total", subtotal: "Subtotal", tip: "Tip", add: "Add", sending: "Sending...", orderCash: "Order • Cash", orderPos: "Order • POS", payOnline: "Pay online", notePlaceholder: "Note e.g. well done, no onion...", noteLabel: "Kitchen note" },
+  de: { search: "Gericht, Getränk suchen...", cart: "Warenkorb", items: "Artikel", tapOpen: "tippen zum Öffnen", tapClose: "tippen zum Schließen", table: "Tisch", cartEmpty: "Warenkorb ist leer", total: "Gesamt", subtotal: "Zwischensumme", tip: "Trinkgeld", add: "Hinzufügen", sending: "Senden...", orderCash: "Bestellen • Bar", orderPos: "Bestellen • POS", payOnline: "Online bezahlen", notePlaceholder: "Hinweis z.B. gut durchgebraten...", noteLabel: "Hinweis für Küche" },
 };
 const getInitialLang = (): "hr"|"en"|"de" => {
   if (typeof window!== "undefined") {
@@ -81,7 +81,7 @@ function AllergensBadge({ item, lang }: { item: Item, lang: 'hr'|'en'|'de' }) {
 }
 
 export default function MenuClient({ restaurant, tableNumber, mains, lang: propLang, slug }: { restaurant:any, tableNumber:number|null, mains:MainCat[], lang:'hr'|'en'|'de', slug:string }) {
-  const [cart, setCart] = useState<{id:string, qty:number}[]>([])
+  const [cart, setCart] = useState<{id:string, qty:number, note?:string}[]>([])
   const [activeMain, setActiveMain] = useState(mains[0]?.id || "")
   const [activeSub, setActiveSub] = useState<string>("all")
   const [openAccordion, setOpenAccordion] = useState<string | null>(null)
@@ -151,9 +151,10 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
     }
   }, [activeSub, filteredData])
 
-  const add = (id:string)=> setCart(p=>{ const ex=p.find(x=>x.id===id); return ex? p.map(x=>x.id===id?{...x,qty:x.qty+1}:x) : [...p,{id,qty:1}] })
+  const add = (id:string)=> setCart(p=>{ const ex=p.find(x=>x.id===id); return ex? p.map(x=>x.id===id?{...x,qty:x.qty+1}:x) : [...p,{id,qty:1, note:""}] })
   const dec = (id:string)=> setCart(p=> p.map(x=>x.id===id?{...x,qty:x.qty-1}:x).filter(x=>x.qty>0))
   const getQty=(id:string)=> cart.find(c=>c.id===id)?.qty||0
+ const updateNote = (id:string, note:string)=> setCart(p=> p.map(x=>x.id===id?{...x, note: note.slice(0,120)}:x))
 
   const order = async()=>{
     if(!cart.length) return
@@ -390,6 +391,13 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
                       <div className="flex justify-between items-center mt-1">
                         <span className="text- text-zinc-500">{i.allergens? `⚠ ${i.allergens}` : ''}</span>
                         <div className="flex items-center gap-1 bg-black text-white rounded-full p-0.5"><button onClick={()=>dec(i.id)} className="w-6 h-6 grid place-items-center">−</button><span className="w-5 text-center text-">{i.qty}</span><button onClick={()=>add(i.id)} className="w-6 h-6 grid place-items-center bg-white text-black rounded-full">+</button></div>
+                      </div>
+                      <div className="mt-2.5 relative">
+                        <div className="text- font-black uppercase tracking-wider text-amber-700 mb-1 ml-1">📝 Napomena za kuhinju</div>
+                        <input type="text" value={i.note||""} onChange={e=>updateNote(i.id, e.target.value)} placeholder={T.notePlaceholder||"Napomena npr. bez luka..."} maxLength={120} className="w-full bg-amber-50 border-2 border-amber-300 focus:border-black rounded-2xl pl-9 pr-12 py-2.5 text- outline-none font-bold placeholder:text-zinc-400" />
+                        <span className="absolute left-3 top- text-">📝</span>
+                        {i.note && i.note.length>0 && <span className="absolute right-2 top- text- font-bold bg-black text-white px-2 py-1 rounded-full">{i.note.length}/120</span>}
+                        {i.note && /alerg/i.test(i.note) && <span className="mt-1 inline-flex bg-red-600 text-white text- font-black px-2 py-0.5 rounded-full">⚠️ ALERGIJA - OBAVIJESTI KUHINJU</span>}
                       </div>
                     </div>
                   </div>
