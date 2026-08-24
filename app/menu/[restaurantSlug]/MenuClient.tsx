@@ -82,6 +82,7 @@ function AllergensBadge({ item, lang }: { item: Item, lang: 'hr'|'en'|'de' }) {
 
 export default function MenuClient({ restaurant, tableNumber, mains, lang: propLang, slug }: { restaurant:any, tableNumber:number|null, mains:MainCat[], lang:'hr'|'en'|'de', slug:string }) {
   const [cart, setCart] = useState<{id:string, qty:number, note?:string}[]>([])
+  const [globalNote, setGlobalNote] = useState("")
   const [activeMain, setActiveMain] = useState(mains[0]?.id || "")
   const [activeSub, setActiveSub] = useState<string>("all")
   const [openAccordion, setOpenAccordion] = useState<string | null>(null)
@@ -160,7 +161,8 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
     if(!cart.length) return
     setSending(true)
     try{
-      const res=await fetch('/api/orders',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({restaurantSlug:slug,tableNumber,items:cart,paymentMethod,tipPercent})})
+      const itemsWithGlobalNote = cart.map((c:any)=>({...c, note: globalNote.trim().slice(0,120)}))
+      const res=await fetch('/api/orders',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({restaurantSlug:slug,tableNumber,items:itemsWithGlobalNote,paymentMethod,tipPercent})})
       const data=await res.json()
       if(!res.ok) throw new Error(data.error||'Greška')
       if(data.order){
@@ -376,8 +378,9 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
 
       {showCart && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end">
-          <div className="bg-white w-full rounded-t- max-h- flex flex-col shadow-2xl">
-            <div className="p-5 flex justify-between items-center border-b">
+          <div className="bg-white w-full rounded-t-[28px] max-h-[80dvh] h-[80dvh] flex flex-col shadow-2xl max-w-6xl mx-auto overflow-hidden">
+            <div className="w-full flex justify-center pt-2"><div className="w-10 h-1.5 rounded-full bg-zinc-300"/></div>
+ <div className="p-5 flex justify-between items-center border-b">
               <div><h2 className="font-black text- tracking-tight">{T.cart} • {T.table} {tableNumber}</h2><p className="text- text-zinc-500">{cartCount} {T.items}</p></div>
               <button onClick={()=>setShowCart(false)} className="w-9 h-9 rounded-full bg-zinc-100 grid place-items-center font-bold">✕</button>
             </div>
@@ -403,29 +406,20 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
                   </div>
                 ))}
 
-              {upsells.length>0 && (
-                <div className="pt-4 border-t mt-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text- font-black uppercase tracking-wider">✨ Preporučujemo uz narudžbu</span>
-                    {loadingUpsell && <span className="text- text-zinc-400">učitavam...</span>}
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    {upsells.map((u:any)=>(
-                      <div key={u.id} className="bg-amber-50 border border-amber-200 rounded-2xl p-2.5 flex gap-2">
-                        <div className="w-12 h-12 rounded-xl bg-white overflow-hidden shrink-0"><img src={u.imageUrl||"https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200"} className="w-full h-full object-cover"/></div>
-                        <div className="flex-1 min-w-0">
-                          <div className="font-bold text- leading-tight line-clamp-1">{t(u.name,u.nameEn,u.nameDe)}</div>
-                          <div className="text- text-zinc-600">{u.price.toFixed(2)}€ {u.isBoosted && `🔥${u.boostLevel}`}</div>
-                          <button onClick={()=>add(u.id)} className="mt-1 bg-black text-white text- font-bold px-3 py-1 rounded-full">+ {T.add}</button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+              
             </div>
 
             <div className="p-4 border-t bg-zinc-50 space-y-3">
+              <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-3">
+                <div className="font-black text-xs uppercase mb-2">📝 Napomena za kuhinju - za cijelu narudžbu</div>
+                <div className="relative">
+                  <span className="absolute left-3 top-3 text-sm">📝</span>
+                  <input type="text" value={globalNote} onChange={e=>setGlobalNote(e.target.value.slice(0,120))} placeholder={T.notePlaceholder||"Npr. bez luka, alergija..."} maxLength={120} className="w-full bg-white border-2 border-amber-300 focus:border-black rounded-2xl pl-9 pr-12 py-3 text-sm outline-none font-bold placeholder:text-zinc-400" />
+                  {globalNote && globalNote.length>0 && <span className="absolute right-2 top-2.5 text-xs font-bold bg-black text-white px-2 py-1 rounded-full">{globalNote.length}/120</span>}
+                </div>
+                {globalNote && /alerg/i.test(globalNote) && <span className="mt-2 inline-flex bg-red-600 text-white text-xs font-black px-2 py-1 rounded-full">⚠ ALERGIJA - OBAVIJESTI KUHINJU</span>}
+              </div>
+
               <div>
                 <div className="text- font-black uppercase tracking-wider opacity-60 mb-2 flex justify-between">
                   <span>💝 Napojnica za osoblje</span>
@@ -485,7 +479,22 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
                 <div className="flex justify-between font-black text- pt-1 border-t mt-1"><span>{T.total}</span><span>{total.toFixed(2)}€</span></div>
               </div>
 
-              <button disabled={sending || cart.length===0} onClick={order} className="w-full bg-black text-white py-4 rounded-full font-black text- shadow-lg shadow-black/20 disabled:opacity-50 active:scale-[0.98] transition">
+              
+              {upsells.length>0 && (
+                <div className="bg-amber-50/70 border border-amber-200 rounded-2xl p-3">
+                  <div className="mb-2 text- font-black uppercase">✨ Preporučujemo</div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {upsells.map((u:any)=>(
+                      <div key={u.id} className="bg-white border rounded-2xl p-2.5 flex gap-2">
+                        <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0"><img src={u.imageUrl||""} className="w-full h-full object-cover"/></div>
+                        <div className="flex-1 min-w-0"><div className="font-bold text- line-clamp-1">{t(u.name,u.nameEn,u.nameDe)}</div><div className="text-">{u.price.toFixed(2)}€</div><button onClick={()=>add(u.id)} className="mt-1 bg-black text-white text- px-3 py-1 rounded-full">+ {T.add}</button></div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+ <button disabled={sending || cart.length===0} onClick={order} className="w-full bg-black text-white py-4 rounded-full font-black text- shadow-lg shadow-black/20 disabled:opacity-50 active:scale-[0.98] transition">
                 {sending? T.sending : paymentMethod==='CASH'? `${T.orderCash} • ${total.toFixed(2)}€` : paymentMethod==='CARD_TERMINAL'? `${T.orderPos} • ${total.toFixed(2)}€` : `${T.payOnline} • ${total.toFixed(2)}€`}
               </button>
             </div>
