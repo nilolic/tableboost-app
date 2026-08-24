@@ -75,7 +75,7 @@ function AllergensBadge({ item, lang }: { item: Item, lang: 'hr'|'en'|'de' }) {
   )
 }
 export default function MenuClient({ restaurant, tableNumber, mains, lang: propLang, slug }: { restaurant:any, tableNumber:number|null, mains:MainCat[], lang:'hr'|'en'|'de', slug:string }) {
-  const [cart, setCart] = useState<{id:string, qty:number, note?:string}[]>([])
+  const [cart, setCart] = useState<{id:string, qty:number}[]>([])
   const [activeMain, setActiveMain] = useState(mains[0]?.id || "")
   const [activeSub, setActiveSub] = useState<string>("all")
   const [openAccordion, setOpenAccordion] = useState<string | null>(null)
@@ -85,7 +85,8 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
   const [showCart, setShowCart] = useState(false)
   const [sending, setSending] = useState(false)
   const [paymentMethod, setPaymentMethod] = useState<'CASH'|'CARD_TERMINAL'|'CARD_ONLINE'>('CASH')
-  const [tipPercent, setTipPercent] = useState<number>(0)
+  const [orderNote, setOrderNote] = useState("")
+ const [tipPercent, setTipPercent] = useState<number>(0)
   const [upsells, setUpsells] = useState<Item[]>([])
   const [loadingUpsell, setLoadingUpsell] = useState(false)
   const subRefs = useRef<Record<string, any>>({})
@@ -138,7 +139,7 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
       return { subs: sub? [sub] : [], directItems: [] }
     }
   }, [activeSub, filteredData])
-  const add = (id:string)=> setCart(p=>{ const ex=p.find(x=>x.id===id); return ex? p.map(x=>x.id===id?{...x,qty:x.qty+1}:x) : [...p,{id,qty:1, note:""}] })
+  const add = (id:string)=> setCart(p=>{ const ex=p.find(x=>x.id===id); return ex? p.map(x=>x.id===id?{...x,qty:x.qty+1}:x) : [...p,{id,qty:1}] })
   const dec = (id:string)=> setCart(p=> p.map(x=>x.id===id?{...x,qty:x.qty-1}:x).filter(x=>x.qty>0))
   const getQty=(id:string)=> cart.find(c=>c.id===id)?.qty||0
   const updateNote = (id:string, note:string)=> setCart(p=> p.map(x=>x.id===id?{...x, note: note.slice(0,120)}:x))
@@ -146,7 +147,7 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
     if(!cart.length) return
     setSending(true)
     try{
-      const res=await fetch('/api/orders',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({restaurantSlug:slug,tableNumber,items:cart,paymentMethod,tipPercent})})
+      const res=await fetch('/api/orders',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({restaurantSlug:slug,tableNumber,items:cart.map(c=>({...c, note: orderNote})),orderNote,paymentMethod,tipPercent, note: orderNote})})
       const data=await res.json()
       if(!res.ok) throw new Error(data.error||'Greška')
       if(data.order){
@@ -358,7 +359,8 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
               <div><h2 className="font-black text- tracking-tight">{T.cart} • {T.table} {tableNumber}</h2><p className="text- text-zinc-500">{cartCount} {T.items}</p></div>
               <button onClick={()=>setShowCart(false)} className="w-9 h-9 rounded-full bg-zinc-100 grid place-items-center font-bold">✕</button>
             </div>
-            <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0 overscroll-contain">
+            <div className="flex-1 overflow-y-auto min-h-0 overscroll-contain">
+ <div className="p-4 space-y-3">
               {cartDetailed.length===0 && <div className="py-12 text-center text-zinc-400">{T.cartEmpty}</div>}
               {cartDetailed.length>0 && (
                 <div className="text- font-black uppercase tracking-widest text-zinc-500 mb-1">Vaša narudžba • dodajte napomenu ispod svakog jela</div>
@@ -375,21 +377,23 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
                         </div>
                       </div>
                     </div>
-                    <div className="relative">
-                      <div className="text- font-black uppercase tracking-wider text-amber-700 mb-1 ml-1">📝 Napomena za kuhinju</div>
-                      <input
-                        type="text"
-                        value={i.note||""}
-                        onChange={e=>updateNote(i.id, e.target.value)}
-                        placeholder={T.notePlaceholder}
-                        maxLength={120}
-                        className="w-full bg-amber-50 border-2 border-amber-300 focus:border-black rounded-2xl pl-9 pr-10 py-2.5 text- outline-none font-bold placeholder:text-zinc-400 placeholder:font-medium"
-                      />
-                      <span className="absolute left-3 top- text-">📝</span>
-                      {i.note && i.note.length>0 && <span className="absolute right-3 top- text- font-bold bg-black text-white px-1.5 py-0.5 rounded-full">{i.note.length}/120</span>}
-                    </div>
+                    
                   </div>
                 ))}
+              {cartDetailed.length>0 && (
+                <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-3">
+                  <div className="text- font-black uppercase tracking-wider text-amber-700 mb-1 ml-1">📝 Napomena za kuhinju / alergije</div>
+                  <textarea
+                    value={orderNote}
+                    onChange={e=>setOrderNote(e.target.value)}
+                    placeholder="Npr. bez luka, alergija na kikiriki, ljuto..."
+                    maxLength={200}
+                    rows={2}
+                    className="w-full bg-white border-2 border-amber-200 focus:border-black rounded-xl px-3 py-2 text- outline-none font-medium resize-none"
+                  />
+                  {orderNote.length>0 && <div className="text- text-zinc-500 mt-1 text-right">{orderNote.length}/200</div>}
+                </div>
+              )}
             </div>
             <div className="p-4 border-t bg-zinc-50 space-y-3 shrink-0">
               <div>
