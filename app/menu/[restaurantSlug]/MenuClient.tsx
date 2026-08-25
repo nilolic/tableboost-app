@@ -98,7 +98,7 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
   const [activeSub, setActiveSub] = useState<string>("all")
   const [openAccordion, setOpenAccordion] = useState<string | null>(null)
   const [lang] = useState<"hr"|"en"|"de">(getInitialLang())
- const CATEGORY_DICT: Record<string, {en:string,de:string}> = {
+   const CATEGORY_DICT: Record<string, {en:string,de:string}> = {
     "Glavna jela": {en:"Main dishes", de:"Hauptgerichte"},
     "Predjela": {en:"Starters", de:"Vorspeisen"},
     "Juhe": {en:"Soups", de:"Suppen"},
@@ -113,12 +113,12 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
   }
 
   function t(hr?: string | null, en?: string | null, de?: string | null) {
-    if (lang === "de" && de) return de
-    if (lang === "en" && en) return en
     if (hr && CATEGORY_DICT[hr]) {
       if (lang === "de") return CATEGORY_DICT[hr].de
       if (lang === "en") return CATEGORY_DICT[hr].en
     }
+    if (lang === "de" && de && de !== hr) return de
+    if (lang === "en" && en && en !== hr) return en
     return hr || ""
   }
 
