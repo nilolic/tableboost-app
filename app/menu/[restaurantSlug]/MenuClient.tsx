@@ -380,7 +380,6 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
                   </div>
                 ))}
             </div>
-            </div>
             <div className="p-4 border-t bg-zinc-50 space-y-3 mt-6 pb-8">
               <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-3">
                 <div className="text- font-black uppercase tracking-wider text-amber-700 mb-1">📝 Napomena za kuhinju / alergije - cijela narudžba</div>
@@ -467,6 +466,7 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
               </button>
             </div>
           </div>
+        </div>
         </div>
       )}
     </div>
