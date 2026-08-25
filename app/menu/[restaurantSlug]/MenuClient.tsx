@@ -142,12 +142,11 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
   const add = (id:string)=> setCart(p=>{ const ex=p.find(x=>x.id===id); return ex? p.map(x=>x.id===id?{...x,qty:x.qty+1}:x) : [...p,{id,qty:1, note:""}] })
   const dec = (id:string)=> setCart(p=> p.map(x=>x.id===id?{...x,qty:x.qty-1}:x).filter(x=>x.qty>0))
   const getQty=(id:string)=> cart.find(c=>c.id===id)?.qty||0
-  
   const order = async()=>{
     if(!cart.length) return
     setSending(true)
     try{
-      const res=await fetch('/api/orders',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({restaurantSlug:slug,tableNumber,items:cart.map((c:any)=>({...c, note: orderNote})),orderNote,paymentMethod,tipPercent, note: orderNote})})
+      const res=await fetch('/api/orders',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({restaurantSlug:slug,tableNumber,items: cart.map((c:any)=>({...c, note: orderNote})), orderNote, note: orderNote,paymentMethod,tipPercent})})
       const data=await res.json()
       if(!res.ok) throw new Error(data.error||'Greška')
       if(data.order){
@@ -183,7 +182,7 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
             </div>
           </div>
           <div className="flex items-center gap-2">
-            
+            </div>
                 ))}
             </div>
             <div className="p-4 border-t bg-zinc-50 space-y-3 shrink-0">
