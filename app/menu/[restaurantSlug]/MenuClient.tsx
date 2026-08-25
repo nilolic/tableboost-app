@@ -7,21 +7,21 @@ const UI_TEXT = {
     notePlaceholder: "Npr. bez luka, alergija na...", noteLabel: "Napomena za kuhinju / alergije",
     yourOrder: "Vaša narudžba", noTip: "Bez tipa", barPickupTitle: "Preuzimanje na šanku", barPickupDesc: "Ovdje naručite i platite, a piće/hranu preuzmite na šanku kad bude spremno.",
     waiterService: "Poslužuje konobar - dostava na stol", paymentMethod: "Način plaćanja",
-    cash: "Gotovina", pos: "POS terminal", online: "Online", tipAmount: "Napojnica", goesToKitchen: "IDE U KUHINJU 🍳", kitchenShort: "KUHINJA"
+    cash: "Gotovina", pos: "POS terminal", online: "Online", tipAmount: "Napojnica", goesToKitchen: "IDE U KUHINJU 🍳", kitchenShort: "KUHINJA", all: "Sve"
   },
   en: { 
     search: "Search dishes, drinks...", cart: "Cart", items: "items", tapOpen: "tap to open", tapClose: "tap to close", table: "Table", cartEmpty: "Cart is empty", total: "Total", subtotal: "Subtotal", tip: "Tip", add: "Add", sending: "Sending...", orderCash: "Order • Cash", orderPos: "Order • POS", payOnline: "Pay online", 
     notePlaceholder: "E.g. no onion, allergy to...", noteLabel: "Kitchen note / allergies",
     yourOrder: "Your order", noTip: "No tip", barPickupTitle: "Pickup at bar", barPickupDesc: "Order and pay here, pick up drinks/food at the bar when ready.",
     waiterService: "Waiter service - delivery to table", paymentMethod: "Payment method",
-    cash: "Cash", pos: "POS terminal", online: "Online", tipAmount: "Tip", goesToKitchen: "GOES TO KITCHEN 🍳", kitchenShort: "KITCHEN"
+    cash: "Cash", pos: "POS terminal", online: "Online", tipAmount: "Tip", goesToKitchen: "GOES TO KITCHEN 🍳", kitchenShort: "KITCHEN", all: "All"
   },
   de: { 
     search: "Gericht, Getränk suchen...", cart: "Warenkorb", items: "Artikel", tapOpen: "tippen zum Öffnen", tapClose: "tippen zum Schließen", table: "Tisch", cartEmpty: "Warenkorb ist leer", total: "Gesamt", subtotal: "Zwischensumme", tip: "Trinkgeld", add: "Hinzufügen", sending: "Senden...", orderCash: "Bestellen • Bar", orderPos: "Bestellen • POS", payOnline: "Online bezahlen", 
     notePlaceholder: "Z.B. ohne Zwiebel, Allergie auf...", noteLabel: "Hinweis für Küche / Allergien",
     yourOrder: "Ihre Bestellung", noTip: "Kein Trinkgeld", barPickupTitle: "Abholung an der Bar", barPickupDesc: "Hier bestellen und bezahlen, Getränke/Essen an der Bar abholen wenn fertig.",
     waiterService: "Kellnerservice - Lieferung an Tisch", paymentMethod: "Zahlungsart",
-    cash: "Bar", pos: "POS Terminal", online: "Online", tipAmount: "Trinkgeld", goesToKitchen: "GEHT IN DIE KÜCHE 🍳", kitchenShort: "KÜCHE"
+    cash: "Bar", pos: "POS Terminal", online: "Online", tipAmount: "Trinkgeld", goesToKitchen: "GEHT IN DIE KÜCHE 🍳", kitchenShort: "KÜCHE", all: "Alle"
   },
 };
 const getInitialLang = (): "hr"|"en"|"de" => {
@@ -197,7 +197,7 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
             <div className="w-10 h-10 rounded-2xl bg-black text-white grid place-items-center font-black text-">{restaurant?.name?.[0]?.toUpperCase()||"T"}</div>
             <div className="leading-tight">
               <div className="font-black text- tracking-tight">{restaurant?.name}</div>
-              <div className="text- text-zinc-500 font-medium flex items-center gap-1.5"><span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"/> Stol {tableNumber} • QR Menu</div>
+              <div className="text- text-zinc-500 font-medium flex items-center gap-1.5"><span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"/> {T.table} {tableNumber} • QR Menu</div>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -231,7 +231,7 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
         <div className="max-w-6xl mx-auto px-4 mt-4">
           <div className="flex gap-2.5 overflow-x-auto scrollbar-none pb-2">
             <button onClick={()=>{setActiveSub("all"); setOpenAccordion(null)}} className={`shrink-0 h- px-5 rounded-full font-bold text- border transition-all flex items-center gap-2 ${activeSub==="all"? "bg-black text-white border-black shadow-lg shadow-black/20" : "bg-white border-zinc-200 hover:border-zinc-300"}`}>
-              <span className="text-">✨</span> Sve
+              <span className="text-">✨</span> {(T as any).all || (lang==="de"?"Alle":lang==="en"?"All":"Sve")}
             </button>
             {filteredData.subs.map(sub=>(
               <button key={sub.id} onClick={()=>{setActiveSub(sub.id); setOpenAccordion(sub.id); subRefs.current[sub.id]?.scrollIntoView({behavior:'smooth', block:'start'})}} className={`shrink-0 group flex items-center gap-2.5 h- pl-1.5 pr-4 rounded-full font-bold text- border transition-all ${activeSub===sub.id? "bg-black text-white border-black shadow-lg" : "bg-white border-zinc-200 hover:border-zinc-300 hover:shadow-sm"}`}>
