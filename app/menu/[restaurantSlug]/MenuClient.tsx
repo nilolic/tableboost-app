@@ -352,121 +352,68 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
           </div>
         </div>
       </div>
-      {showCart && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end justify-center p-0 md:p-4">
-          <div className="bg-white w-full max-w-2xl rounded-t-[28px] md:rounded-[28px] max-h-[100dvh] flex flex-col shadow-2xl overflow-hidden" style={{ maxHeight: '100dvh', height: '100dvh' }}>
-            <div className="p-5 flex justify-between items-center border-b shrink-0">
-              <div><h2 className="font-black text- tracking-tight">{T.cart} • {T.table} {tableNumber}</h2><p className="text- text-zinc-500">{cartCount} {T.items}</p></div>
+             {showCart && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end md:items-center justify-center p-0 md:p-4 overflow-y-auto">
+          <div className="bg-white w-full max-w-2xl rounded-t-[28px] md:rounded-[28px] md:my-4 flex flex-col shadow-2xl">
+            <div className="p-5 flex justify-between items-center border-b">
+              <div><h2 className="font-black tracking-tight">{T.cart} • {T.table} {tableNumber}</h2><p className="text-zinc-500">{cartCount} {T.items}</p></div>
               <button onClick={()=>setShowCart(false)} className="w-9 h-9 rounded-full bg-zinc-100 grid place-items-center font-bold">✕</button>
             </div>
-            <div className="flex-1 overflow-y-auto min-h-0 overscroll-contain">
-              <div className="p-4 space-y-3">
+            <div className="p-4 space-y-3">
               {cartDetailed.length===0 && <div className="py-12 text-center text-zinc-400">{T.cartEmpty}</div>}
-              {cartDetailed.length>0 && (
-                <div className="text- font-black uppercase tracking-widest text-zinc-500 mb-1">Vaša narudžba</div>
-              )}
+              {cartDetailed.length>0 && <div className="font-black uppercase tracking-widest text-zinc-500 mb-1">Vaša narudžba</div>}
               {cartDetailed.map((i:any)=>(
-                  <div key={i.id} className="flex flex-col gap-2 border-2 border-zinc-900 p-3 rounded-2xl bg-white shadow-sm">
-                    <div className="flex gap-3">
-                      <div className="w-12 h-12 rounded-xl bg-zinc-100 overflow-hidden"><img src={i.imageUrl||""} className="w-full h-full object-cover"/></div>
-                      <div className="flex-1">
-                        <div className="flex justify-between"><span className="font-black text-">{t(i.name,i.nameEn,i.nameDe)}</span><span className="font-black text-">{(i.price*i.qty).toFixed(2)}€</span></div>
-                        <div className="flex justify-between items-center mt-1">
-                          <span className="text- text-zinc-500">{i.allergens? `⚠ ${i.allergens}` : ''}</span>
-                          <div className="flex items-center gap-1 bg-black text-white rounded-full p-0.5"><button onClick={()=>dec(i.id)} className="w-7 h-7 grid place-items-center">−</button><span className="w-6 text-center text- font-black">{i.qty}</span><button onClick={()=>add(i.id)} className="w-7 h-7 grid place-items-center bg-white text-black rounded-full">+</button></div>
-                        </div>
-                      </div>
+                <div key={i.id} className="flex gap-3 border-2 border-zinc-900 p-3 rounded-2xl bg-white shadow-sm">
+                  <div className="w-12 h-12 rounded-xl bg-zinc-100 overflow-hidden shrink-0"><img src={i.imageUrl||""} className="w-full h-full object-cover"/></div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between gap-2"><span className="font-black">{t(i.name,i.nameEn,i.nameDe)}</span><span className="font-black">{(i.price*i.qty).toFixed(2)}€</span></div>
+                    <div className="flex justify-between items-center mt-2">
+                      <span className="text-zinc-500 text-sm">{i.allergens? `⚠ ${i.allergens}` : ''}</span>
+                      <div className="flex items-center gap-1 bg-black text-white rounded-full p-0.5"><button onClick={()=>dec(i.id)} className="w-7 h-7 grid place-items-center">−</button><span className="w-6 text-center font-black">{i.qty}</span><button onClick={()=>add(i.id)} className="w-7 h-7 grid place-items-center bg-white text-black rounded-full">+</button></div>
                     </div>
                   </div>
-                ))}
+                </div>
+              ))}
             </div>
-            <div className="p-4 border-t bg-zinc-50 space-y-3 mt-6" style={{ paddingBottom: '180px' }}>
+            <div className="p-4 bg-zinc-50 space-y-4">
               <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-3">
-                <div className="text- font-black uppercase tracking-wider text-amber-700 mb-1">📝 Napomena za kuhinju / alergije - cijela narudžba</div>
-                <textarea value={orderNote} onChange={e=>setOrderNote(e.target.value)} placeholder="Npr. bez luka, alergija na kikiriki..." maxLength={200} rows={3} className="w-full bg-white border-2 border-amber-200 focus:border-black rounded-xl px-3 py-2 text- outline-none font-medium resize-none" />
-                <div className="text- text-amber-700 mt-1 text-right font-bold">{orderNote.length}/200</div>
+                <div className="font-black uppercase tracking-wider text-amber-700 mb-1">📝 Napomena za kuhinju / alergije</div>
+                <textarea value={orderNote} onChange={e=>setOrderNote(e.target.value)} placeholder="Npr. bez luka, alergija..." maxLength={200} rows={3} className="w-full bg-white border-2 border-amber-200 focus:border-black rounded-xl px-3 py-2 outline-none font-medium resize-none" />
+                <div className="text-amber-700 mt-1 text-right font-bold text-sm">{orderNote.length}/200</div>
               </div>
               <div>
-                <div className="text- font-black uppercase tracking-wider opacity-60 mb-2 flex justify-between">
-                  <span>💝 Napojnica za osoblje</span>
-                  {tipPercent>0 && <span className="text-black">+{tipAmount.toFixed(2)}€</span>}
-                </div>
+                <div className="font-black uppercase tracking-wider opacity-60 mb-2 flex justify-between"><span>💝 Napojnica</span>{tipPercent>0 && <span className="text-black">+{tipAmount.toFixed(2)}€</span>}</div>
                 <div className="grid grid-cols-4 gap-2">
                   {[0,10,20,30].map(pct=>(
-                    <button key={pct} onClick={()=>setTipPercent(pct)} className={`h-10 rounded-full font-bold text- border-2 transition ${tipPercent===pct? 'bg-black text-white border-black' : 'bg-white border-zinc-200 hover:border-zinc-300'}`}>
-                      {pct===0? 'Bez tipa' : `${pct}%`}
-                    </button>
+                    <button key={pct} onClick={()=>setTipPercent(pct)} className={`h-10 rounded-full font-bold border-2 transition ${tipPercent===pct? 'bg-black text-white border-black' : 'bg-white border-zinc-200'}`}>{pct===0? 'Bez tipa' : `${pct}%`}</button>
                   ))}
                 </div>
               </div>
               {restaurant?.serviceMode==='BAR'? (
-                <div className="bg-amber-300 border-2 border-black rounded-2xl p-3 flex gap-2.5 items-start shadow-sm">
-                  <div className="w-9 h-9 bg-black text-white rounded-full grid place-items-center shrink-0 text-">🛎</div>
-                  <div>
-                    <div className="font-black text- leading-tight uppercase">{lang==='en'? 'Pickup at the bar' : lang==='de'? 'Abholung an der Theke' : 'Preuzimanje na šanku'}</div>
-                    <div className="text- leading-[1.35] mt-0.5 font-medium">{lang==='en'? 'Order and pay here, then pick up your food/drinks at the bar when ready. You will get a notification.' : lang==='de'? 'Hier bestellen und bezahlen, dann Essen/Getränke an der Theke abholen, wenn es fertig ist. Sie erhalten eine Benachrichtigung.' : 'Ovdje naručite i platite, a piće/hranu preuzmite na šanku kad bude spremno. Dobićete obavijest.'}</div>
-                    <div className="text- font-bold mt-2 leading-[1.35]">{lang==='en'? 'Stay on this page to get notified!' : lang==='de'? 'Bleiben Sie auf dieser Seite, um benachrichtigt zu werden!' : 'Ostanite na ovoj stranici da biste dobili obavijest!'}</div>
-                  </div>
+                <div className="bg-amber-300 border-2 border-black rounded-2xl p-3 flex gap-2.5 items-start">
+                  <div className="w-9 h-9 bg-black text-white rounded-full grid place-items-center shrink-0">🛎</div>
+                  <div><div className="font-black uppercase">Preuzimanje na šanku</div><div className="text-sm mt-0.5 font-medium">Ovdje naručite i platite, a piće/hranu preuzmite na šanku kad bude spremno.</div></div>
                 </div>
               ) : (
-                <div className="bg-white border border-zinc-200 rounded-2xl p-2.5 flex gap-2 items-center">
-                  <div className="text-">🍽</div>
-                  <div className="text- font-medium">{lang==='en'? `Waiter service - delivery to table ${tableNumber||''}` : lang==='de'? `Bedienung - Lieferung an Tisch ${tableNumber||''}` : `Poslužuje konobar - dostava na stol ${tableNumber}`}</div>
-                </div>
+                <div className="bg-white border rounded-2xl p-2.5 flex gap-2 items-center"><div>🍽</div><div className="font-medium text-sm">Poslužuje konobar - dostava na stol {tableNumber}</div></div>
               )}
-              <div className="text- font-black uppercase tracking-wider opacity-60">Način plaćanja</div>
+              <div className="font-black uppercase tracking-wider opacity-60 text-sm">Način plaćanja</div>
               <div className="grid grid-cols-3 gap-2">
-                {payCashEnabled && (
-                  <button onClick={()=>setPaymentMethod('CASH')} className={`p-3 rounded-2xl border-2 text-left transition ${paymentMethod==='CASH'?'border-black bg-black text-white':'border-zinc-200 bg-white'}`}>
-                    <div className="text-">💵</div><div className="font-bold text- mt-1">Gotovina</div><div className="text- opacity-70 leading-tight mt-0.5">Plati konobaru</div>
-                  </button>
-                )}
-                {payTerminalEnabled && (
-                  <button onClick={()=>setPaymentMethod('CARD_TERMINAL')} className={`p-3 rounded-2xl border-2 text-left transition ${paymentMethod==='CARD_TERMINAL'?'border-black bg-black text-white':'border-zinc-200 bg-white'}`}>
-                    <div className="text-">💳</div><div className="font-bold text- mt-1">POS</div><div className="text- opacity-70 leading-tight mt-0.5">Kartica na stolu</div>
-                  </button>
-                )}
-                {payOnlineEnabled? (
-                  <button onClick={()=>setPaymentMethod('CARD_ONLINE')} className={`p-3 rounded-2xl border-2 text-left transition ${paymentMethod==='CARD_ONLINE'?'border-black bg-black text-white':'border-zinc-200 bg-white'}`}>
-                    <div className="text-">🌐</div><div className="font-bold text- mt-1">Online</div><div className="text- opacity-70 leading-tight mt-0.5">Apple/Google Pay</div>
-                  </button>
-                ) : (
-                  <button disabled className="p-3 rounded-2xl border-2 border-zinc-100 bg-zinc-100 opacity-50 text-left">
-                    <div className="text-">🌐</div><div className="font-bold text- mt-1">Online</div><div className="text- mt-0.5">Uskoro</div>
-                  </button>
-                )}
+                {payCashEnabled && <button onClick={()=>setPaymentMethod('CASH')} className={`p-3 rounded-2xl border-2 text-left transition ${paymentMethod==='CASH'?'border-black bg-black text-white':'border-zinc-200 bg-white'}`}><div>💵</div><div className="font-bold mt-1">Gotovina</div></button>}
+                {payTerminalEnabled && <button onClick={()=>setPaymentMethod('CARD_TERMINAL')} className={`p-3 rounded-2xl border-2 text-left transition ${paymentMethod==='CARD_TERMINAL'?'border-black bg-black text-white':'border-zinc-200 bg-white'}`}><div>💳</div><div className="font-bold mt-1">POS</div></button>}
+                {payOnlineEnabled? <button onClick={()=>setPaymentMethod('CARD_ONLINE')} className={`p-3 rounded-2xl border-2 text-left transition ${paymentMethod==='CARD_ONLINE'?'border-black bg-black text-white':'border-zinc-200 bg-white'}`}><div>🌐</div><div className="font-bold mt-1">Online</div></button> : <button disabled className="p-3 rounded-2xl border-2 border-zinc-100 bg-zinc-100 opacity-50 text-left"><div>🌐</div><div className="font-bold mt-1">Online</div></button>}
               </div>
-              <div className="bg-white border rounded-2xl p-3 space-y-1 text-">
-                <div className="flex justify-between"><span className="text-zinc-500">{T.subtotal}</span><span className="font-bold">{subtotal.toFixed(2)}€</span></div>
-                {tipPercent>0 && <div className="flex justify-between"><span className="text-zinc-500">{T.tip} {tipPercent}%</span><span className="font-bold">+{tipAmount.toFixed(2)}€</span></div>}
-                <div className="flex justify-between font-black text- pt-1 border-t mt-1"><span>{T.total}</span><span>{total.toFixed(2)}€</span></div>
+              <div className="bg-white border rounded-2xl p-3 space-y-1">
+                <div className="flex justify-between"><span className="text-zinc-500">Međuzbroj</span><span className="font-bold">{subtotal.toFixed(2)}€</span></div>
+                {tipPercent>0 && <div className="flex justify-between"><span className="text-zinc-500">Napojnica {tipPercent}%</span><span className="font-bold">+{tipAmount.toFixed(2)}€</span></div>}
+                <div className="flex justify-between font-black pt-1 border-t mt-1"><span>Ukupno</span><span>{total.toFixed(2)}€</span></div>
               </div>
-              {upsells.length>0 && (
-                <div className="bg-white border-2 border-dashed border-amber-200 rounded-2xl p-3">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text- font-black uppercase tracking-widest">✨ Preporučujemo uz narudžbu</span>
-                    {loadingUpsell && <span className="text- text-zinc-400">učitavam...</span>}
-                  </div>
-                  <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none snap-x">
-                    {upsells.map((u:any)=>(
-                      <div key={u.id} className="min-w- bg-amber-50 border border-amber-200 rounded-2xl p-2.5 flex gap-2 shrink-0 snap-start">
-                        <div className="w-12 h-12 rounded-xl bg-white overflow-hidden shrink-0"><img src={u.imageUrl||"https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200"} className="w-full h-full object-cover"/></div>
-                        <div className="flex-1 min-w-0">
-                          <div className="font-bold text- leading-tight line-clamp-1">{t(u.name,u.nameEn,u.nameDe)}</div>
-                          <div className="text- text-zinc-600">{u.price.toFixed(2)}€ {u.isBoosted && `🔥${u.boostLevel}`}</div>
-                          <button onClick={()=>add(u.id)} className="mt-1 bg-black text-white text- font-bold px-3 py-1 rounded-full">+ {T.add}</button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              <button disabled={sending || cart.length===0} onClick={order} className="w-full bg-black text-white py-4 rounded-full font-black text- shadow-lg shadow-black/20 disabled:opacity-50 active:scale-[0.98] transition">
+              <button disabled={sending || cart.length===0} onClick={order} className="w-full bg-black text-white py-4 rounded-full font-black shadow-lg disabled:opacity-50 active:scale-[0.98] transition">
                 {sending? T.sending : paymentMethod==='CASH'? `${T.orderCash} • ${total.toFixed(2)}€` : paymentMethod==='CARD_TERMINAL'? `${T.orderPos} • ${total.toFixed(2)}€` : `${T.payOnline} • ${total.toFixed(2)}€`}
               </button>
+              <div className="h-6" />
             </div>
           </div>
-        </div>
         </div>
       )}
     </div>
