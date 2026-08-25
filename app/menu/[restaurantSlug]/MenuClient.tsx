@@ -247,7 +247,7 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
                 <h1 className="text-white font-black text- md:text- leading-none tracking-tight">{t(currentMain.name, currentMain.nameEn, currentMain.nameDe)}</h1>
                 {currentMain.sendsToKitchen && <span className="bg-orange-500 text-white text- font-black px-2.5 py-1 rounded-full">{(T as any).goesToKitchen || "IDE U KUHINJU 🍳"}</span>}
               </div>
-              <p className="text-white/70 text- max-w- leading-snug">{t(currentMain.description, (currentMain as any).descriptionEn, (currentMain as any).descriptionDe) || ""}</p>
+              {(() => { const d = t(currentMain.description, (currentMain as any).descriptionEn, (currentMain as any).descriptionDe); if (!d) return null; const low = d.toLowerCase(); if (low.includes("kuhinju") || low.includes("kuhinja") || low.includes("ide u")) return null; return <p className="text-white/70 text-sm max-w-xl leading-snug">{d}</p>; })()}
             </div>
           </div>
         </div>
