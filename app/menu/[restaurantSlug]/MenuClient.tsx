@@ -261,7 +261,7 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
             {filteredData.subs.map(sub=>(
               <button key={sub.id} onClick={()=>{setActiveSub(sub.id); setOpenAccordion(sub.id); subRefs.current[sub.id]?.scrollIntoView({behavior:'smooth', block:'start'})}} className={`shrink-0 group flex items-center gap-2.5 h- pl-1.5 pr-4 rounded-full font-bold text- border transition-all ${activeSub===sub.id? "bg-black text-white border-black shadow-lg" : "bg-white border-zinc-200 hover:border-zinc-300 hover:shadow-sm"}`}>
                 <div className="w-8 h-8 rounded-full overflow-hidden bg-zinc-100">
-                  <img src={sub.imageUrl || SUB_IMAGES[sub.name] || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100"} className="w-full h-full object-cover"/>
+                  <img src={sub.imageUrl || SUB_IMAGES[sub.name] || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100"} className="w-full h-full object-cover" onError={(e:any)=>{e.currentTarget.src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200"}}/>
                 </div>
                 <span className="whitespace-nowrap">{t(sub.name, sub.nameEn, sub.nameDe)}</span>
                 <span className={`text- px-1.5 py-0.5 rounded-full ${activeSub===sub.id? "bg-white/20 text-white" : "bg-zinc-100 text-zinc-600"}`}>{sub.items.length}</span>
@@ -326,7 +326,7 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
               className="w-full flex items-center gap-3 p-3 text-left"
             >
               <div className="w-12 h-12 rounded-xl overflow-hidden bg-zinc-100 border shrink-0">
-                <img src={sub.imageUrl || SUB_IMAGES[sub.name] || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100"} className="w-full h-full object-cover"/>
+                <img src={sub.imageUrl || SUB_IMAGES[sub.name] || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100"} className="w-full h-full object-cover" onError={(e:any)=>{e.currentTarget.src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200"}}/>
               </div>
               <div className="flex-1 min-w-0">
                 <h2 className="font-black text- tracking-tight leading-none flex items-center gap-2">
@@ -454,7 +454,7 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
                   <div className="space-y-2">
                     {upsells.slice(0,3).map((u:any)=>(
                       <div key={u.id} className="flex gap-2 items-center bg-amber-50 border border-amber-200 rounded-2xl p-2.5">
-                        <div className="w-12 h-12 rounded-xl bg-white overflow-hidden shrink-0"><img src={u.imageUrl||""} className="w-full h-full object-cover"/></div>
+                        <div className="w-12 h-12 rounded-xl bg-white overflow-hidden shrink-0"><img src={u.imageUrl||"https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200"} className="w-full h-full object-cover" onError={(e:any)=>{e.currentTarget.src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200"}}/></div>
                         <div className="flex-1 min-w-0">
                           <div className="font-bold text-xs line-clamp-1">{t(u.name,u.nameEn,u.nameDe)}</div>
                           <div className="text-xs text-zinc-500">{u.price.toFixed(2)}€</div>
