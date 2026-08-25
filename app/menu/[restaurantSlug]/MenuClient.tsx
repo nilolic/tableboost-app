@@ -354,7 +354,7 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
       </div>
       {showCart && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end justify-center p-0 md:p-4">
-          <div className="bg-white w-full max-w-2xl rounded-t-[28px] md:rounded-[28px] max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+          <div className="bg-white w-full max-w-2xl rounded-t-[28px] md:rounded-[28px] max-h-[90dvh] flex flex-col shadow-2xl overflow-hidden">
             <div className="p-5 flex justify-between items-center border-b shrink-0">
               <div><h2 className="font-black text- tracking-tight">{T.cart} • {T.table} {tableNumber}</h2><p className="text- text-zinc-500">{cartCount} {T.items}</p></div>
               <button onClick={()=>setShowCart(false)} className="w-9 h-9 rounded-full bg-zinc-100 grid place-items-center font-bold">✕</button>
@@ -380,7 +380,7 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
                   </div>
                 ))}
             </div>
-            <div className="p-4 border-t bg-zinc-50 space-y-3 mt-6 pb-[calc(2rem+env(safe-area-inset-bottom))]">
+            <div className="p-4 border-t bg-zinc-50 space-y-3 mt-6 pb-8">
               <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-3">
                 <div className="text- font-black uppercase tracking-wider text-amber-700 mb-1">📝 Napomena za kuhinju / alergije - cijela narudžba</div>
                 <textarea value={orderNote} onChange={e=>setOrderNote(e.target.value)} placeholder="Npr. bez luka, alergija na kikiriki..." maxLength={200} rows={3} className="w-full bg-white border-2 border-amber-200 focus:border-black rounded-xl px-3 py-2 text- outline-none font-medium resize-none" />
