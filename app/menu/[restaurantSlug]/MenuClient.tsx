@@ -353,7 +353,7 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
       </div>
        {showCart && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end justify-center p-0 md:p-4">
-          <div className="bg-white w-full max-w-2xl rounded-t-3xl md:rounded-3xl max-h- flex flex-col shadow-2xl overflow-hidden">
+          <div className="bg-white w-full max-w-2xl rounded-t-3xl md:rounded-3xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
             <div className="p-5 flex justify-between items-center border-b shrink-0 bg-white">
               <div><h2 className="font-black text-base tracking-tight">{T.cart} - {T.table} {tableNumber}</h2><p className="text-xs text-zinc-500">{cartCount} {T.items}</p></div>
               <button onClick={()=>setShowCart(false)} className="w-9 h-9 rounded-full bg-zinc-100 grid place-items-center font-bold">X</button>
