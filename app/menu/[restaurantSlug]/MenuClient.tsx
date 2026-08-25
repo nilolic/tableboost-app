@@ -247,7 +247,7 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
                 <h1 className="text-white font-black text- md:text- leading-none tracking-tight">{t(currentMain.name, currentMain.nameEn, currentMain.nameDe)}</h1>
                 {currentMain.sendsToKitchen && <span className="bg-orange-500 text-white text- font-black px-2.5 py-1 rounded-full">{(T as any).goesToKitchen || "IDE U KUHINJU 🍳"}</span>}
               </div>
-              {(() => { const d = t(currentMain.description, (currentMain as any).descriptionEn, (currentMain as any).descriptionDe); if (!d) return null; const low = d.toLowerCase(); if (low.includes("kuhinju") || low.includes("kuhinja") || low.includes("ide u")) return null; return <p className="text-white/70 text-sm max-w-xl leading-snug">{d}</p>; })()}
+              <p className="text-white/70 text- max-w- leading-snug">{t(currentMain.description, (currentMain as any).descriptionEn, (currentMain as any).descriptionDe) || ""}</p>
             </div>
           </div>
         </div>
@@ -397,7 +397,7 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
       </div>
                    {showCart && (
         <div className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm flex items-end md:items-center justify-center p-0 md:p-4">
-          <div className="bg-white w-full max-w-2xl rounded-t-[28px] md:rounded-[28px] md:my-4 flex flex-col shadow-2xl">
+          <div className="bg-white w-full max-w-2xl rounded-t-[28px] md:rounded-[28px] flex flex-col shadow-2xl max-h-[100dvh] md:max-h-[90vh] overflow-hidden">
             <div className="p-5 flex justify-between items-center border-b shrink-0 bg-white">
               <div><h2 className="font-black tracking-tight">{T.cart} • {T.table} {tableNumber}</h2><p className="text-zinc-500">{cartCount} {T.items}</p></div>
               <button onClick={()=>setShowCart(false)} className="w-9 h-9 rounded-full bg-zinc-100 grid place-items-center font-bold">✕</button>
@@ -458,6 +458,7 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
               </button>
               <div className="h-6" />
             </div>
+          </div>
           </div>
         </div>
       )}
