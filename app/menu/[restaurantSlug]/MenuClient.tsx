@@ -2,9 +2,27 @@
 import { useState, useRef, useMemo, useEffect } from 'react'
 
 const UI_TEXT = {
-  hr: { search: "Traži jelo, piće...", cart: "Košarica", items: "artikala", tapOpen: "tapni za otvaranje", tapClose: "tapni za zatvaranje", table: "Stol", cartEmpty: "Košarica je prazna", total: "Ukupno", subtotal: "Međuzbroj", tip: "Napojnica", add: "Dodaj", sending: "Šaljem...", orderCash: "Naruči • Gotovina", orderPos: "Naruči • POS", payOnline: "Plati online", notePlaceholder: "Napomena npr. jače pečeno, bez luka...", noteLabel: "Napomena za kuhinju" },
-  en: { search: "Search dishes, drinks...", cart: "Cart", items: "items", tapOpen: "tap to open", tapClose: "tap to close", table: "Table", cartEmpty: "Cart is empty", total: "Total", subtotal: "Subtotal", tip: "Tip", add: "Add", sending: "Sending...", orderCash: "Order • Cash", orderPos: "Order • POS", payOnline: "Pay online", notePlaceholder: "Note e.g. well done, no onion...", noteLabel: "Kitchen note" },
-  de: { search: "Gericht, Getränk suchen...", cart: "Warenkorb", items: "Artikel", tapOpen: "tippen zum Öffnen", tapClose: "tippen zum Schließen", table: "Tisch", cartEmpty: "Warenkorb ist leer", total: "Gesamt", subtotal: "Zwischensumme", tip: "Trinkgeld", add: "Hinzufügen", sending: "Senden...", orderCash: "Bestellen • Bar", orderPos: "Bestellen • POS", payOnline: "Online bezahlen", notePlaceholder: "Hinweis z.B. gut durchgebraten, ohne Zwiebel...", noteLabel: "Hinweis für Küche" },
+  hr: { 
+    search: "Traži jelo, piće...", cart: "Košarica", items: "artikala", tapOpen: "tapni za otvaranje", tapClose: "tapni za zatvaranje", table: "Stol", cartEmpty: "Košarica je prazna", total: "Ukupno", subtotal: "Međuzbroj", tip: "Napojnica", add: "Dodaj", sending: "Šaljem...", orderCash: "Naruči • Gotovina", orderPos: "Naruči • POS", payOnline: "Plati online", 
+    notePlaceholder: "Npr. bez luka, alergija na...", noteLabel: "Napomena za kuhinju / alergije",
+    yourOrder: "Vaša narudžba", noTip: "Bez tipa", barPickupTitle: "Preuzimanje na šanku", barPickupDesc: "Ovdje naručite i platite, a piće/hranu preuzmite na šanku kad bude spremno.",
+    waiterService: "Poslužuje konobar - dostava na stol", paymentMethod: "Način plaćanja",
+    cash: "Gotovina", pos: "POS terminal", online: "Online", tipAmount: "Napojnica"
+  },
+  en: { 
+    search: "Search dishes, drinks...", cart: "Cart", items: "items", tapOpen: "tap to open", tapClose: "tap to close", table: "Table", cartEmpty: "Cart is empty", total: "Total", subtotal: "Subtotal", tip: "Tip", add: "Add", sending: "Sending...", orderCash: "Order • Cash", orderPos: "Order • POS", payOnline: "Pay online", 
+    notePlaceholder: "E.g. no onion, allergy to...", noteLabel: "Kitchen note / allergies",
+    yourOrder: "Your order", noTip: "No tip", barPickupTitle: "Pickup at bar", barPickupDesc: "Order and pay here, pick up drinks/food at the bar when ready.",
+    waiterService: "Waiter service - delivery to table", paymentMethod: "Payment method",
+    cash: "Cash", pos: "POS terminal", online: "Online", tipAmount: "Tip"
+  },
+  de: { 
+    search: "Gericht, Getränk suchen...", cart: "Warenkorb", items: "Artikel", tapOpen: "tippen zum Öffnen", tapClose: "tippen zum Schließen", table: "Tisch", cartEmpty: "Warenkorb ist leer", total: "Gesamt", subtotal: "Zwischensumme", tip: "Trinkgeld", add: "Hinzufügen", sending: "Senden...", orderCash: "Bestellen • Bar", orderPos: "Bestellen • POS", payOnline: "Online bezahlen", 
+    notePlaceholder: "Z.B. ohne Zwiebel, Allergie auf...", noteLabel: "Hinweis für Küche / Allergien",
+    yourOrder: "Ihre Bestellung", noTip: "Kein Trinkgeld", barPickupTitle: "Abholung an der Bar", barPickupDesc: "Hier bestellen und bezahlen, Getränke/Essen an der Bar abholen wenn fertig.",
+    waiterService: "Kellnerservice - Lieferung an Tisch", paymentMethod: "Zahlungsart",
+    cash: "Bar", pos: "POS Terminal", online: "Online", tipAmount: "Trinkgeld"
+  },
 };
 const getInitialLang = (): "hr"|"en"|"de" => {
   if (typeof window!== "undefined") {
@@ -352,7 +370,7 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
           </div>
         </div>
       </div>
-             {showCart && (
+                   {showCart && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end md:items-center justify-center p-0 md:p-4 overflow-y-auto">
           <div className="bg-white w-full max-w-2xl rounded-t-[28px] md:rounded-[28px] md:my-4 flex flex-col shadow-2xl">
             <div className="p-5 flex justify-between items-center border-b">
@@ -361,10 +379,12 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
             </div>
             <div className="p-4 space-y-3">
               {cartDetailed.length===0 && <div className="py-12 text-center text-zinc-400">{T.cartEmpty}</div>}
-              {cartDetailed.length>0 && <div className="font-black uppercase tracking-widest text-zinc-500 mb-1">Vaša narudžba</div>}
+              {cartDetailed.length>0 && <div className="font-black uppercase tracking-widest text-zinc-500 mb-1">{(T as any).yourOrder || 'Vaša narudžba'}</div>}
               {cartDetailed.map((i:any)=>(
                 <div key={i.id} className="flex gap-3 border-2 border-zinc-900 p-3 rounded-2xl bg-white shadow-sm">
-                  <div className="w-12 h-12 rounded-xl bg-zinc-100 overflow-hidden shrink-0"><img src={i.imageUrl||""} className="w-full h-full object-cover"/></div>
+                  <div className="w-12 h-12 rounded-xl bg-zinc-100 overflow-hidden shrink-0">
+                    <img src={i.imageUrl || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200"} className="w-full h-full object-cover" alt={t(i.name,i.nameEn,i.nameDe)} />
+                  </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between gap-2"><span className="font-black">{t(i.name,i.nameEn,i.nameDe)}</span><span className="font-black">{(i.price*i.qty).toFixed(2)}€</span></div>
                     <div className="flex justify-between items-center mt-2">
@@ -377,36 +397,36 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
             </div>
             <div className="p-4 bg-zinc-50 space-y-4">
               <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-3">
-                <div className="font-black uppercase tracking-wider text-amber-700 mb-1">📝 Napomena za kuhinju / alergije</div>
-                <textarea value={orderNote} onChange={e=>setOrderNote(e.target.value)} placeholder="Npr. bez luka, alergija..." maxLength={200} rows={3} className="w-full bg-white border-2 border-amber-200 focus:border-black rounded-xl px-3 py-2 outline-none font-medium resize-none" />
+                <div className="font-black uppercase tracking-wider text-amber-700 mb-1">📝 {(T as any).noteLabel || T.noteLabel}</div>
+                <textarea value={orderNote} onChange={e=>setOrderNote(e.target.value)} placeholder={T.notePlaceholder} maxLength={200} rows={3} className="w-full bg-white border-2 border-amber-200 focus:border-black rounded-xl px-3 py-2 outline-none font-medium resize-none" />
                 <div className="text-amber-700 mt-1 text-right font-bold text-sm">{orderNote.length}/200</div>
               </div>
               <div>
-                <div className="font-black uppercase tracking-wider opacity-60 mb-2 flex justify-between"><span>💝 Napojnica</span>{tipPercent>0 && <span className="text-black">+{tipAmount.toFixed(2)}€</span>}</div>
+                <div className="font-black uppercase tracking-wider opacity-60 mb-2 flex justify-between"><span>💝 {T.tip}</span>{tipPercent>0 && <span className="text-black">+{tipAmount.toFixed(2)}€</span>}</div>
                 <div className="grid grid-cols-4 gap-2">
                   {[0,10,20,30].map(pct=>(
-                    <button key={pct} onClick={()=>setTipPercent(pct)} className={`h-10 rounded-full font-bold border-2 transition ${tipPercent===pct? 'bg-black text-white border-black' : 'bg-white border-zinc-200'}`}>{pct===0? 'Bez tipa' : `${pct}%`}</button>
+                    <button key={pct} onClick={()=>setTipPercent(pct)} className={`h-10 rounded-full font-bold border-2 transition ${tipPercent===pct? 'bg-black text-white border-black' : 'bg-white border-zinc-200'}`}>{pct===0? (T as any).noTip || 'Bez tipa' : `${pct}%`}</button>
                   ))}
                 </div>
               </div>
               {restaurant?.serviceMode==='BAR'? (
                 <div className="bg-amber-300 border-2 border-black rounded-2xl p-3 flex gap-2.5 items-start">
                   <div className="w-9 h-9 bg-black text-white rounded-full grid place-items-center shrink-0">🛎</div>
-                  <div><div className="font-black uppercase">Preuzimanje na šanku</div><div className="text-sm mt-0.5 font-medium">Ovdje naručite i platite, a piće/hranu preuzmite na šanku kad bude spremno.</div></div>
+                  <div><div className="font-black uppercase">{(T as any).barPickupTitle || 'Preuzimanje na šanku'}</div><div className="text-sm mt-0.5 font-medium">{(T as any).barPickupDesc || 'Ovdje naručite i platite, a piće/hranu preuzmite na šanku kad bude spremno.'}</div></div>
                 </div>
               ) : (
-                <div className="bg-white border rounded-2xl p-2.5 flex gap-2 items-center"><div>🍽</div><div className="font-medium text-sm">Poslužuje konobar - dostava na stol {tableNumber}</div></div>
+                <div className="bg-white border rounded-2xl p-2.5 flex gap-2 items-center"><div>🍽</div><div className="font-medium text-sm">{(T as any).waiterService || 'Poslužuje konobar - dostava na stol'} {tableNumber}</div></div>
               )}
-              <div className="font-black uppercase tracking-wider opacity-60 text-sm">Način plaćanja</div>
+              <div className="font-black uppercase tracking-wider opacity-60 text-sm">{(T as any).paymentMethod || 'Način plaćanja'}</div>
               <div className="grid grid-cols-3 gap-2">
-                {payCashEnabled && <button onClick={()=>setPaymentMethod('CASH')} className={`p-3 rounded-2xl border-2 text-left transition ${paymentMethod==='CASH'?'border-black bg-black text-white':'border-zinc-200 bg-white'}`}><div>💵</div><div className="font-bold mt-1">Gotovina</div></button>}
-                {payTerminalEnabled && <button onClick={()=>setPaymentMethod('CARD_TERMINAL')} className={`p-3 rounded-2xl border-2 text-left transition ${paymentMethod==='CARD_TERMINAL'?'border-black bg-black text-white':'border-zinc-200 bg-white'}`}><div>💳</div><div className="font-bold mt-1">POS</div></button>}
-                {payOnlineEnabled? <button onClick={()=>setPaymentMethod('CARD_ONLINE')} className={`p-3 rounded-2xl border-2 text-left transition ${paymentMethod==='CARD_ONLINE'?'border-black bg-black text-white':'border-zinc-200 bg-white'}`}><div>🌐</div><div className="font-bold mt-1">Online</div></button> : <button disabled className="p-3 rounded-2xl border-2 border-zinc-100 bg-zinc-100 opacity-50 text-left"><div>🌐</div><div className="font-bold mt-1">Online</div></button>}
+                {payCashEnabled && <button onClick={()=>setPaymentMethod('CASH')} className={`p-3 rounded-2xl border-2 text-left transition ${paymentMethod==='CASH'?'border-black bg-black text-white':'border-zinc-200 bg-white'}`}><div>💵</div><div className="font-bold mt-1">{(T as any).cash || 'Gotovina'}</div></button>}
+                {payTerminalEnabled && <button onClick={()=>setPaymentMethod('CARD_TERMINAL')} className={`p-3 rounded-2xl border-2 text-left transition ${paymentMethod==='CARD_TERMINAL'?'border-black bg-black text-white':'border-zinc-200 bg-white'}`}><div>💳</div><div className="font-bold mt-1">{(T as any).pos || 'POS'}</div></button>}
+                {payOnlineEnabled? <button onClick={()=>setPaymentMethod('CARD_ONLINE')} className={`p-3 rounded-2xl border-2 text-left transition ${paymentMethod==='CARD_ONLINE'?'border-black bg-black text-white':'border-zinc-200 bg-white'}`}><div>🌐</div><div className="font-bold mt-1">{(T as any).online || 'Online'}</div></button> : <button disabled className="p-3 rounded-2xl border-2 border-zinc-100 bg-zinc-100 opacity-50 text-left"><div>🌐</div><div className="font-bold mt-1">{(T as any).online || 'Online'}</div></button>}
               </div>
               <div className="bg-white border rounded-2xl p-3 space-y-1">
-                <div className="flex justify-between"><span className="text-zinc-500">Međuzbroj</span><span className="font-bold">{subtotal.toFixed(2)}€</span></div>
-                {tipPercent>0 && <div className="flex justify-between"><span className="text-zinc-500">Napojnica {tipPercent}%</span><span className="font-bold">+{tipAmount.toFixed(2)}€</span></div>}
-                <div className="flex justify-between font-black pt-1 border-t mt-1"><span>Ukupno</span><span>{total.toFixed(2)}€</span></div>
+                <div className="flex justify-between"><span className="text-zinc-500">{T.subtotal}</span><span className="font-bold">{subtotal.toFixed(2)}€</span></div>
+                {tipPercent>0 && <div className="flex justify-between"><span className="text-zinc-500">{(T as any).tipAmount || T.tip} {tipPercent}%</span><span className="font-bold">+{tipAmount.toFixed(2)}€</span></div>}
+                <div className="flex justify-between font-black pt-1 border-t mt-1"><span>{T.total}</span><span>{total.toFixed(2)}€</span></div>
               </div>
               <button disabled={sending || cart.length===0} onClick={order} className="w-full bg-black text-white py-4 rounded-full font-black shadow-lg disabled:opacity-50 active:scale-[0.98] transition">
                 {sending? T.sending : paymentMethod==='CASH'? `${T.orderCash} • ${total.toFixed(2)}€` : paymentMethod==='CARD_TERMINAL'? `${T.orderPos} • ${total.toFixed(2)}€` : `${T.payOnline} • ${total.toFixed(2)}€`}
