@@ -98,7 +98,31 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
   const [activeSub, setActiveSub] = useState<string>("all")
   const [openAccordion, setOpenAccordion] = useState<string | null>(null)
   const [lang] = useState<"hr"|"en"|"de">(getInitialLang())
- const T = UI_TEXT[lang]
+ const CATEGORY_DICT: Record<string, {en:string,de:string}> = {
+    "Glavna jela": {en:"Main dishes", de:"Hauptgerichte"},
+    "Predjela": {en:"Starters", de:"Vorspeisen"},
+    "Juhe": {en:"Soups", de:"Suppen"},
+    "Salate": {en:"Salads", de:"Salate"},
+    "Deserti": {en:"Desserts", de:"Desserts"},
+    "Pića": {en:"Drinks", de:"Getränke"},
+    "Prilozi": {en:"Sides", de:"Beilagen"},
+    "Roštilj": {en:"Grill", de:"Grill"},
+    "Tjestenine": {en:"Pasta", de:"Pasta"},
+    "Pizze": {en:"Pizzas", de:"Pizzen"},
+    "Doručak": {en:"Breakfast", de:"Frühstück"},
+  }
+
+  function t(hr?: string | null, en?: string | null, de?: string | null) {
+    if (lang === "de" && de) return de
+    if (lang === "en" && en) return en
+    if (hr && CATEGORY_DICT[hr]) {
+      if (lang === "de") return CATEGORY_DICT[hr].de
+      if (lang === "en") return CATEGORY_DICT[hr].en
+    }
+    return hr || ""
+  }
+
+  const T = UI_TEXT[lang]
  const [search, setSearch] = useState("")
   const [showCart, setShowCart] = useState(false)
   const [sending, setSending] = useState(false)
