@@ -396,13 +396,13 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
         </div>
       </div>
                    {showCart && (
-        <div className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm flex items-end md:items-center justify-center p-0 md:p-4 overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end md:items-center justify-center p-0 md:p-4 overflow-y-auto">
           <div className="bg-white w-full max-w-2xl rounded-t-[28px] md:rounded-[28px] md:my-4 flex flex-col shadow-2xl">
             <div className="p-5 flex justify-between items-center border-b">
               <div><h2 className="font-black tracking-tight">{T.cart} • {T.table} {tableNumber}</h2><p className="text-zinc-500">{cartCount} {T.items}</p></div>
               <button onClick={()=>setShowCart(false)} className="w-9 h-9 rounded-full bg-zinc-100 grid place-items-center font-bold">✕</button>
             </div>
-            <div className="flex-1 overflow-y-auto overscroll-contain"><div className="p-4 space-y-3">
+            <div className="p-4 space-y-3">
               {cartDetailed.length===0 && <div className="py-12 text-center text-zinc-400">{T.cartEmpty}</div>}
               {cartDetailed.length>0 && <div className="font-black uppercase tracking-widest text-zinc-500 mb-1">{(T as any).yourOrder || 'Vaša narudžba'}</div>}
               {cartDetailed.map((i:any)=>(
