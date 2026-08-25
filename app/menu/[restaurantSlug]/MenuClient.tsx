@@ -448,6 +448,23 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
                 {payTerminalEnabled && <button onClick={()=>setPaymentMethod('CARD_TERMINAL')} className={`p-3 rounded-2xl border-2 text-left transition ${paymentMethod==='CARD_TERMINAL'?'border-black bg-black text-white':'border-zinc-200 bg-white'}`}><div>💳</div><div className="font-bold mt-1">{(T as any).pos || 'POS'}</div></button>}
                 {payOnlineEnabled? <button onClick={()=>setPaymentMethod('CARD_ONLINE')} className={`p-3 rounded-2xl border-2 text-left transition ${paymentMethod==='CARD_ONLINE'?'border-black bg-black text-white':'border-zinc-200 bg-white'}`}><div>🌐</div><div className="font-bold mt-1">{(T as any).online || 'Online'}</div></button> : <button disabled className="p-3 rounded-2xl border-2 border-zinc-100 bg-zinc-100 opacity-50 text-left"><div>🌐</div><div className="font-bold mt-1">{(T as any).online || 'Online'}</div></button>}
               </div>
+              {upsells.length>0 && (
+                <div className="bg-white border-2 border-dashed border-amber-200 rounded-2xl p-3">
+                  <div className="text-xs font-black uppercase tracking-widest mb-2">✨ Preporučujemo uz narudžbu</div>
+                  <div className="space-y-2">
+                    {upsells.slice(0,3).map((u:any)=>(
+                      <div key={u.id} className="flex gap-2 items-center bg-amber-50 border border-amber-200 rounded-2xl p-2.5">
+                        <div className="w-12 h-12 rounded-xl bg-white overflow-hidden shrink-0"><img src={u.imageUrl||""} className="w-full h-full object-cover"/></div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-bold text-xs line-clamp-1">{t(u.name,u.nameEn,u.nameDe)}</div>
+                          <div className="text-xs text-zinc-500">{u.price.toFixed(2)}€</div>
+                        </div>
+                        <button onClick={()=>add(u.id)} className="bg-black text-white rounded-full px-3 h-8 text-xs font-black">+ Dodaj</button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               <div className="bg-white border rounded-2xl p-3 space-y-1">
                 <div className="flex justify-between"><span className="text-zinc-500">{T.subtotal}</span><span className="font-bold">{subtotal.toFixed(2)}€</span></div>
                 {tipPercent>0 && <div className="flex justify-between"><span className="text-zinc-500">{(T as any).tipAmount || T.tip} {tipPercent}%</span><span className="font-bold">+{tipAmount.toFixed(2)}€</span></div>}
