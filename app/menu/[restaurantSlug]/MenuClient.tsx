@@ -359,8 +359,9 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
               <div><h2 className="font-black text- tracking-tight">{T.cart} • {T.table} {tableNumber}</h2><p className="text- text-zinc-500">{cartCount} {T.items}</p></div>
               <button onClick={()=>setShowCart(false)} className="w-9 h-9 rounded-full bg-zinc-100 grid place-items-center font-bold">✕</button>
             </div>
-            <div className="flex-1 overflow-y-auto min-h-0 overscroll-contain p-4 space-y-3">
-              {cartDetailed.length===0 && <div className="py-12 text-center text-zinc-400">{T.cartEmpty}</div>}
+            <div className="flex-1 overflow-y-auto min-h-0 overscroll-contain">
+              <div className="p-4 space-y-3">
+{cartDetailed.length===0 && <div className="py-12 text-center text-zinc-400">{T.cartEmpty}</div>}
               {cartDetailed.length>0 && (
                 <div className="text- font-black uppercase tracking-widest text-zinc-500 mb-1">Vaša narudžba</div>
               )}
@@ -378,7 +379,8 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
                     </div>
                   </div>
                 ))}
-            <div className="p-4 border-t bg-zinc-50 space-y-3 mt-4 pb-6">
+            </div>
+            <div className="p-4 border-t bg-zinc-50 space-y-3 mt-4 pb-8">
               <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-3">
                 <div className="text- font-black uppercase tracking-wider text-amber-700 mb-1">📝 Napomena za kuhinju / alergije - cijela narudžba</div>
                 <textarea value={orderNote} onChange={e=>setOrderNote(e.target.value)} placeholder="Npr. bez luka, alergija na kikiriki..." maxLength={200} rows={3} className="w-full bg-white border-2 border-amber-200 focus:border-black rounded-xl px-3 py-2 text- outline-none font-medium resize-none" />
@@ -459,7 +461,7 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
                   </div>
                 </div>
               )}
-              <button disabled={sending || cart.length===0} onClick={order} className="w-full bg-black text-white py-4 rounded-full font-black mt-2 text- shadow-lg shadow-black/20 disabled:opacity-50 active:scale-[0.98] transition">
+              <button disabled={sending || cart.length===0} onClick={order} className="w-full bg-black text-white py-4 rounded-full font-black text- shadow-lg shadow-black/20 disabled:opacity-50 active:scale-[0.98] transition">
                 {sending? T.sending : paymentMethod==='CASH'? `${T.orderCash} • ${total.toFixed(2)}€` : paymentMethod==='CARD_TERMINAL'? `${T.orderPos} • ${total.toFixed(2)}€` : `${T.payOnline} • ${total.toFixed(2)}€`}
               </button>
             </div>
