@@ -363,9 +363,21 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
               {cartDetailed.length===0 && <div className="py-12 text-center text-zinc-400">{T.cartEmpty}</div>}
               {cartDetailed.length>0 && (<>
                   <div className="space-y-3">
-                    {cartDetailed.map((i:any)=>(<div key={i.id} className="flex flex-col gap-2 border-2 border-zinc-900 p-3 rounded-2xl bg-white shadow-sm"><div className="flex gap-3"><div className="w-12 h-12 rounded-xl bg-zinc-100 overflow-hidden"><img src={i.imageUrl||""} className="w-full h-full object-cover"/></div><div className="flex-1"><div className="flex justify-between"><span className="font-black text-">{t(i.name,i.nameEn,i.nameDe)}</span><span className="font-black text-">{(i.price*i.qty).toFixed(2)}€</span></div><div className="flex justify-between items-center mt-1"><span className="text- text-zinc-500">{i.allergens? `⚠ ${i.allergens}` : ''}</span><div className="flex items-center gap-1 bg-black text-white rounded-full p-0.5"><button onClick={()=>dec(i.id)} className="w-7 h-7 grid place-items-center">−</button><span className="w-6 text-center text- font-black">{i.qty}</span><button onClick={()=>add(i.id)} className="w-7 h-7 grid place-items-center bg-white text-black rounded-full">+</button></div></div></div></div></div>))}
+                    {cartDetailed.map((i:any)=>(
+                      <div key={i.id} className="flex gap-3 border-2 border-zinc-900 p-3 rounded-2xl bg-white shadow-sm">
+                        <div className="w-12 h-12 rounded-xl bg-zinc-100 overflow-hidden shrink-0"><img src={i.imageUrl||""} className="w-full h-full object-cover"/></div>
+                        <div className="flex-1">
+                          <div className="flex justify-between"><span className="font-black text-">{t(i.name,i.nameEn,i.nameDe)}</span><span className="font-black text-">{(i.price*i.qty).toFixed(2)}€</span></div>
+                          <div className="flex justify-between items-center mt-1"><span className="text- text-zinc-500">{i.allergens? `⚠ ${i.allergens}` : ''}</span><div className="flex items-center gap-1 bg-black text-white rounded-full p-0.5"><button onClick={()=>dec(i.id)} className="w-7 h-7 grid place-items-center">−</button><span className="w-6 text-center text- font-black">{i.qty}</span><button onClick={()=>add(i.id)} className="w-7 h-7 grid place-items-center bg-white text-black rounded-full">+</button></div></div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-3"><div className="text- font-black uppercase tracking-wider text-amber-700 mb-1">📝 Napomena za kuhinju / alergije</div><textarea value={orderNote} onChange={e=>setOrderNote(e.target.value)} placeholder="Npr. bez luka, alergija..." maxLength={200} rows={3} className="w-full bg-white border-2 border-amber-200 focus:border-black rounded-xl px-3 py-2 text- outline-none font-medium resize-none" /></div>
+                  <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-3">
+                    <div className="text- font-black uppercase tracking-wider text-amber-700 mb-1">📝 Napomena za kuhinju / alergije - cijela narudžba</div>
+                    <textarea value={orderNote} onChange={e=>setOrderNote(e.target.value)} placeholder="Npr. bez luka, alergija..." maxLength={200} rows={3} className="w-full bg-white border-2 border-amber-200 focus:border-black rounded-xl px-3 py-2 text- outline-none font-medium resize-none" />
+                    <div className="text- text-amber-700 mt-1 text-right">{orderNote.length}/200</div>
+                  </div>
                   <div><div className="text- font-black uppercase tracking-wider opacity-60 mb-2 flex justify-between"><span>💝 Napojnica</span>{tipPercent>0 && <span className="text-black">+{tipAmount.toFixed(2)}€</span>}</div><div className="grid grid-cols-4 gap-2">{[0,10,20,30].map(pct=>(<button key={pct} onClick={()=>setTipPercent(pct)} className={`h-10 rounded-full font-bold text- border-2 ${tipPercent===pct? 'bg-black text-white border-black' : 'bg-white border-zinc-200'}`}>{pct===0? 'Bez tipa' : `${pct}%`}</button>))}</div></div>
                   <div className="text- font-black uppercase tracking-wider opacity-60">Način plaćanja</div>
                   <div className="grid grid-cols-3 gap-2">
