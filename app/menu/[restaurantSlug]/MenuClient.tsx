@@ -110,6 +110,8 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
     "Tjestenine": {en:"Pasta", de:"Pasta"},
     "Pizze": {en:"Pizzas", de:"Pizzen"},
     "Doručak": {en:"Breakfast", de:"Frühstück"},
+    "ide u kuhinju": {en:"goes to kitchen", de:"geht in die Küche"},
+    "IDE U KUHINJU": {en:"GOES TO KITCHEN", de:"GEHT IN DIE KÜCHE"},
   }
 
   function t(hr?: string | null, en?: string | null, de?: string | null) {
@@ -245,7 +247,7 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
                 <h1 className="text-white font-black text- md:text- leading-none tracking-tight">{t(currentMain.name, currentMain.nameEn, currentMain.nameDe)}</h1>
                 {currentMain.sendsToKitchen && <span className="bg-orange-500 text-white text- font-black px-2.5 py-1 rounded-full">{(T as any).goesToKitchen || "IDE U KUHINJU 🍳"}</span>}
               </div>
-              <p className="text-white/70 text- max-w- leading-snug">{currentMain.description || ""}</p>
+              <p className="text-white/70 text- max-w- leading-snug">{t(currentMain.description, (currentMain as any).descriptionEn, (currentMain as any).descriptionDe) || ""}</p>
             </div>
           </div>
         </div>
