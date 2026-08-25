@@ -142,6 +142,7 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
   const add = (id:string)=> setCart(p=>{ const ex=p.find(x=>x.id===id); return ex? p.map(x=>x.id===id?{...x,qty:x.qty+1}:x) : [...p,{id,qty:1, note:""}] })
   const dec = (id:string)=> setCart(p=> p.map(x=>x.id===id?{...x,qty:x.qty-1}:x).filter(x=>x.qty>0))
   const getQty=(id:string)=> cart.find(c=>c.id===id)?.qty||0
+ 
   const order = async()=>{
     if(!cart.length) return
     setSending(true)
@@ -182,10 +183,208 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <div className="relative">
+              <input value={search} onChange={e=>setSearch(e.target.value)} placeholder={T.search} className="bg-zinc-100 focus:bg-white border border-transparent focus:border-zinc-200 rounded-full pl-9 pr-4 py-2.5 text- w- md:w- focus:w- transition-all outline-none font-medium"/>
+              <span className="absolute left-3 top-2.5 text-zinc-400">⌕</span>
             </div>
+            <button onClick={()=>setShowCart(true)} className="relative bg-black text-white h-10 px-4 rounded-full font-black text- flex items-center gap-2 shadow-lg shadow-black/20 active:scale-95 transition">
+              <span>{T.cart}</span>
+              <span className="bg-white text-black min-w-5 h-5 grid place-items-center rounded-full text- px-1">{cartCount}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div className="max-w-6xl mx-auto px-4 mt-4">
+        <div className="relative h- md:h- rounded- overflow-hidden bg-zinc-900">
+          <img src={currentMain.imageUrl || MAIN_IMAGES[currentMain.name] || MAIN_IMAGES["Hrana"]} className="w-full h-full object-cover opacity-80"/>
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"/>
+          <div className="absolute bottom-0 left-0 right-0 p-5 md:p-6 flex justify-between items-end">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <h1 className="text-white font-black text- md:text- leading-none tracking-tight">{t(currentMain.name, currentMain.nameEn, currentMain.nameDe)}</h1>
+                {currentMain.sendsToKitchen && <span className="bg-orange-500 text-white text- font-black px-2.5 py-1 rounded-full">IDE U KUHINJU 🍳</span>}
+              </div>
+              <p className="text-white/70 text- max-w- leading-snug">{currentMain.description || ""}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      {currentMain.children.length>0 && (
+        <div className="max-w-6xl mx-auto px-4 mt-4">
+          <div className="flex gap-2.5 overflow-x-auto scrollbar-none pb-2">
+            <button onClick={()=>{setActiveSub("all"); setOpenAccordion(null)}} className={`shrink-0 h- px-5 rounded-full font-bold text- border transition-all flex items-center gap-2 ${activeSub==="all"? "bg-black text-white border-black shadow-lg shadow-black/20" : "bg-white border-zinc-200 hover:border-zinc-300"}`}>
+              <span className="text-">✨</span> Sve
+            </button>
+            {filteredData.subs.map(sub=>(
+              <button key={sub.id} onClick={()=>{setActiveSub(sub.id); setOpenAccordion(sub.id); subRefs.current[sub.id]?.scrollIntoView({behavior:'smooth', block:'start'})}} className={`shrink-0 group flex items-center gap-2.5 h- pl-1.5 pr-4 rounded-full font-bold text- border transition-all ${activeSub===sub.id? "bg-black text-white border-black shadow-lg" : "bg-white border-zinc-200 hover:border-zinc-300 hover:shadow-sm"}`}>
+                <div className="w-8 h-8 rounded-full overflow-hidden bg-zinc-100">
+                  <img src={sub.imageUrl || SUB_IMAGES[sub.name] || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100"} className="w-full h-full object-cover"/>
+                </div>
+                <span className="whitespace-nowrap">{t(sub.name, sub.nameEn, sub.nameDe)}</span>
+                <span className={`text- px-1.5 py-0.5 rounded-full ${activeSub===sub.id? "bg-white/20 text-white" : "bg-zinc-100 text-zinc-600"}`}>{sub.items.length}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+      <div className="max-w-6xl mx-auto px-4 mt-6 pb-">
+        {visibleItems.directItems && visibleItems.directItems.length>0 && (
+          <section className="mb-8">
+            <div className="grid md:grid-cols-2 gap-3">
+              {visibleItems.directItems.map((item:any)=>{
+                const qty=getQty(item.id)
+                return (
+                  <div key={item.id} className={`group bg-white rounded- border p-3 flex gap-3 shadow-sm hover:shadow-md transition-all ${item.isBoosted? 'border-amber-300 bg-amber-50/30' : 'border-zinc-100 hover:border-zinc-200'}`}>
+                    <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-zinc-100 overflow-hidden shrink-0 relative">
+                      <img src={item.imageUrl || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200"} className="w-full h-full object-cover group-hover:scale-105 transition duration-500"/>
+                      {item.isBoosted && <div className="absolute top-1 left-1 bg-amber-400 text-black text- font-black px-1.5 py-0.5 rounded-full">🔥 BOOST {item.boostLevel}</div>}
+                      {qty>0 && <div className="absolute top-1.5 right-1.5 bg-black text-white text- font-black w-5 h-5 grid place-items-center rounded-full">{qty}</div>}
+                    </div>
+                    <div className="flex-1 min-w-0 flex flex-col">
+                      <div className="flex justify-between items-start gap-2">
+                        <h3 className="font-bold text-[14.5px] leading-[1.2] tracking-tight line-clamp-2">{t(item.name,item.nameEn,item.nameDe)}</h3>
+                        <span className="shrink-0 bg-zinc-900 text-white text-[12.5px] font-black px-2.5 py-1 rounded-full">{item.price.toFixed(2)}€</span>
+                      </div>
+                      <p className="text- text-zinc-500 leading-[1.35] mt-1 line-clamp-2">{tDesc(item)||"Svježe pripremljeno"}</p>
+                      <AllergensBadge item={item} lang={lang} />
+                      <div className="mt-auto flex justify-end pt-2">
+                        {qty===0? (
+                          <button onClick={()=>add(item.id)} className="bg-black text-white h-8 px-4 rounded-full text- font-black hover:bg-zinc-800 active:scale-95 transition">+ {T.add}</button>
+                        ) : (
+                          <div className="flex items-center gap-1 bg-black text-white rounded-full p-1 shadow">
+                            <button onClick={()=>dec(item.id)} className="w-7 h-7 grid place-items-center rounded-full hover:bg-white/15">−</button>
+                            <span className="w-6 text-center text- font-black">{qty}</span>
+                            <button onClick={()=>add(item.id)} className="w-7 h-7 grid place-items-center rounded-full bg-white text-black">+</button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </section>
+        )}
+        {visibleItems.subs.map(sub=>{
+          const isOpen = activeSub!== "all"? true : openAccordion === sub.id
+          return (
+          <section key={sub.id} ref={el=>{subRefs.current[sub.id]=el}} className="mb-3 scroll-mt- bg-white rounded- border border-zinc-100 overflow-hidden shadow-sm">
+            <button
+              onClick={()=>{
+                if(activeSub!== "all"){
+                  setActiveSub("all")
+                  setOpenAccordion(null)
+                } else {
+                  const willOpen = openAccordion!== sub.id
+                  setOpenAccordion(willOpen? sub.id : null)
+                  if(willOpen) setTimeout(()=>subRefs.current[sub.id]?.scrollIntoView({behavior:'smooth', block:'start'}), 80)
+                }
+              }}
+              className="w-full flex items-center gap-3 p-3 text-left"
+            >
+              <div className="w-12 h-12 rounded-xl overflow-hidden bg-zinc-100 border shrink-0">
+                <img src={sub.imageUrl || SUB_IMAGES[sub.name] || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100"} className="w-full h-full object-cover"/>
+              </div>
+              <div className="flex-1 min-w-0">
+                <h2 className="font-black text- tracking-tight leading-none flex items-center gap-2">
+                  {t(sub.name,sub.nameEn,sub.nameDe)}
+                  {sub.sendsToKitchen && <span className="bg-orange-50 text-orange-600 border border-orange-200 text- px-1.5 py-0.5 rounded-full">KUHINJA</span>}
+                </h2>
+                <p className="text- text-zinc-500 mt-1">{sub.items.length} {T.items} • {isOpen? T.tapClose : T.tapOpen}</p>
+              </div>
+              <div className={`w-9 h-9 rounded-full bg-zinc-900 text-white grid place-items-center text- transition-transform ${isOpen? 'rotate-180' : ''}`}>⌄</div>
+            </button>
+            {isOpen && (
+              <div className="p-3 pt-0">
+                <div className="grid md:grid-cols-2 gap-3">
+                  {sub.items.map((item:any)=>{
+                    const qty=getQty(item.id)
+                    return (
+                      <div key={item.id} className={`group bg-white rounded- border p-3 flex gap-3 shadow-sm hover:shadow-md transition-all ${item.isBoosted? 'border-amber-300 bg-amber-50/30' : 'border-zinc-100 hover:border-zinc-200'}`}>
+                        <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-zinc-100 overflow-hidden shrink-0 relative">
+                          <img src={item.imageUrl || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200"} className="w-full h-full object-cover group-hover:scale-105 transition duration-500"/>
+                          {item.isBoosted && <div className="absolute top-1 left-1 bg-amber-400 text-black text- font-black px-1.5 py-0.5 rounded-full">🔥 {item.boostLevel}</div>}
+                          {qty>0 && <div className="absolute top-1.5 right-1.5 bg-black text-white text- font-black w-5 h-5 grid place-items-center rounded-full">{qty}</div>}
+                        </div>
+                        <div className="flex-1 min-w-0 flex flex-col">
+                          <div className="flex justify-between items-start gap-2">
+                            <h3 className="font-bold text- leading-[1.2] tracking-tight line-clamp-2">{t(item.name,item.nameEn,item.nameDe)}</h3>
+                            <span className="shrink-0 bg-zinc-900 text-white text-[11.5px] font-black px-2 py-1 rounded-full">{item.price.toFixed(2)}€</span>
+                          </div>
+                          <p className="text- text-zinc-500 leading-[1.35] mt-1 line-clamp-2">{tDesc(item)||""}</p>
+                          <AllergensBadge item={item} lang={lang} />
+                          <div className="mt-auto flex justify-end pt-2">
+                            {qty===0? (
+                              <button onClick={()=>add(item.id)} className="bg-black text-white h-7 px-3.5 rounded-full text- font-black hover:bg-zinc-800 active:scale-95 transition">+ {T.add}</button>
+                            ) : (
+                              <div className="flex items-center gap-1 bg-black text-white rounded-full p-1 shadow">
+                                <button onClick={()=>dec(item.id)} className="w-6 h-6 grid place-items-center rounded-full hover:bg-white/15">−</button>
+                                <span className="w-5 text-center text- font-black">{qty}</span>
+                                <button onClick={()=>add(item.id)} className="w-6 h-6 grid place-items-center rounded-full bg-white text-black">+</button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+          </section>
+        )})} <div className="h-32" />
+      </div>
+      <div className={`fixed bottom-0 left-0 right-0 z-30 transition-transform duration-300 translate-y-0`}> <div className="max-w-6xl mx-auto p-3">
+          <div className="bg-zinc-900/95 backdrop-blur-2xl rounded- p-1.5 flex gap-1.5 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] border border-white/10">
+            {mains.map(m=>{
+              const active=m.id===activeMain
+              const count = m.items.length + m.children.reduce((s,c)=>s+c.items.length,0)
+              return (
+                <button key={m.id} onClick={()=>setActiveMain(m.id)} className={`flex-1 relative flex flex-col items-center justify-center gap-1 py-2.5 rounded- transition-all ${active? "bg-white text-black shadow-lg" : "text-white/60 hover:text-white hover:bg-white/10"}`}>
+                  <div className={`w-7 h-7 rounded-full overflow-hidden ${active?"bg-zinc-100":"bg-white/10"} grid place-items-center`}>
+                    <img src={m.imageUrl || MAIN_IMAGES[m.name] || MAIN_IMAGES["Hrana"]} className="w-full h-full object-cover opacity-80"/>
+                  </div>
+                  <span className="text- font-black tracking-wide leading-none">{t(m.name,m.nameEn,m.nameDe)}</span>
+                  <span className={`text- px-1.5 py-0.5 rounded-full font-bold leading-none ${active? "bg-black text-white" : "bg-white/15 text-white/70"}`}>{count}</span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+      {showCart && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end justify-center p-0 md:p-4">
+          <div className="bg-white w-full max-w-2xl rounded-t-[28px] md:rounded-[28px] max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+            <div className="p-5 flex justify-between items-center border-b shrink-0">
+              <div><h2 className="font-black text- tracking-tight">{T.cart} • {T.table} {tableNumber}</h2><p className="text- text-zinc-500">{cartCount} {T.items}</p></div>
+              <button onClick={()=>setShowCart(false)} className="w-9 h-9 rounded-full bg-zinc-100 grid place-items-center font-bold">✕</button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0 overscroll-contain">
+              {cartDetailed.length===0 && <div className="py-12 text-center text-zinc-400">{T.cartEmpty}</div>}
+              {cartDetailed.length>0 && (
+                <div className="text- font-black uppercase tracking-widest text-zinc-500 mb-1">Vaša narudžba</div>
+              )}
+              {cartDetailed.map((i:any)=>(
+                  <div key={i.id} className="flex flex-col gap-2 border-2 border-zinc-900 p-3 rounded-2xl bg-white shadow-sm">
+                    <div className="flex gap-3">
+                      <div className="w-12 h-12 rounded-xl bg-zinc-100 overflow-hidden"><img src={i.imageUrl||""} className="w-full h-full object-cover"/></div>
+                      <div className="flex-1">
+                        <div className="flex justify-between"><span className="font-black text-">{t(i.name,i.nameEn,i.nameDe)}</span><span className="font-black text-">{(i.price*i.qty).toFixed(2)}€</span></div>
+                        <div className="flex justify-between items-center mt-1">
+                          <span className="text- text-zinc-500">{i.allergens? `⚠ ${i.allergens}` : ''}</span>
+                          <div className="flex items-center gap-1 bg-black text-white rounded-full p-0.5"><button onClick={()=>dec(i.id)} className="w-7 h-7 grid place-items-center">−</button><span className="w-6 text-center text- font-black">{i.qty}</span><button onClick={()=>add(i.id)} className="w-7 h-7 grid place-items-center bg-white text-black rounded-full">+</button></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 ))}
             </div>
             <div className="p-4 border-t bg-zinc-50 space-y-3 shrink-0">
+              <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-3">
+                <div className="text- font-black uppercase tracking-wider text-amber-700 mb-1">📝 Napomena za kuhinju / alergije - cijela narudžba</div>
+                <textarea value={orderNote} onChange={e=>setOrderNote(e.target.value)} placeholder="Npr. bez luka, alergija na kikiriki..." maxLength={200} rows={3} className="w-full bg-white border-2 border-amber-200 focus:border-black rounded-xl px-3 py-2 text- outline-none font-medium resize-none" />
+                <div className="text- text-amber-700 mt-1 text-right font-bold">{orderNote.length}/200</div>
+              </div>
               <div>
                 <div className="text- font-black uppercase tracking-wider opacity-60 mb-2 flex justify-between">
                   <span>💝 Napojnica za osoblje</span>
