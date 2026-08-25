@@ -359,7 +359,8 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
               <div><h2 className="font-black text- tracking-tight">{T.cart} • {T.table} {tableNumber}</h2><p className="text- text-zinc-500">{cartCount} {T.items}</p></div>
               <button onClick={()=>setShowCart(false)} className="w-9 h-9 rounded-full bg-zinc-100 grid place-items-center font-bold">✕</button>
             </div>
-            <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0 overscroll-contain">
+            <div className="flex-1 overflow-y-auto min-h-0 overscroll-contain">
+              <div className="p-4 space-y-3">
               {cartDetailed.length===0 && <div className="py-12 text-center text-zinc-400">{T.cartEmpty}</div>}
               {cartDetailed.length>0 && (
                 <div className="text- font-black uppercase tracking-widest text-zinc-500 mb-1">Vaša narudžba</div>
@@ -378,6 +379,8 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
                     </div>
                   </div>
                 ))}
+            </div>
+            </div>
             <div className="p-4 border-t bg-zinc-50 space-y-3 mt-6 pb-8">
               <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-3">
                 <div className="text- font-black uppercase tracking-wider text-amber-700 mb-1">📝 Napomena za kuhinju / alergije - cijela narudžba</div>
