@@ -69,7 +69,7 @@ function AllergensBadge({ item, lang }: { item: Item, lang: 'hr'|'en'|'de' }) {
           {c}
         </span>
       ))}
-      {codes.length>0 && <span className="text- text-orange-700/70 ml-1">{codes.map(c=>ALLERGENS_MAP[c]?.hr).join(", ")}</span>}
+      {codes.length>0 && <span className="text-sm text-orange-700/70 ml-1">{codes.map(c=>ALLERGENS_MAP[c]?.hr).join(", ")}</span>}
       {note && <span className="text-xs text-zinc-500 italic w-full mt-0.5">⚠ {note}</span>}
     </div>
   )
@@ -183,12 +183,12 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
           </div>
           <div className="flex items-center gap-2">
             <div className="relative">
-              <input value={search} onChange={e=>setSearch(e.target.value)} placeholder={T.search} className="bg-zinc-100 focus:bg-white border border-transparent focus:border-zinc-200 rounded-full pl-9 pr-4 py-2.5 text- w- md:w- focus:w- transition-all outline-none font-medium"/>
+              <input value={search} onChange={e=>setSearch(e.target.value)} placeholder={T.search} className="bg-zinc-100 focus:bg-white border border-transparent focus:border-zinc-200 rounded-full pl-9 pr-4 py-2.5 text-sm w- md:w- focus:w- transition-all outline-none font-medium"/>
               <span className="absolute left-3 top-2.5 text-zinc-400">⌕</span>
             </div>
-            <button onClick={()=>setShowCart(true)} className="relative bg-black text-white h-10 px-4 rounded-full font-black text- flex items-center gap-2 shadow-lg shadow-black/20 active:scale-95 transition">
+            <button onClick={()=>setShowCart(true)} className="relative bg-black text-white h-10 px-4 rounded-full font-black text-sm flex items-center gap-2 shadow-lg shadow-black/20 active:scale-95 transition">
               <span>{T.cart}</span>
-              <span className="bg-white text-black min-w-5 h-5 grid place-items-center rounded-full text- px-1">{cartCount}</span>
+              <span className="bg-white text-black min-w-5 h-5 grid place-items-center rounded-full text-sm px-1">{cartCount}</span>
             </button>
           </div>
         </div>
@@ -200,10 +200,10 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
           <div className="absolute bottom-0 left-0 right-0 p-5 md:p-6 flex justify-between items-end">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <h1 className="text-white font-black text- md:text- leading-none tracking-tight">{t(currentMain.name, currentMain.nameEn, currentMain.nameDe)}</h1>
+                <h1 className="text-white font-black text-sm md:text-sm leading-none tracking-tight">{t(currentMain.name, currentMain.nameEn, currentMain.nameDe)}</h1>
                 {currentMain.sendsToKitchen && <span className="bg-orange-500 text-white text-sm font-black px-2.5 py-1 rounded-full">IDE U KUHINJU 🍳</span>}
               </div>
-              <p className="text-white/70 text- max-w- leading-snug">{currentMain.description || ""}</p>
+              <p className="text-white/70 text-sm max-w- leading-snug">{currentMain.description || ""}</p>
             </div>
           </div>
         </div>
@@ -211,16 +211,16 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
       {currentMain.children.length>0 && (
         <div className="max-w-6xl mx-auto px-4 mt-4">
           <div className="flex gap-2.5 overflow-x-auto scrollbar-none pb-2">
-            <button onClick={()=>{setActiveSub("all"); setOpenAccordion(null)}} className={`shrink-0 h- px-5 rounded-full font-bold text- border transition-all flex items-center gap-2 ${activeSub==="all"? "bg-black text-white border-black shadow-lg shadow-black/20" : "bg-white border-zinc-200 hover:border-zinc-300"}`}>
+            <button onClick={()=>{setActiveSub("all"); setOpenAccordion(null)}} className={`shrink-0 h- px-5 rounded-full font-bold text-sm border transition-all flex items-center gap-2 ${activeSub==="all"? "bg-black text-white border-black shadow-lg shadow-black/20" : "bg-white border-zinc-200 hover:border-zinc-300"}`}>
               <span className="text-">✨</span> Sve
             </button>
             {filteredData.subs.map(sub=>(
-              <button key={sub.id} onClick={()=>{setActiveSub(sub.id); setOpenAccordion(sub.id); subRefs.current[sub.id]?.scrollIntoView({behavior:'smooth', block:'start'})}} className={`shrink-0 group flex items-center gap-2.5 h- pl-1.5 pr-4 rounded-full font-bold text- border transition-all ${activeSub===sub.id? "bg-black text-white border-black shadow-lg" : "bg-white border-zinc-200 hover:border-zinc-300 hover:shadow-sm"}`}>
+              <button key={sub.id} onClick={()=>{setActiveSub(sub.id); setOpenAccordion(sub.id); subRefs.current[sub.id]?.scrollIntoView({behavior:'smooth', block:'start'})}} className={`shrink-0 group flex items-center gap-2.5 h- pl-1.5 pr-4 rounded-full font-bold text-sm border transition-all ${activeSub===sub.id? "bg-black text-white border-black shadow-lg" : "bg-white border-zinc-200 hover:border-zinc-300 hover:shadow-sm"}`}>
                 <div className="w-8 h-8 rounded-full overflow-hidden bg-zinc-100">
                   <img src={sub.imageUrl || SUB_IMAGES[sub.name] || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100"} className="w-full h-full object-cover"/>
                 </div>
                 <span className="whitespace-nowrap">{t(sub.name, sub.nameEn, sub.nameDe)}</span>
-                <span className={`text- px-1.5 py-0.5 rounded-full ${activeSub===sub.id? "bg-white/20 text-white" : "bg-zinc-100 text-zinc-600"}`}>{sub.items.length}</span>
+                <span className={`text-sm px-1.5 py-0.5 rounded-full ${activeSub===sub.id? "bg-white/20 text-white" : "bg-zinc-100 text-zinc-600"}`}>{sub.items.length}</span>
               </button>
             ))}
           </div>
@@ -287,11 +287,11 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
               <div className="flex-1 min-w-0">
                 <h2 className="font-black text-base tracking-tight leading-none flex items-center gap-2">
                   {t(sub.name,sub.nameEn,sub.nameDe)}
-                  {sub.sendsToKitchen && <span className="bg-orange-50 text-orange-600 border border-orange-200 text- px-1.5 py-0.5 rounded-full">KUHINJA</span>}
+                  {sub.sendsToKitchen && <span className="bg-orange-50 text-orange-600 border border-orange-200 text-sm px-1.5 py-0.5 rounded-full">KUHINJA</span>}
                 </h2>
                 <p className="text-xs text-zinc-500 mt-1">{sub.items.length} {T.items} • {isOpen? T.tapClose : T.tapOpen}</p>
               </div>
-              <div className={`w-9 h-9 rounded-full bg-zinc-900 text-white grid place-items-center text- transition-transform ${isOpen? 'rotate-180' : ''}`}>⌄</div>
+              <div className={`w-9 h-9 rounded-full bg-zinc-900 text-white grid place-items-center text-sm transition-transform ${isOpen? 'rotate-180' : ''}`}>⌄</div>
             </button>
             {isOpen && (
               <div className="p-3 pt-0">
@@ -307,7 +307,7 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
                         </div>
                         <div className="flex-1 min-w-0 flex flex-col">
                           <div className="flex justify-between items-start gap-2">
-                            <h3 className="font-bold text- leading-[1.2] tracking-tight line-clamp-2">{t(item.name,item.nameEn,item.nameDe)}</h3>
+                            <h3 className="font-bold text-sm leading-[1.2] tracking-tight line-clamp-2">{t(item.name,item.nameEn,item.nameDe)}</h3>
                             <span className="shrink-0 bg-zinc-900 text-white text-[11.5px] font-black px-2 py-1 rounded-full">{item.price.toFixed(2)}€</span>
                           </div>
                           <p className="text-xs text-zinc-500 leading-[1.35] mt-1 line-clamp-2">{tDesc(item)||""}</p>
@@ -344,7 +344,7 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
                     <img src={m.imageUrl || MAIN_IMAGES[m.name] || MAIN_IMAGES["Hrana"]} className="w-full h-full object-cover opacity-80"/>
                   </div>
                   <span className="text-sm font-black tracking-wide leading-none">{t(m.name,m.nameEn,m.nameDe)}</span>
-                  <span className={`text- px-1.5 py-0.5 rounded-full font-bold leading-none ${active? "bg-black text-white" : "bg-white/15 text-white/70"}`}>{count}</span>
+                  <span className={`text-sm px-1.5 py-0.5 rounded-full font-bold leading-none ${active? "bg-black text-white" : "bg-white/15 text-white/70"}`}>{count}</span>
                 </button>
               )
             })}
