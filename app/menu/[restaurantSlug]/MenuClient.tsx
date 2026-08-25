@@ -7,21 +7,21 @@ const UI_TEXT = {
     notePlaceholder: "Npr. bez luka, alergija na...", noteLabel: "Napomena za kuhinju / alergije",
     yourOrder: "Vaša narudžba", noTip: "Bez tipa", barPickupTitle: "Preuzimanje na šanku", barPickupDesc: "Ovdje naručite i platite, a piće/hranu preuzmite na šanku kad bude spremno.",
     waiterService: "Poslužuje konobar - dostava na stol", paymentMethod: "Način plaćanja",
-    cash: "Gotovina", pos: "POS terminal", online: "Online", tipAmount: "Napojnica"
+    cash: "Gotovina", pos: "POS terminal", online: "Online", tipAmount: "Napojnica", goesToKitchen: "IDE U KUHINJU 🍳", kitchenShort: "KUHINJA"
   },
   en: { 
     search: "Search dishes, drinks...", cart: "Cart", items: "items", tapOpen: "tap to open", tapClose: "tap to close", table: "Table", cartEmpty: "Cart is empty", total: "Total", subtotal: "Subtotal", tip: "Tip", add: "Add", sending: "Sending...", orderCash: "Order • Cash", orderPos: "Order • POS", payOnline: "Pay online", 
     notePlaceholder: "E.g. no onion, allergy to...", noteLabel: "Kitchen note / allergies",
     yourOrder: "Your order", noTip: "No tip", barPickupTitle: "Pickup at bar", barPickupDesc: "Order and pay here, pick up drinks/food at the bar when ready.",
     waiterService: "Waiter service - delivery to table", paymentMethod: "Payment method",
-    cash: "Cash", pos: "POS terminal", online: "Online", tipAmount: "Tip"
+    cash: "Cash", pos: "POS terminal", online: "Online", tipAmount: "Tip", goesToKitchen: "GOES TO KITCHEN 🍳", kitchenShort: "KITCHEN"
   },
   de: { 
     search: "Gericht, Getränk suchen...", cart: "Warenkorb", items: "Artikel", tapOpen: "tippen zum Öffnen", tapClose: "tippen zum Schließen", table: "Tisch", cartEmpty: "Warenkorb ist leer", total: "Gesamt", subtotal: "Zwischensumme", tip: "Trinkgeld", add: "Hinzufügen", sending: "Senden...", orderCash: "Bestellen • Bar", orderPos: "Bestellen • POS", payOnline: "Online bezahlen", 
     notePlaceholder: "Z.B. ohne Zwiebel, Allergie auf...", noteLabel: "Hinweis für Küche / Allergien",
     yourOrder: "Ihre Bestellung", noTip: "Kein Trinkgeld", barPickupTitle: "Abholung an der Bar", barPickupDesc: "Hier bestellen und bezahlen, Getränke/Essen an der Bar abholen wenn fertig.",
     waiterService: "Kellnerservice - Lieferung an Tisch", paymentMethod: "Zahlungsart",
-    cash: "Bar", pos: "POS Terminal", online: "Online", tipAmount: "Trinkgeld"
+    cash: "Bar", pos: "POS Terminal", online: "Online", tipAmount: "Trinkgeld", goesToKitchen: "GEHT IN DIE KÜCHE 🍳", kitchenShort: "KÜCHE"
   },
 };
 const getInitialLang = (): "hr"|"en"|"de" => {
@@ -220,7 +220,7 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <h1 className="text-white font-black text- md:text- leading-none tracking-tight">{t(currentMain.name, currentMain.nameEn, currentMain.nameDe)}</h1>
-                {currentMain.sendsToKitchen && <span className="bg-orange-500 text-white text- font-black px-2.5 py-1 rounded-full">IDE U KUHINJU 🍳</span>}
+                {currentMain.sendsToKitchen && <span className="bg-orange-500 text-white text- font-black px-2.5 py-1 rounded-full">{(T as any).goesToKitchen || "IDE U KUHINJU 🍳"}</span>}
               </div>
               <p className="text-white/70 text- max-w- leading-snug">{currentMain.description || ""}</p>
             </div>
@@ -306,7 +306,7 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
               <div className="flex-1 min-w-0">
                 <h2 className="font-black text- tracking-tight leading-none flex items-center gap-2">
                   {t(sub.name,sub.nameEn,sub.nameDe)}
-                  {sub.sendsToKitchen && <span className="bg-orange-50 text-orange-600 border border-orange-200 text- px-1.5 py-0.5 rounded-full">KUHINJA</span>}
+                  {sub.sendsToKitchen && <span className="bg-orange-50 text-orange-600 border border-orange-200 text- px-1.5 py-0.5 rounded-full">{(T as any).kitchenShort || "KUHINJA"}</span>}
                 </h2>
                 <p className="text- text-zinc-500 mt-1">{sub.items.length} {T.items} • {isOpen? T.tapClose : T.tapOpen}</p>
               </div>
