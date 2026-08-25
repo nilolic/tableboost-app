@@ -132,7 +132,6 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
   const [upsells, setUpsells] = useState<Item[]>([])
   const [loadingUpsell, setLoadingUpsell] = useState(false)
   const subRefs = useRef<Record<string, any>>({})
-  const t = (hr:string, en?:string|null, de?:string|null)=> lang==='en'?(en||hr):lang==='de'?(de||hr):hr
   const tDesc = (item:Item)=> lang==='en'? (item.descriptionEn || item.description) : lang==='de'? (item.descriptionDe || item.description) : item.description
   useEffect(()=>{ setActiveSub("all"); setOpenAccordion(null) }, [activeMain])
   const currentMain = mains.find(m=>m.id===activeMain) || mains[0]
