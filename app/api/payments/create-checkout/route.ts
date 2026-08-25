@@ -14,16 +14,15 @@ export async function POST(req: Request) {
 
     const restaurant = order.restaurant as any
 
-    // Ako nema Stripe ključa ili je test mode, mockiraj
-    if(!restaurant.stripeSecretKey || restaurant.paymentTestMode){
-      return NextResponse.json({ 
+    // Mock samo ako nema Stripe ključa uopće
+    if(!restaurant.stripeSecretKey){
+      return NextResponse.json({
         url: `/order/${order.id}/success?mock=1&method=CARD_ONLINE`,
         mock: true,
       })
     }
 
     try {
-      // Pokušaj Stripe
       const Stripe = (await import('stripe')).default
       const stripe = new Stripe(restaurant.stripeSecretKey, { apiVersion: '2024-06-20' as any })
 
@@ -62,10 +61,10 @@ export async function POST(req: Request) {
         data: { paymentIntentId: session.id, paymentStatus: 'PENDING' }
       })
 
-      return NextResponse.json({ url: session.url })
+      return NextResponse.json({ url: session.url, testMode: !!restaurant.paymentTestMode })
     } catch (stripeErr:any) {
       console.error('Stripe error, fallback to mock', stripeErr)
-      return NextResponse.json({ 
+      return NextResponse.json({
         url: `/order/${order.id}/success?mock=1&method=CARD_ONLINE`,
         mock: true,
         warning: stripeErr.message
