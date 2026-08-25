@@ -5,14 +5,14 @@ const UI_TEXT = {
   hr: { 
     search: "Traži jelo, piće...", cart: "Košarica", items: "artikala", tapOpen: "tapni za otvaranje", tapClose: "tapni za zatvaranje", table: "Stol", cartEmpty: "Košarica je prazna", total: "Ukupno", subtotal: "Međuzbroj", tip: "Napojnica", add: "Dodaj", sending: "Šaljem...", orderCash: "Naruči • Gotovina", orderPos: "Naruči • POS", payOnline: "Plati online", 
     notePlaceholder: "Npr. bez luka, alergija na...", noteLabel: "Napomena za kuhinju / alergije",
-    yourOrder: "Vaša narudžba", noTip: "Bez tipa", barPickupTitle: "Preuzimanje na šanku", barPickupDesc: "Ovdje naručite i platite, a piće/hranu preuzmite na šanku kad bude spremno.",
+    yourOrder: "Vaša narudžba", noTip: "Bez tipa", barPickupTitle: "Preuzimanje na šanku", barPickupDesc: "Ovdje naručite i platite, a piće/hranu preuzmite na šanku kad bude spremno. Ostanite na ovoj stranici da primite obavijest kad je jelo gotovo 🔔 Ako želite notifikaciju, ne zatvarajte stranicu.",
     waiterService: "Poslužuje konobar - dostava na stol", paymentMethod: "Način plaćanja",
     cash: "Gotovina", pos: "POS terminal", online: "Online", tipAmount: "Napojnica", goesToKitchen: "IDE U KUHINJU 🍳", kitchenShort: "KUHINJA", all: "Sve"
   },
   en: { 
     search: "Search dishes, drinks...", cart: "Cart", items: "items", tapOpen: "tap to open", tapClose: "tap to close", table: "Table", cartEmpty: "Cart is empty", total: "Total", subtotal: "Subtotal", tip: "Tip", add: "Add", sending: "Sending...", orderCash: "Order • Cash", orderPos: "Order • POS", payOnline: "Pay online", 
     notePlaceholder: "E.g. no onion, allergy to...", noteLabel: "Kitchen note / allergies",
-    yourOrder: "Your order", noTip: "No tip", barPickupTitle: "Pickup at bar", barPickupDesc: "Order and pay here, pick up drinks/food at the bar when ready.",
+    yourOrder: "Your order", noTip: "No tip", barPickupTitle: "Pickup at bar", barPickupDesc: "Order and pay here, pick up drinks/food at the bar when ready. Stay on this page to get notified when your food is ready 🔔 If you want notification, do not close this page.",
     waiterService: "Waiter service - delivery to table", paymentMethod: "Payment method",
     cash: "Cash", pos: "POS terminal", online: "Online", tipAmount: "Tip", goesToKitchen: "GOES TO KITCHEN 🍳", kitchenShort: "KITCHEN", all: "All"
   },
