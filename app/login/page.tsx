@@ -1,5 +1,13 @@
+import type { Metadata } from 'next'
 import LoginForm from './LoginForm'
 import { prisma } from '@/lib/prisma'
+
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: false,
+  },
+}
 
 export default async function LoginPage({ searchParams }: { searchParams: { r?: string, restaurant?: string } }) {
   const slug = searchParams.r || searchParams.restaurant
