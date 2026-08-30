@@ -4,7 +4,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: ['/admin/', '/api/', '/dashboard/', '/superadmin/', '/order/', '/menu/', '/login/'],
+      disallow: ['/login', '/admin/', '/api/', '/dashboard/', '/superadmin/', '/order/', '/menu/', '/app/'],
     },
     sitemap: 'https://tableboost.app/sitemap.xml',
   }
