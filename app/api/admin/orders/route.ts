@@ -12,11 +12,39 @@ export async function GET(req: Request) {
     const from = searchParams.get('from'); const to = searchParams.get('to'); const all = searchParams.get('all') === '1';
     const where: any = { restaurantId };
     if (from || to) { where.createdAt = {}; if (from) where.createdAt.gte = new Date(from); if (to) { const toDate = new Date(to); toDate.setHours(23,59,59,999); where.createdAt.lte = toDate; } }
-    const orders = await prisma.order.findMany({ where, orderBy: { createdAt: 'desc' }, take: all? undefined : 500, include: { table: true, items: { include: { menuItem: true } } }, });
+    // dohvat restorana za soloMode
+    const restaurant = await prisma.restaurant.findUnique({ where: { id: restaurantId } });
+    const isSolo = !!restaurant?.soloMode;
+    const orders = await prisma.order.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      take: all? undefined : 500,
+      include: { 
+        table: true, 
+        items: { include: { menuItem: { include: { category: true } } } } 
+      },
+    });
+    // SOLO MOD: kuhinja ne vidi ništa, konobar vidi sve
+    if (isSolo) {
+      if (user?.role === 'KITCHEN') {
+        return NextResponse.json({ orders: [], soloMode: true });
+      }
+      if (user?.role === 'WAITER' || user?.role === 'KITCHEN') {
+        const sanitized = orders.map((o:any)=> ({...o, total: 0, tipAmount: 0, tipPercent: 0, }))
+        return NextResponse.json({ orders: sanitized, soloMode: true });
+      }
+    } else {
+      // NORMAL MOD: kuhinja vidi samo stavke koje idu u kuhinju
+      if (user?.role === 'KITCHEN') {
+        const kitchenOrders = orders.filter((o:any) => o.items?.some((it:any) => it.menuItem?.category?.sendsToKitchen));
+        const sanitized = kitchenOrders.map((o:any)=> ({...o, total: 0, tipAmount: 0, tipPercent: 0, }))
+        return NextResponse.json({ orders: sanitized, soloMode: false });
+      }
+    }
     if(user?.role === 'WAITER' || user?.role === 'KITCHEN'){
       const sanitized = orders.map((o:any)=> ({...o, total: 0, tipAmount: 0, tipPercent: 0, }))
-      return NextResponse.json({ orders: sanitized });
+      return NextResponse.json({ orders: sanitized, soloMode: isSolo });
     }
-    return NextResponse.json({ orders });
+    return NextResponse.json({ orders, soloMode: isSolo });
   } catch (e: any) { return NextResponse.json({ error: e.message }, { status: 500 }); }
 }
