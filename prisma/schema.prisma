@@ -36,6 +36,7 @@ model Restaurant {
   expiresAt   DateTime?
   convertedAt DateTime?
   serviceMode String @default("TABLE") // TABLE=konobar, BAR=sank
+  soloMode Boolean @default(false)
   paymentCashEnabled Boolean @default(true)
   paymentCardTerminalEnabled Boolean @default(true)
   paymentCardOnlineEnabled Boolean @default(false)
