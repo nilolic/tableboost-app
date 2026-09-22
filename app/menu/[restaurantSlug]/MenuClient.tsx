@@ -38,7 +38,7 @@ const getInitialLang = (): "hr"|"en"|"de" => {
 type Item = {
   id:string, name:string, nameEn?:string|null, nameDe?:string|null,
   description?:string|null, descriptionEn?:string|null, descriptionDe?:string|null,
-  price:number, imageUrl?:string|null,
+  price:number, anchorPrice?:number|null, imageUrl?:string|null,
   categoryId:string, sendsToKitchen?:boolean,
   allergens?:string|null, allergensNote?:string|null, allergensNoteEn?:string|null, allergensNoteDe?:string|null,
   isBoosted?:boolean, boostLevel?:number, upsellEnabled?:boolean
@@ -286,7 +286,10 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
                     <div className="flex-1 min-w-0 flex flex-col">
                       <div className="flex justify-between items-start gap-2">
                         <h3 className="font-bold text-[14.5px] leading-[1.2] tracking-tight line-clamp-2">{t(item.name,item.nameEn,item.nameDe)}</h3>
-                        <span className="shrink-0 bg-zinc-900 text-white text-[12.5px] font-black px-2.5 py-1 rounded-full">{item.price.toFixed(2)}€</span>
+                        <div className="flex flex-col items-end gap-1 shrink-0">
+                        <span className="bg-zinc-900 text-white text-[12.5px] font-black px-2.5 py-1 rounded-full">{item.price.toFixed(2)}€</span>
+                        {item.anchorPrice != null && <span className="bg-orange-600 text-white text-[12.5px] font-black px-2.5 py-1 rounded-full">S {Number(item.anchorPrice).toFixed(2)}€</span>}
+                      </div>
                       </div>
                       <p className="text- text-zinc-500 leading-[1.35] mt-1 line-clamp-2">{tDesc(item)||"Svježe pripremljeno"}</p>
                       <AllergensBadge item={item} lang={lang} />
@@ -352,7 +355,10 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
                         <div className="flex-1 min-w-0 flex flex-col">
                           <div className="flex justify-between items-start gap-2">
                             <h3 className="font-bold text- leading-[1.2] tracking-tight line-clamp-2">{t(item.name,item.nameEn,item.nameDe)}</h3>
-                            <span className="shrink-0 bg-zinc-900 text-white text-[11.5px] font-black px-2 py-1 rounded-full">{item.price.toFixed(2)}€</span>
+                            <div className="flex flex-col items-end gap-1 shrink-0">
+                            <span className="bg-zinc-900 text-white text-[11.5px] font-black px-2 py-1 rounded-full">{item.price.toFixed(2)}€</span>
+                            {item.anchorPrice != null && <span className="bg-orange-600 text-white text-[11.5px] font-black px-2 py-1 rounded-full">S {Number(item.anchorPrice).toFixed(2)}€</span>}
+                          </div>
                           </div>
                           <p className="text- text-zinc-500 leading-[1.35] mt-1 line-clamp-2">{tDesc(item)||""}</p>
                           <AllergensBadge item={item} lang={lang} />
