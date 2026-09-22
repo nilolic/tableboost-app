@@ -288,7 +288,7 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
                         <h3 className="font-bold text-[14.5px] leading-[1.2] tracking-tight line-clamp-2">{t(item.name,item.nameEn,item.nameDe)}</h3>
                         <div className="flex flex-col items-end gap-1 shrink-0">
                         <span className="bg-zinc-900 text-white text-[12.5px] font-black px-2.5 py-1 rounded-full">{item.price.toFixed(2)}€</span>
-                        {item.anchorPrice != null && <span className="bg-orange-600 text-white text-[12.5px] font-black px-2.5 py-1 rounded-full">S {Number(item.anchorPrice).toFixed(2)}€</span>}
+                        {item.anchorPrice != null && <span className="bg-orange-600 text-white text-[12.5px] font-black px-2.5 py-1 rounded-full">Sidrena 10.09: {Number(item.anchorPrice).toFixed(2)}€</span>}
                       </div>
                       </div>
                       <p className="text- text-zinc-500 leading-[1.35] mt-1 line-clamp-2">{tDesc(item)||"Svježe pripremljeno"}</p>
@@ -357,7 +357,7 @@ export default function MenuClient({ restaurant, tableNumber, mains, lang: propL
                             <h3 className="font-bold text- leading-[1.2] tracking-tight line-clamp-2">{t(item.name,item.nameEn,item.nameDe)}</h3>
                             <div className="flex flex-col items-end gap-1 shrink-0">
                             <span className="bg-zinc-900 text-white text-[11.5px] font-black px-2 py-1 rounded-full">{item.price.toFixed(2)}€</span>
-                            {item.anchorPrice != null && <span className="bg-orange-600 text-white text-[11.5px] font-black px-2 py-1 rounded-full">S {Number(item.anchorPrice).toFixed(2)}€</span>}
+                            {item.anchorPrice != null && <span className="bg-orange-600 text-white text-[11.5px] font-black px-2 py-1 rounded-full">Sidrena 10.09: {Number(item.anchorPrice).toFixed(2)}€</span>}
                           </div>
                           </div>
                           <p className="text- text-zinc-500 leading-[1.35] mt-1 line-clamp-2">{tDesc(item)||""}</p>
