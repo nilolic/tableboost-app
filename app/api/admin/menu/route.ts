@@ -24,17 +24,25 @@ export async function POST(req: Request) {
   const restaurantId = getRestaurantId(user, impId)
   if (!user ||!restaurantId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const body = await req.json()
-  const { name, price, description, categoryId, imageUrl, available, isBoosted, boostLevel, nameEn, nameDe, descriptionEn, descriptionDe, allergens, allergensNote, allergensNoteEn, allergensNoteDe } = body
+  const { name, price, anchorPrice, description, categoryId, imageUrl, available, isBoosted, boostLevel, nameEn, nameDe, descriptionEn, descriptionDe, allergens, allergensNote, allergensNoteEn, allergensNoteDe } = body
   if (!name || price == null ||!categoryId) return NextResponse.json({ error: 'Ime, cijena, kategorija obavezni' }, { status: 400 })
   const cat = await prisma.menuCategory.findFirst({ where: { id: categoryId, restaurantId } })
   if (!cat) return NextResponse.json({ error: 'Kategorija ne pripada restoranu' }, { status: 400 })
   const maxOrder = await prisma.menuItem.aggregate({ where: { categoryId }, _max: { order: true } })
+  
+  const parseNum = (v:any) => {
+    if(v===null||v===undefined||v==="") return null
+    const n = Number(String(v).replace(",",".").trim())
+    return isNaN(n) ? null : n
+  }
+
   const created = await prisma.menuItem.create({
     data: {
       name: name.trim(),
       nameEn: nameEn?.trim() || null,
       nameDe: nameDe?.trim() || null,
-      price: Number(price),
+      price: Number(String(price).replace(",",".")),
+      anchorPrice: parseNum(anchorPrice),
       description: description || null,
       descriptionEn: descriptionEn || null,
       descriptionDe: descriptionDe || null,

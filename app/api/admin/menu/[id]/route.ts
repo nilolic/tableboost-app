@@ -20,7 +20,15 @@ export async function PATCH(req: NextRequest, {params}:{params:{id:string}}){
   if(body.description!==undefined) data.description = body.description || null
   if(body.descriptionEn!==undefined) data.descriptionEn = body.descriptionEn || null
   if(body.descriptionDe!==undefined) data.descriptionDe = body.descriptionDe || null
-  if(body.price!==undefined) data.price = Number(body.price)
+  if(body.price!==undefined) data.price = Number(String(body.price).replace(",","."))
+  if(body.anchorPrice!==undefined){
+    if(body.anchorPrice===null || body.anchorPrice===""){
+      data.anchorPrice = null
+    } else {
+      const n = Number(String(body.anchorPrice).replace(",",".").trim())
+      data.anchorPrice = isNaN(n) ? null : n
+    }
+  }
   if(body.categoryId!==undefined) data.categoryId = body.categoryId
   if(body.imageUrl!==undefined) data.imageUrl = body.imageUrl || null
   if(body.available!==undefined) data.available = Boolean(body.available)

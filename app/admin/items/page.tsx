@@ -5,7 +5,7 @@ type Cat = { id:string; name:string; parentId?:string|null; order?:number };
 type Item = { 
   id:string; name:string; nameEn?:string|null; nameDe?:string|null;
   description?:string|null; descriptionEn?:string|null; descriptionDe?:string|null;
-  price:number; categoryId:string; category?:{name:string; id?:string}; 
+  price:number; anchorPrice?:number|null; categoryId:string; category?:{name:string; id?:string}; 
   imageUrl?:string|null; available:boolean; isBoosted:boolean; boostLevel:number; order?:number;
   allergens?:string|null; allergensNote?:string|null; allergensNoteEn?:string|null; allergensNoteDe?:string|null;
 };
@@ -38,7 +38,7 @@ export default function ItemsPage(){
   const [uploading,setUploading]=useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const [newItem,setNewItem]=useState<any>({ 
-    name:"", nameEn:"", nameDe:"", price:"", categoryId:"", 
+    name:"", nameEn:"", nameDe:"", price:"", anchorPrice:"", categoryId:"", 
     description:"", descriptionEn:"", descriptionDe:"", 
     imageUrl:"", isBoosted:false, boostLevel:0, available:true,
     allergens:"", allergensNote:"", allergensNoteEn:"", allergensNoteDe:""
@@ -220,7 +220,8 @@ export default function ItemsPage(){
         <input placeholder="Naziv HR *" value={newItem.name} onChange={e=>setNewItem({...newItem, name:e.target.value })} className="col-span-6 md:col-span-3 border rounded-lg px-2 h-9 text-xs font-medium"/>
         <input placeholder="Name EN" value={newItem.nameEn} onChange={e=>setNewItem({...newItem, nameEn:e.target.value })} className="col-span-3 md:col-span-2 border rounded-lg px-2 h-9 text-xs bg-blue-50/50"/>
         <input placeholder="Name DE" value={newItem.nameDe} onChange={e=>setNewItem({...newItem, nameDe:e.target.value })} className="col-span-3 md:col-span-2 border rounded-lg px-2 h-9 text-xs bg-yellow-50/50"/>
-        <input placeholder="€ 13.50 *" inputMode="decimal" value={newItem.price} onChange={e=>setNewItem({...newItem, price:e.target.value })} className="col-span-4 md:col-span-1 border rounded-lg px-2 h-9 text-xs"/>
+        <input placeholder="€ 13.50 *" inputMode="decimal" value={newItem.price} onChange={e=>setNewItem({...newItem, price:e.target.value })} className="col-span-2 md:col-span-1 border rounded-lg px-2 h-9 text-xs"/>
+ <input placeholder="Sidrena 10.09. €" inputMode="decimal" value={newItem.anchorPrice} onChange={e=>setNewItem({...newItem, anchorPrice:e.target.value })} className="col-span-2 md:col-span-1 border border-orange-300 bg-orange-50 rounded-lg px-2 h-9 text-xs"/>
         <select value={newItem.categoryId} onChange={e=>setNewItem({...newItem, categoryId:e.target.value })} className="col-span-8 md:col-span-3 border rounded-lg px-2 h-9 text-xs">
           {sortedCatsForSelect.map(c=><option key={c.id} value={c.id}>{getCatDisplay(c)}</option>)}
         </select>
@@ -300,7 +301,10 @@ export default function ItemsPage(){
               </div>
             </div>
             <div className="col-span-2 space-y-1">
-              <div className="flex items-center gap-1"><span className="text-[10px] text-neutral-400">€</span><input inputMode="decimal" value={(it as any).price} onChange={e=>setItems(p=>p.map(x=>x.id===it.id?{...x,price:e.target.value as any}:x))} className="w-20 border rounded-lg px-1 h-6 text-xs"/></div>
+              <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-1"><span className="text- text-neutral-400">€</span><input inputMode="decimal" value={(it as any).price} onChange={e=>setItems(p=>p.map(x=>x.id===it.id?{...x,price:e.target.value as any}:x))} className="w-20 border rounded-lg px-1 h-6 text-xs"/></div>
+              <div className="flex items-center gap-1"><span className="text- text-orange-500 font-bold">S</span><input inputMode="decimal" placeholder="Sidrena 10.09." value={(it as any).anchorPrice?? ""} onChange={e=>setItems(p=>p.map(x=>x.id===it.id?{...x,anchorPrice:e.target.value as any}:x))} className="w-20 border border-orange-300 bg-orange-50 rounded-lg px-1 h-6 text-"/></div>
+              </div>
               <select value={it.categoryId} onChange={e=>setItems(p=>p.map(x=>x.id===it.id?{...x,categoryId:e.target.value}:x))} className="w-full border rounded-lg px-1 h-6 text-[10px]">{sortedCatsForSelect.map((c:any)=><option key={c.id} value={c.id}>{getCatDisplay(c)}</option>)}</select>
               <div className="flex gap-1">
                 <label className="flex items-center gap-1 text-[10px]"><input type="checkbox" checked={it.available} onChange={e=>setItems(p=>p.map(x=>x.id===it.id?{...x,available:e.target.checked}:x))} className="w-3 h-3"/>Dost.</label>
