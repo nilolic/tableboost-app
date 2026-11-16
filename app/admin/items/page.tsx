@@ -303,7 +303,7 @@ export default function ItemsPage(){
             <div className="col-span-2 space-y-1">
               <div className="flex flex-col gap-1">
               <div className="flex items-center gap-1"><span className="text- text-neutral-400">€</span><input inputMode="decimal" value={(it as any).price} onChange={e=>setItems(p=>p.map(x=>x.id===it.id?{...x,price:e.target.value as any}:x))} className="w-20 border rounded-lg px-1 h-6 text-xs"/></div>
-              <div className="flex items-center gap-1"><span className="text- text-orange-600 font-bold whitespace-nowrap text-">Cijena na 10.09.2026.:</span><input inputMode="decimal" placeholder="Cijena na 10.09.2026." value={(it as any).anchorPrice?? ""} onChange={e=>setItems(p=>p.map(x=>x.id===it.id?{...x,anchorPrice:e.target.value as any}:x))} className="w-20 border border-orange-300 bg-orange-50 rounded-lg px-1 h-6 text-"/></div>
+              <div className="flex items-center gap-1"><span className="text- text-orange-600 font-bold whitespace-nowrap text- leading-none">Cijena na 10.09.2026.:</span><input inputMode="decimal" placeholder="Cijena na 10.09.2026." value={(it as any).anchorPrice?? ""} onChange={e=>setItems(p=>p.map(x=>x.id===it.id?{...x,anchorPrice:e.target.value as any}:x))} className="w-20 border border-orange-300 bg-orange-50 rounded-lg px-1 h-6 text-"/></div>
               </div>
               <select value={it.categoryId} onChange={e=>setItems(p=>p.map(x=>x.id===it.id?{...x,categoryId:e.target.value}:x))} className="w-full border rounded-lg px-1 h-6 text-[10px]">{sortedCatsForSelect.map((c:any)=><option key={c.id} value={c.id}>{getCatDisplay(c)}</option>)}</select>
               <div className="flex gap-1">
